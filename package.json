@@ -1,0 +1,51 @@
+{
+  "name": "iobroker.i2c",
+  "version": "0.0.1",
+  "description": "Adapter for ioBroker that communicates with devices over I2C bus",
+  "main": "i2c.js",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UncleSamSwiss/ioBroker.i2c.git"
+  },
+  "keywords": [
+    "ioBroker",
+    "I2C",
+    "Raspberry Pi",
+    "BeagleBone",
+    "Intel Edison"
+  ],
+  "author": {
+    "name": "UncleSamSwiss",
+    "email": "samuel.weibel@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "UncleSamSwiss",
+      "email": "samuel.weibel@gmail.com"
+    }
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/UncleSamSwiss/ioBroker.i2c/issues"
+  },
+  "homepage": "https://github.com/UncleSamSwiss/ioBroker.i2c",
+  "readme": "https://github.com/UncleSamSwiss/ioBroker.i2c/blob/master/README.md",
+  "engines": {
+    "node": ">=1.0"
+  },
+  "dependencies": {
+    "i2c-bus": "^1.2.2"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-replace": "^0.9.3",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-jscs": "^2.0.0",
+    "grunt-http": "^1.6.0",
+    "mocha": "^2.3.4",
+    "chai": "^3.4.1"
+  }
+}
