@@ -7,7 +7,7 @@
 var utils = require(__dirname + '/lib/utils');
 
 // other dependencies:
-var i2c = require('i2c-bus');
+//var i2c = require('i2c-bus');
 
 // create the adapter object
 var adapter = utils.adapter('i2c');
@@ -56,12 +56,60 @@ adapter.on('ready', function () {
     });
 });
 
+// New message arrived. obj is array with current messages
+adapter.on('message', function (obj) {
+    var wait = false;
+    if (obj) {
+        switch (obj.command) {
+            case 'search':
+                searchDevices(obj.message, function (err, res) {
+                    if (obj.callback) {
+                        adapter.sendTo(obj.from, obj.command, JSON.stringify(res || []), obj.callback);
+                    }
+                });
+                wait = true;
+                break;
+            default:
+                adapter.log.warn("Unknown command: " + obj.command);
+                break;
+        }
+    }
+    if (!wait && obj.callback) {
+        adapter.sendTo(obj.from, obj.command, obj.message, obj.callback);
+    }
+    return true;
+});
+
 function main() {
-    bus = i2c.openSync(adapter.config.busNumber);
-    var found = bus.scanSync();
-    adapter.log.debug('Found ' + found.length + ' devices: ' + JSON.stringify(found));
+    //bus = i2c.openSync(adapter.config.busNumber);
+    //var found = bus.scanSync();
+    //adapter.log.debug('Found ' + found.length + ' devices: ' + JSON.stringify(found));
     // TODO: implement
     adapter.subscribeStates('*');
+}
+
+function searchDevices(busNumber, callback) {
+    busNumber = parseInt(busNumber);
+    
+    /*if (busNumber == adapter.config.busNumber) {
+        bus.scan(callback);
+    } else {
+        var searchBus = bus.open(busNumber, function (err) {
+            if (err) {
+                callback(err);
+            } else {
+                searchBus.scan(function (err, result) {
+                    searchBus.close(function () {
+                        callback(err, result);
+                    })
+                });
+            }
+        });
+    }*/
+    // TODO: remove debugging:
+    setTimeout(function () {
+        callback(null, [busNumber, 4, 36, 52, 61]);
+    }, 2000);
 }
 
 function addStateChangeListener(id, listener) {

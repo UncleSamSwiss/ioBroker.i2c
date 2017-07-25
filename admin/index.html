@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
     <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css" />
 
@@ -9,98 +9,218 @@
     <link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
     <script type="text/javascript" src="../../js/translate.js"></script>
     <script type="text/javascript" src="../../js/adapter-settings.js"></script>
+    <script type="text/javascript" src="js/jsviews.min.js"></script>
+    <script type="text/javascript" src="js/jsviews-jqueryui-widgets.min.js"></script>
     <script type="text/javascript" src="words.js"></script>
 
-    <script type="text/javascript">
-        var bridges = [];
+    <!-- supported devices -->
+    <script type="text/javascript" src="devices/DeviceBase.js"></script> <!-- this must come before all other devices -->
+    <script type="text/javascript" src="devices/PCF8574.js"></script>
 
-        function setValue(id, value, onChange) {
-            // example: select elements with id=key and class=value and insert value
-            if ($('#' + id + '.value').attr('type') === 'checkbox') {
-                $('#' + id + '.value').prop('checked', value).change(function() {
-                    onChange();
-                });
-            } else {
-                $('#' + id + '.value').val(value).change(function() {
-                    onChange();
-                }).keyup(function() {
-                    $(this).trigger('change');
-                });
+    <!-- converters for JsRender -->
+    <script type="text/javascript">
+        $.views.converters("hex", function (val) {
+            // Convert a number to a hex string "0xXX"
+            var str = parseInt(val).toString(16);
+            return '0x' + (str.length == 1 ? '0' + str : str).toUpperCase();
+        });
+        $.views.converters("t", function (text) {
+            return _(text);
+        });
+    </script>
+
+    <!-- JsViews templates -->
+    <script id="tabsTemplate" type="text/x-jsrender">
+        {^{on 'change keyup' 'input, select' ~onChange }}
+        {^{tabs selectedTab}}
+            <ul>
+                <li><a href="#tabs-general">{{t:'General'}}</a></li>
+                {^{for devices}}
+                <li><a href="#tabs-{{:address}}">{{hex:address}}</a></li>{{/for}}
+            </ul>
+            <div id="tabs-general">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><label for="busNumber">{{t:'Bus Number'}}</label></td>
+                            <td class="admin-icon"></td>
+                            <td><input type="text" id="busNumber" class="value" data-link="busNumber"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">&nbsp;</td>
+                            <td><button id="search"><span>{{t:'Search Devices'}}</span></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {^{for devices
+}}
+            <div id="tabs-{{:address}}">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><label>{{t:'Address'}}</label></td>
+                            <td class="admin-icon"></td>
+                            <td><input type="text" value="{{hex:address}}" disabled></td>
+                        </tr>
+                        <tr>
+                            <td><label for="type-{{:address}}">{{t:'Device Type'}}</label></td>
+                            <td class="admin-icon"></td>
+                            <td>
+                                <select class="value" id="type-{{:address}}" data-link="selectedTypeIdx">
+                                    <option value="-1">{{t:'Unused'}}</option>
+                                    {{for supportedDevices}}
+                                    <option value="{{:#index}}">{{:name}}</option>
+                                    {{/for}}
+                                </select>
+                            </td>
+                        </tr>
+                        {^{if supportedDevices[selectedTypeIdx]}}
+                            {^{include supportedDevices[selectedTypeIdx].prepareViewModel(#data) ^tmpl=supportedDevices[selectedTypeIdx].template/}}
+                        {{/if}}
+                    </tbody>
+                </table>
+            </div>
+            {{/for}}
+        {{/tabs}}
+        {{/on}}
+    </script>
+
+    <script type="text/javascript">
+        var active = false;
+        var model = {};
+
+        function showDevices(devices, onChange) {
+            for (var index in devices) {
+                var device = devices[index];
+                appendDevice(device);
             }
+        }
+
+        function addFoundDevices(addresses) {
+            for (var i = 0; i < addresses.length; i++) {
+                var address = addresses[i];
+                if ($('#tabs-' + address).length === 0) {
+                    appendDevice({ address: address });
+                }
+            }
+        }
+
+        function appendDevice(device) {
+            prepareDevice(device);
+            $.observable(model.devices).insert(device);
+        }
+
+        function prepareDevice(device) {
+            device.supportedDevices = [];
+            device.selectedTypeIdx = -1;
+            for (var name in deviceTypes) {
+                var deviceType = deviceTypes[name];
+                if (deviceType.supportsAddress(device.address)) {
+                    if (device.type == deviceType.type) {
+                        device.selectedTypeIdx = device.supportedDevices.length;
+                    }
+                    device.supportedDevices.push(deviceType);
+                }
+            }
+        }
+
+        function toHexString(integer) {
+            var str = parseInt(integer).toString(16);
+            return '0x' + (str.length == 1 ? '0' + str : str);
         }
 
         // the function loadSettings has to exist ...
         function load(settings, onChange) {
-            for (var key in settings) {
-                setValue(key, settings[key], onChange);
+            // prepare the view model
+            model.busNumber = settings.busNumber;
+            model.deviceTypes = deviceTypes;
+            model.devices = settings.devices || [];
+            for (var index in model.devices) {
+                var device = model.devices[index];
+                prepareDevice(device);
             }
+
+            // load all the child templates for the device types
+            var childTemplates = {};
+            for (var name in deviceTypes) {
+                var deviceType = deviceTypes[name];
+                childTemplates[deviceType.type] = '#' + deviceType.type;
+            }
+
+            // render the template
+            var tabsTemplate = $.templates({ markup: "#tabsTemplate", templates: childTemplates });
+            tabsTemplate.link("#content", model, { onChange: onChange });
+
+            // read if instance is active or enabled
+            getIsAdapterAlive(function (isAlive) {
+                if (isAlive || common.enabled) {
+                    active = true;
+                }
+            });
+
             onChange(false);
+
+            $('#search').button().click(function () {
+                if (!active) {
+                    showMessage(_('Enable adapter first'), 'Warning', 'info');
+                    return;
+                }
+
+                $('#search').button('disable');
+
+                sendTo('i2c.' + instance, 'search', $('#busNumber').val(), function (result) {
+                    try {
+                        var arr = JSON.parse(result);
+                        addFoundDevices(arr);
+                    } catch (e) {
+                        alert("Error finding devices: " + e);
+                    }
+
+                    $('#search').button('enable');
+                });
+            });
         }
 
         // ... and the function save has to exist.
         // you have to make sure the callback is called with the settings object as first param!
         function save(callback) {
-            // example: select elements with class=value and build settings object
-            var obj = {};
-            $('.value').each(function () {
-                var $this = $(this);
-                if ($this.attr('type') === 'checkbox') {
-                    obj[$this.attr('id')] = $this.prop('checked');
-                } else {
-                    obj[$this.attr('id')] = $this.val();
+            var settings = {
+                busNumber: model.busNumber,
+                devices: []
+            };
+            for (var i = 0; i < model.devices.length; i++) {
+                var device = JSON.parse(JSON.stringify(model.devices[i]));
+                if (device.selectedTypeIdx == -1) {
+                    // ignore devices without a selected type
+                    continue;
                 }
-            });
-            $('.check').each(function () {
-                var $this = $(this);
-                obj[$this.attr('id')] = $this.is('checked');
-            });
-            callback(obj);
+
+                device.type = device.supportedDevices[device.selectedTypeIdx].type;
+                delete device.supportedDevices;
+                delete device.selectedTypeIdx;
+                settings.devices.push(device);
+            }
+            callback(settings);
         }
-    </script> 
+    </script>
 
     <style>
-        #settings tr {
+        #tabs tr {
             line-height: 2.5em;
         }
+
+        #search {
+            font-size: 14px;
+        }
     </style>
-</head>     
+</head>
 <body>
     <!-- you have to put your config page in a div with id adapter-container -->
     <div id="adapter-container">
-        <table><tr><td><img src="loxone.png" width="64" height="64"></td><td><h3 class="translate">Loxone Miniserver adapter settings</h3></td></tr></table>
-        <div id="settings">
-            <table>
-                <tr>
-                    <td><label class="translate" for="host">Miniserver Hostname / IP</label></td>
-                    <td class="admin-icon"></td>
-                    <td><input type="text" id="host" class="value"></td>
-                </tr>
-                <tr>
-                    <td><label class="translate" for="port">Miniserver Port</label></td>
-                    <td class="admin-icon"></td>
-                    <td><input type="text" id="port" class="value"></td>
-                </tr>
-                <tr>
-                    <td><label class="translate" for="username">Miniserver Username</label></td>
-                    <td class="admin-icon"></td>
-                    <td><input type="text" id="username" class="value"></td>
-                </tr>
-                <tr>
-                    <td><label class="translate" for="password">Miniserver Password</label></td>
-                    <td class="admin-icon"></td>
-                    <td><input type="password" id="password" class="value"></td>
-                </tr>
-                <tr>
-                    <td class="translate">Synchronize</td>
-                    <td class="admin-icon"></td>
-                    <td><input type="checkbox" id="syncRooms" value="true" class="value"> <label class="translate" for="syncRooms">Rooms</label></td>
-                </tr>
-                <tr>
-                    <td colspan="2">&nbsp;</td>
-                    <td><input type="checkbox" id="syncFunctions" value="true" class="value"> <label class="translate" for="syncFunctions">Functions</label></td>
-                </tr>
-            </table>
-        </div>
+        <table><tr><td><img src="i2c.png" width="64" height="64"></td><td><h3 class="translate">I²C adapter settings</h3></td></tr></table>
+
+        <div id="content"></div>
     </div>
 </body>
-</html> 
+</html>
