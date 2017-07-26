@@ -12,6 +12,9 @@ DeviceBase.prototype.supportsAddress = function (address) {
 };
 
 DeviceBase.prototype.prepareViewModel = function (device) {
-    alert(JSON.stringify(device));
+    return device;
+};
+
+DeviceBase.prototype.prepareModel = function (device) {
     return device;
 };

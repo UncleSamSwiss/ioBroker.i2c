@@ -26,7 +26,7 @@ PCF8574.prototype.prepareViewModel = function (device) {
     for (var i = 0; i < 8; i++) {
         if (!device.PCF8574.pins[i]) {
             device.PCF8574.pins[i] = {
-                dir: 'in'
+                dir: 'out'
             };
         }
     }
@@ -34,6 +34,7 @@ PCF8574.prototype.prepareViewModel = function (device) {
     return device;
 };
 
+// "exports" of all device types supported by this class
 deviceTypes.PCF8574 = new PCF8574('PCF8574', 0x20);
 deviceTypes.PCF8574A = new PCF8574('PCF8574A', 0x38);
 

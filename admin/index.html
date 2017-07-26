@@ -135,7 +135,7 @@
             // prepare the view model
             model.busNumber = settings.busNumber;
             model.deviceTypes = deviceTypes;
-            model.devices = settings.devices || [];
+            model.devices = settings.devices;
             for (var index in model.devices) {
                 var device = model.devices[index];
                 prepareDevice(device);
@@ -190,16 +190,19 @@
                 devices: []
             };
             for (var i = 0; i < model.devices.length; i++) {
-                var device = JSON.parse(JSON.stringify(model.devices[i]));
-                if (device.selectedTypeIdx == -1) {
+                var deviceConfig = JSON.parse(JSON.stringify(model.devices[i]));
+                if (deviceConfig.selectedTypeIdx == -1) {
                     // ignore devices without a selected type
                     continue;
                 }
 
-                device.type = device.supportedDevices[device.selectedTypeIdx].type;
-                delete device.supportedDevices;
-                delete device.selectedTypeIdx;
-                settings.devices.push(device);
+                var device = model.devices[i].supportedDevices[deviceConfig.selectedTypeIdx];
+                deviceConfig.type = device.type;
+                delete deviceConfig.supportedDevices;
+                delete deviceConfig.selectedTypeIdx;
+
+                deviceConfig = device.prepareModel(deviceConfig);
+                settings.devices.push(deviceConfig);
             }
             callback(settings);
         }

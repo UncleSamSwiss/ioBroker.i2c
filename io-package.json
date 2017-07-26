@@ -33,7 +33,8 @@
         "extIcon":                  "https://raw.githubusercontent.com/UncleSamSwiss/ioBroker.i2c/master/admin/i2c.png"
     },
     "native": {
-      "busNumber": 1
+      "busNumber": 1,
+      "devices": [ ]
     },
     "objects": [
     ]
