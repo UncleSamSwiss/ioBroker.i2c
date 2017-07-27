@@ -19,7 +19,7 @@ Especially make sure, that you have properly configured and enabled I2C on your 
 After you have enabled and configured I2C, you can install this adapter via ioBroker Admin:
 1. Start the adapter (it must run for the discovery to work)
 2. Open instance config dialog
-3. Press the "Scan" button to discover all connected I2C devices - this will take some time, be patient!
+3. Press the "Search Devices" button to discover all connected I2C devices - this will take some time, be patient!
 4. Configure all found devices in their respective tabs.
 5. Save the configuration (this will restart the adapter)
 
