@@ -24,17 +24,25 @@ function I2CAdapter()
     that.adapter = utils.adapter('i2c'); // create the adapter object
     
     // register event handlers
-    that.adapter.on('ready', function () { that.onReady(); });
-    that.adapter.on('stateChange', function (id, state) { that.onStateChange(id, state); });
-    that.adapter.on('message', function (obj) { that.onMessage(obj); });
-    that.adapter.on('unload', function (callback) { that.onUnload(callback); });
+    that.adapter.on('ready', function () {
+        that.onReady();
+    });
+    that.adapter.on('stateChange', function (id, state) {
+        that.onStateChange(id, state);
+    });
+    that.adapter.on('message', function (obj) {
+        that.onMessage(obj);
+    });
+    that.adapter.on('unload', function (callback) {
+        that.onUnload(callback);
+    });
 }
 
 I2CAdapter.prototype.main = function () {
     var that = this;
     that.bus = i2c.openSync(that.adapter.config.busNumber);
     
-    if (!that.adapter.config.devices || that.adapter.config.devices.length == 0) {
+    if (!that.adapter.config.devices || that.adapter.config.devices.length === 0) {
         // no devices configured, nothing to do in this adapter
         return;
     }
@@ -76,15 +84,11 @@ I2CAdapter.prototype.searchDevices = function (busNumber, callback) {
                 searchBus.scan(function (err, result) {
                     searchBus.close(function () {
                         callback(err, result);
-                    })
+                    });
                 });
             }
         });
     }
-    // TODO: remove debugging:
-    /*setTimeout(function () {
-        callback(null, [busNumber, 4, 36, 52, 61]);
-    }, 2000);*/
 };
 
 I2CAdapter.prototype.addStateChangeListener = function (id, listener) {
@@ -93,11 +97,11 @@ I2CAdapter.prototype.addStateChangeListener = function (id, listener) {
 
 I2CAdapter.prototype.setStateAck = function (id, value) {
     this._currentStateValues[this.adapter.namespace + '.' + id] = value;
-    this.adapter.setState(id, { val: value, ack: true });
+    this.adapter.setState(id, {val: value, ack: true});
 };
 
 I2CAdapter.prototype.getStateValue = function (id) {
-    return this._currentStateValues[this.adapter.namespace + '.' + id]
+    return this._currentStateValues[this.adapter.namespace + '.' + id];
 };
 
 I2CAdapter.prototype.toHexString = function (value) {
@@ -128,7 +132,7 @@ I2CAdapter.prototype.onStateChange = function (id, state) {
     
     this.adapter.log.debug('stateChange ' + id + ' ' + JSON.stringify(state));
     if (!this._stateChangeListeners.hasOwnProperty(id)) {
-        adapter.log.error('Unsupported state change: ' + id);
+        this.adapter.log.error('Unsupported state change: ' + id);
         return;
     }
     
@@ -168,8 +172,7 @@ I2CAdapter.prototype.onUnload = function (callback) {
 
     if (this.bus) {
         this.bus.close(callback);
-    }
-    else {
+    } else {
         callback();
     }
 };
