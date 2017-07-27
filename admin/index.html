@@ -90,13 +90,6 @@
         var active = false;
         var model = {};
 
-        function showDevices(devices, onChange) {
-            for (var index in devices) {
-                var device = devices[index];
-                appendDevice(device);
-            }
-        }
-
         function addFoundDevices(addresses) {
             for (var i = 0; i < addresses.length; i++) {
                 var address = addresses[i];
@@ -135,7 +128,7 @@
             // prepare the view model
             model.busNumber = settings.busNumber;
             model.deviceTypes = deviceTypes;
-            model.devices = settings.devices;
+            model.devices = settings.devices || [];
             for (var index in model.devices) {
                 var device = model.devices[index];
                 prepareDevice(device);

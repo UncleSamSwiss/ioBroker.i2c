@@ -34,6 +34,11 @@ I2CAdapter.prototype.main = function () {
     var that = this;
     that.bus = i2c.openSync(that.adapter.config.busNumber);
     
+    if (!that.adapter.config.devices || that.adapter.config.devices.length == 0) {
+        // no devices configured, nothing to do in this adapter
+        return;
+    }
+    
     for (var i = 0; i < that.adapter.config.devices.length; i++) {
         var deviceConfig = that.adapter.config.devices[i];
         if (!deviceConfig.type || (!deviceConfig.address && deviceConfig.address !== 0)) {
