@@ -21,7 +21,7 @@ PCF8574.prototype.constructor = PCF8574;
 
 PCF8574.prototype.prepareViewModel = function (device) {
     device.PCF8574 = device.PCF8574 || {};
-    device.PCF8574.pollingInterval = device.PCF8574.pollingInterval || 50;
+    device.PCF8574.pollingInterval = device.PCF8574.pollingInterval || 200;
     device.PCF8574.pins = device.PCF8574.pins || [];
     for (var i = 0; i < 8; i++) {
         if (!device.PCF8574.pins[i]) {
