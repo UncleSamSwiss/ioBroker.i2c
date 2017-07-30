@@ -6,13 +6,15 @@
     }
     
     this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-pollingInterval">{{t:"Polling Interval (ms)"}}</label></td><td class="admin-icon"></td>';
-    this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-pollingInterval" data-link="PCF8574.pollingInterval"></td></tr>';
+    this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-pollingInterval" data-link="PCF8574.pollingInterval" /></td></tr>';
     this.template += '{^{for PCF8574.pins}}';
     this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-pin-{{:#index}}">{{t:"Pin"}} {{:#index}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><select data-link="dir" id="{{:#parent.parent.data.address}}-pin-{{:#index}}">';
     this.template += '<option value="in">{{t:"Input"}}</option>';
     this.template += '<option value="out">{{t:"Output"}}</option>';
-    this.template += '</select></td></tr>';
+    this.template += '</select> ';
+    this.template += '<input type="checkbox" data-link="inv" id="{{:#parent.parent.data.address}}-inv-{{:#index}}" /> ';
+    this.template += '<label for="{{:#parent.parent.data.address}}-inv-{{:#index}}">{{t:"inverted"}}</label></td></tr>';
     this.template += '{{/for}}';
 }
 
@@ -31,6 +33,11 @@ PCF8574.prototype.prepareViewModel = function (device) {
         }
     }
 
+    return device;
+};
+
+PCF8574.prototype.prepareModel = function (device) {
+    device.name = this.name;
     return device;
 };
 
@@ -54,4 +61,8 @@ systemDictionary['Input'] = {
 systemDictionary['Output'] = {
     "en": "Output",
     "de": "Ausgang"
+};
+systemDictionary['inverted'] = {
+    "en": "inverted",
+    "de": "invertiert"
 };
