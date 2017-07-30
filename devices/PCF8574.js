@@ -6,6 +6,7 @@ function create(deviceConfig, i2cAdapter) {
 
 function PCF8574(deviceConfig, i2cAdapter) {
     this.address = deviceConfig.address;
+    this.name = deviceConfig.name || 'PCF8574';
     this.hexAddress = i2cAdapter.toHexString(this.address);
 
     this.config = deviceConfig.PCF8574;
@@ -23,7 +24,7 @@ PCF8574.prototype.start = function () {
     that.adapter.setObject(that.hexAddress, {
         type: 'device',
         common: {
-            name: this.hexAddress + ' (PCF8574)',
+            name: this.hexAddress + ' (' + this.name + ')',
             role: 'sensor'
         },
         native: that.config
@@ -39,8 +40,11 @@ PCF8574.prototype.start = function () {
             that.addOutputListener(i);
             var value = that.getStateValue(i);
             if (value === undefined) {
-                value = false;
+                value = pinConfig.inv === true;
                 that.setStateAck(i, value);
+            }
+            if (pinConfig.inv) {
+                value = !value;
             }
             if (!value) {
                 that.writeValue |= 1 << i;
@@ -89,7 +93,11 @@ PCF8574.prototype.readCurrentValue = function (force) {
     for (var i = 0; i < 8; i++) {
         var mask = 1 << i;
         if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir == 'in') {
-            this.setStateAck(i, (this.readValue & mask) > 0);
+            var value = (this.readValue & mask) > 0;
+            if (this.config.pins[i].inv) {
+                value = !value;
+            }
+            this.setStateAck(i, value);
         }
     }
 };
@@ -102,7 +110,8 @@ PCF8574.prototype.addOutputListener = function (pin) {
 PCF8574.prototype.changeOutput = function (pin, value) {
     var mask = 1 << pin;
     var oldValue = this.writeValue;
-    if (value) {
+    var realValue = this.config.pins[pin].inv ? !value : value;
+    if (realValue) {
         this.writeValue &= ~mask;
     } else {
         this.writeValue |= mask;
