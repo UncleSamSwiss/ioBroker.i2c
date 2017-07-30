@@ -1,11 +1,15 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.1",
+        "version": "0.0.2",
         "news": {
             "0.0.1": {
                 "en": "initial version",
                 "de": "initial version"
+            },
+            "0.0.2": {
+                "en": "Added support for inverting PCF8574 inputs and outputs.",
+                "de": "PCF8574-Eingänge und -Ausgänge können nun invertiert werden."
             }
         },
         "title": "I2C Adapter",
