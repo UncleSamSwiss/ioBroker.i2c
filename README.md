@@ -2,7 +2,7 @@
 
 # ioBroker adapter for I2C
 
-[![NPM version](http://img.shields.io/npm/v/iobroker.i2c.svg)](https://www.npmjs.com/package/iobroker.i2c) [![Downloads](https://img.shields.io/npm/dm/iobroker.i2c.svg)](https://www.npmjs.com/package/iobroker.i2c) [![Travis](https://img.shields.io/travis/UncleSamSwiss/ioBroker.i2c.svg)](https://travis-ci.org/UncleSamSwiss/ioBroker.i2c/) [![AppVeyor Build Status](https://img.shields.io/appveyor/ci/UncleSamSwiss/iobroker-i2c.svg)](https://ci.appveyor.com/project/UncleSamSwiss/iobroker-i2c) [![GitHub issues](https://img.shields.io/github/issues/UncleSamSwiss/ioBroker.i2c.svg)](https://github.com/UncleSamSwiss/ioBroker.i2c/issues)
+[![NPM version](http://img.shields.io/npm/v/iobroker.i2c.svg)](https://www.npmjs.com/package/iobroker.i2c) [![Downloads](https://img.shields.io/npm/dm/iobroker.i2c.svg)](https://www.npmjs.com/package/iobroker.i2c) [![Travis](https://img.shields.io/travis/UncleSamSwiss/ioBroker.i2c.svg)](https://travis-ci.org/UncleSamSwiss/ioBroker.i2c/) [![GitHub issues](https://img.shields.io/github/issues/UncleSamSwiss/ioBroker.i2c.svg)](https://github.com/UncleSamSwiss/ioBroker.i2c/issues)
 
 Communicates with devices connected to the local system using the I2C bus.
 
