@@ -79,12 +79,22 @@ PCF8574.prototype.stop = function () {
 
 PCF8574.prototype.sendCurrentValue = function () {
     this.debug('Sending ' + this.i2cAdapter.toHexString(this.writeValue));
-    this.i2cAdapter.bus.sendByteSync(this.address, this.writeValue);
+    try {
+        this.i2cAdapter.bus.sendByteSync(this.address, this.writeValue);
+    } catch (e) {
+        this.error("Couldn't send current value: " + e);
+    }
 };
 
 PCF8574.prototype.readCurrentValue = function (force) {
     var oldValue = this.readValue;
-    this.readValue = this.i2cAdapter.bus.receiveByteSync(this.address);
+    try {
+        this.readValue = this.i2cAdapter.bus.receiveByteSync(this.address);
+    } catch (e) {
+        this.error("Couldn't read current value: " + e);
+        return;
+    }
+
     if (oldValue == this.readValue && !force) {
         return;
     }
@@ -126,6 +136,10 @@ PCF8574.prototype.changeOutput = function (pin, value) {
 
 PCF8574.prototype.debug = function (message) {
     this.adapter.log.debug('PCF8574 ' + this.address + ': ' + message);
+};
+
+PCF8574.prototype.error = function (message) {
+    this.adapter.log.error('PCF8574 ' + this.address + ': ' + message);
 };
 
 PCF8574.prototype.setStateAck = function (pin, value) {
