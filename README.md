@@ -62,6 +62,9 @@ If you require a missing devcies, please provide the type of IC (brand, model, .
 
 ## Changelog
 
+### 0.0.3
+* (UncleSamSwiss) Added support for MCP23017.
+
 ### 0.0.2
 * (UncleSamSwiss) Added support for inverting PCF8574 inputs and outputs.
 
