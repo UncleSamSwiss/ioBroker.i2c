@@ -27,6 +27,7 @@ function MCP23017(deviceConfig, i2cAdapter) {
     this.i2cAdapter = i2cAdapter;
     this.adapter = this.i2cAdapter.adapter;
     
+    this.initialized = false;
     this.directions = 0;
     this.polarities = 0;
     this.pullUps = 0;
@@ -76,7 +77,7 @@ MCP23017.prototype.start = function () {
         that.adapter.setObject(that.hexAddress + '.' + pinConfig.name, {
             type: 'state',
             common: {
-                name: that.hexAddress + (isInput ? ' Input ' : ' Output ') + i,
+                name: that.hexAddress + (isInput ? ' Input ' : ' Output ') + pinConfig.name,
                 read: isInput,
                 write: !isInput,
                 type: 'boolean',
@@ -86,18 +87,12 @@ MCP23017.prototype.start = function () {
         });
     }
     
-    that.debug('Setting directions to ' + that.i2cAdapter.toHexString(that.directions, 4));
-    that.sendWord(REG_IODIR, that.directions);
-    that.debug('Setting polarities to ' + that.i2cAdapter.toHexString(that.polarities, 4));
-    that.sendWord(REG_IPOL, that.polarities);
-    that.debug('Setting pull-ups to ' + that.i2cAdapter.toHexString(that.pullUps, 4));
-    that.sendWord(REG_GPPU, that.pullUps);
-    that.debug('Setting initial value to ' + that.i2cAdapter.toHexString(that.writeValue, 4));
-    that.sendCurrentValue();
-    
-    that.readCurrentValue(true);
+    that.checkInitialized();
+
     if (hasInput && that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
-        this.pollingTimer = setInterval(function () { that.readCurrentValue(false); }, Math.max(50, parseInt(that.config.pollingInterval)));
+        this.pollingTimer = setInterval(
+            function () { that.readCurrentValue(false); },
+            Math.max(50, parseInt(that.config.pollingInterval)));
     }
 };
 
@@ -106,20 +101,54 @@ MCP23017.prototype.stop = function () {
     clearInterval(this.pollingTimer);
 };
 
+MCP23017.prototype.checkInitialized = function () {
+    if (this.initialized) {
+        return true;
+    }
+    
+    try {
+        this.debug('Setting directions to ' + this.i2cAdapter.toHexString(this.directions, 4));
+        this.sendWord(REG_IODIR, this.directions);
+        this.debug('Setting polarities to ' + this.i2cAdapter.toHexString(this.polarities, 4));
+        this.sendWord(REG_IPOL, this.polarities);
+        this.debug('Setting pull-ups to ' + this.i2cAdapter.toHexString(this.pullUps, 4));
+        this.sendWord(REG_GPPU, this.pullUps);
+        this.debug('Setting initial value to ' + this.i2cAdapter.toHexString(this.writeValue, 4));
+        this.sendCurrentValue();
+    
+        this.readCurrentValue(true);
+        this.initialized = true;
+        return true;
+    } catch (e) {
+        this.error("Couldn't initialize: " + e);
+        return false;
+    }
+};
+
 MCP23017.prototype.sendCurrentValue = function () {
+    if (!this.checkInitialized()) {
+        return;
+    }
+
     try {
         this.sendWord(REG_OLAT, this.writeValue);
     } catch (e) {
         this.error("Couldn't send current value: " + e);
+        this.initialized = false;
     }
 };
 
 MCP23017.prototype.readCurrentValue = function (force) {
+    if (!this.checkInitialized()) {
+        return;
+    }
+
     var oldValue = this.readValue;
     try {
         this.readValue = this.i2cAdapter.bus.readWordSync(this.address, REG_GPIO);
     } catch (e) {
         this.error("Couldn't read current value: " + e);
+        this.initialized = false;
         return;
     }
 
