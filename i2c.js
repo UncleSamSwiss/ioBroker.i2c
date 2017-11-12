@@ -104,9 +104,13 @@ I2CAdapter.prototype.getStateValue = function (id) {
     return this._currentStateValues[this.adapter.namespace + '.' + id];
 };
 
-I2CAdapter.prototype.toHexString = function (value) {
-    var str = parseInt(value).toString(16);
-    return '0x' + (str.length == 1 ? '0' + str : str).toUpperCase();
+I2CAdapter.prototype.toHexString = function (value, length) {
+    length = length || 2;
+    var str = parseInt(value).toString(16).toUpperCase();
+    while (str.length < length) {
+        str = '0' + str;
+    }
+    return '0x' + str;
 };
 
 // startup
