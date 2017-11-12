@@ -114,15 +114,15 @@ MCP23017.prototype.checkInitialized = function () {
         this.debug('Setting pull-ups to ' + this.i2cAdapter.toHexString(this.pullUps, 4));
         this.sendWord(REG_GPPU, this.pullUps);
         this.debug('Setting initial value to ' + this.i2cAdapter.toHexString(this.writeValue, 4));
-        this.sendCurrentValue();
-    
-        this.readCurrentValue(true);
         this.initialized = true;
-        return true;
     } catch (e) {
         this.error("Couldn't initialize: " + e);
         return false;
     }
+    
+    this.sendCurrentValue();
+    this.readCurrentValue(true);
+    return true;
 };
 
 MCP23017.prototype.sendCurrentValue = function () {
