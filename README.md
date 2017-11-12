@@ -35,6 +35,10 @@ On Raspberry Pi 3, this is "1".
 
 The following devices are currently supported. The numbers in parenthesis are the known addresses of the device in hexadecimal format (without the read bit).
 
+### MCP23017 16-Bit I/O Expander (20-27)
+
+Not yet implemented.
+
 ### PCF8574 8-Bit I/O Expander (20-27)
 
 Not yet implemented.
@@ -53,7 +57,13 @@ Please use the GitHub repository to report any bugs or request new features.
 
 If you require a missing devcies, please provide the type of IC (brand, model, ...) and its address(es) as reported in the adapter configuration.
 
+## TODO
+* Support interrupts instead of only polling for MCP23017 and PCF8574
+
 ## Changelog
+
+### 0.0.3
+* (UncleSamSwiss) Added support for MCP23017.
 
 ### 0.0.2
 * (UncleSamSwiss) Added support for inverting PCF8574 inputs and outputs.
