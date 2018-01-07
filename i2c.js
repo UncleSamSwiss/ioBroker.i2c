@@ -21,7 +21,7 @@ function I2CAdapter()
     
     // public fields
     that.bus = null;
-    that.adapter = utils.adapter('i2c'); // create the adapter object
+    that.adapter = utils.Adapter('i2c'); // create the adapter object
     
     // register event handlers
     that.adapter.on('ready', function () {
