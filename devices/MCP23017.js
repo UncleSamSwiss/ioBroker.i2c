@@ -104,7 +104,7 @@ MCP23017.prototype.stop = function () {
 MCP23017.prototype.checkInitialized = function () {
     if (this.initialized) {
         // checking if the directions are still the same, if not, the chip might have reset itself
-        var readDirections = this.i2cAdapter.bus.readWordSync(this.address, REG_IODIR);
+        var readDirections = this.readWord(REG_IODIR);
         if (readDirections === this.directions) {
             return true;
         }
@@ -115,13 +115,13 @@ MCP23017.prototype.checkInitialized = function () {
     
     try {
         this.debug('Setting initial output value to ' + this.i2cAdapter.toHexString(this.writeValue, 4));
-        this.sendWord(REG_OLAT, this.writeValue);
+        this.writeWord(REG_OLAT, this.writeValue);
         this.debug('Setting polarities to ' + this.i2cAdapter.toHexString(this.polarities, 4));
-        this.sendWord(REG_IPOL, this.polarities);
+        this.writeWord(REG_IPOL, this.polarities);
         this.debug('Setting pull-ups to ' + this.i2cAdapter.toHexString(this.pullUps, 4));
-        this.sendWord(REG_GPPU, this.pullUps);
+        this.writeWord(REG_GPPU, this.pullUps);
         this.debug('Setting directions to ' + this.i2cAdapter.toHexString(this.directions, 4));
-        this.sendWord(REG_IODIR, this.directions);
+        this.writeWord(REG_IODIR, this.directions);
         this.initialized = true;
     } catch (e) {
         this.error("Couldn't initialize: " + e);
@@ -138,7 +138,7 @@ MCP23017.prototype.sendCurrentValue = function () {
     }
 
     try {
-        this.sendWord(REG_OLAT, this.writeValue);
+        this.writeWord(REG_OLAT, this.writeValue);
     } catch (e) {
         this.error("Couldn't send current value: " + e);
         this.initialized = false;
@@ -155,7 +155,7 @@ MCP23017.prototype.readCurrentValue = function (force) {
 
     var oldValue = this.readValue;
     try {
-        this.readValue = this.i2cAdapter.bus.readWordSync(this.address, REG_GPIO);
+        this.readValue = this.readWord(REG_GPIO);
     } catch (e) {
         this.error("Couldn't read current value: " + e);
         this.initialized = false;
@@ -192,11 +192,10 @@ MCP23017.prototype.changeOutput = function (pinIndex, value) {
     } else {
         this.writeValue |= mask;
     }
-    if (this.writeValue == oldValue) {
-        return;
+    if (this.writeValue != oldValue) {
+        this.sendCurrentValue();
     }
 
-    this.sendCurrentValue();
     this.setStateAck(pinIndex, value);
 };
 
@@ -204,9 +203,15 @@ MCP23017.prototype.indexToName = function (index) {
     return (index < 8 ? 'A' : 'B') + (index % 8);
 }
 
-MCP23017.prototype.sendWord = function (register, value) {
-    this.debug('Sending ' + this.i2cAdapter.toHexString(register) + ' = ' + this.i2cAdapter.toHexString(value, 4));
+MCP23017.prototype.writeWord = function (register, value) {
+    this.debug('Writing ' + this.i2cAdapter.toHexString(register) + ' = ' + this.i2cAdapter.toHexString(value, 4));
     this.i2cAdapter.bus.writeWordSync(this.address, register, value);
+};
+
+MCP23017.prototype.readWord = function (register) {
+    var value = this.i2cAdapter.bus.readWordSync(this.address, register);
+    this.debug('Read ' + this.i2cAdapter.toHexString(register) + ' = ' + this.i2cAdapter.toHexString(value, 4));
+    return value;
 };
 
 MCP23017.prototype.debug = function (message) {
