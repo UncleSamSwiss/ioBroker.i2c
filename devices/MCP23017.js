@@ -28,6 +28,7 @@ function MCP23017(deviceConfig, i2cAdapter) {
     this.adapter = this.i2cAdapter.adapter;
     
     this.initialized = false;
+    this.hasInput = false;
     this.directions = 0;
     this.polarities = 0;
     this.pullUps = 0;
@@ -47,7 +48,6 @@ MCP23017.prototype.start = function () {
         native: that.config
     });
     
-    var hasInput = false;
     for (var i = 0; i < 16; i++) {
         var pinConfig = that.config.pins[i] || { dir: 'out', name: that.indexToName(i) };
         var isInput = pinConfig.dir != 'out';
@@ -59,7 +59,7 @@ MCP23017.prototype.start = function () {
             if (pinConfig.inv) {
                 that.polarities |= 1 << i;
             }
-            hasInput = true;
+            that.hasInput = true;
         } else {
             that.addOutputListener(i);
             var value = that.getStateValue(i);
@@ -89,7 +89,7 @@ MCP23017.prototype.start = function () {
     
     that.checkInitialized();
 
-    if (hasInput && that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
+    if (that.hasInput && that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
         this.pollingTimer = setInterval(
             function () { that.readCurrentValue(false); },
             Math.max(50, parseInt(that.config.pollingInterval)));
@@ -103,26 +103,33 @@ MCP23017.prototype.stop = function () {
 
 MCP23017.prototype.checkInitialized = function () {
     if (this.initialized) {
-        return true;
+        // checking if the directions are still the same, if not, the chip might have reset itself
+        var readDirections = this.i2cAdapter.bus.readWordSync(this.address, REG_IODIR);
+        if (readDirections === this.directions) {
+            return true;
+        }
+
+        this.error("GPIO directions unexpectedly changed, reconfiguring the device");
+        this.initialized = false;
     }
     
     try {
-        this.debug('Setting directions to ' + this.i2cAdapter.toHexString(this.directions, 4));
-        this.sendWord(REG_IODIR, this.directions);
+        this.debug('Setting initial output value to ' + this.i2cAdapter.toHexString(this.writeValue, 4));
+        this.sendWord(REG_OLAT, this.writeValue);
         this.debug('Setting polarities to ' + this.i2cAdapter.toHexString(this.polarities, 4));
         this.sendWord(REG_IPOL, this.polarities);
         this.debug('Setting pull-ups to ' + this.i2cAdapter.toHexString(this.pullUps, 4));
         this.sendWord(REG_GPPU, this.pullUps);
-        this.debug('Setting initial value to ' + this.i2cAdapter.toHexString(this.writeValue, 4));
+        this.debug('Setting directions to ' + this.i2cAdapter.toHexString(this.directions, 4));
+        this.sendWord(REG_IODIR, this.directions);
         this.initialized = true;
     } catch (e) {
         this.error("Couldn't initialize: " + e);
         return false;
     }
     
-    this.sendCurrentValue();
     this.readCurrentValue(true);
-    return true;
+    return this.initialized;
 };
 
 MCP23017.prototype.sendCurrentValue = function () {
@@ -139,6 +146,9 @@ MCP23017.prototype.sendCurrentValue = function () {
 };
 
 MCP23017.prototype.readCurrentValue = function (force) {
+    if (!this.hasInput) {
+        return;
+    }
     if (!this.checkInitialized()) {
         return;
     }
@@ -200,11 +210,11 @@ MCP23017.prototype.sendWord = function (register, value) {
 };
 
 MCP23017.prototype.debug = function (message) {
-    this.adapter.log.debug('MCP23017 ' + this.address + ': ' + message);
+    this.adapter.log.debug('MCP23017 ' + this.hexAddress + ': ' + message);
 };
 
 MCP23017.prototype.error = function (message) {
-    this.adapter.log.error('MCP23017 ' + this.address + ': ' + message);
+    this.adapter.log.error('MCP23017 ' + this.hexAddress + ': ' + message);
 };
 
 MCP23017.prototype.setStateAck = function (pinIndex, value) {
