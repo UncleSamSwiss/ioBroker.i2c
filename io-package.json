@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.3",
+        "version": "0.0.4",
         "news": {
             "0.0.1": {
                 "en": "initial version",
@@ -14,6 +14,10 @@
             "0.0.3": {
                 "en": "Added support for MCP23017 I/O expander.",
                 "de": "Unterstüztung für den MCP23017 I/O-Expander hinzugefügt."
+            },
+            "0.0.4": {
+                "en": "Improved stability of MCP23017 I/O expander.",
+                "de": "Stabilität von MCP23017 I/O-Expander verbessert."
             }
         },
         "title": "I2C Adapter",
