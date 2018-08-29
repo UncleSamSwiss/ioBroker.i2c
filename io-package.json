@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.41",
+        "version": "0.0.5",
         "news": {
             "0.0.1": {
                 "en": "initial version",
@@ -19,7 +19,7 @@
                 "en": "Improved stability of MCP23017 I/O expander.",
                 "de": "Stabilität von MCP23017 I/O-Expander verbessert."
             },
-            "0.0.41": {
+            "0.0.5": {
                 "en": "Test Init Relais OFF",
                 "de": "Test Init Relais OFF."
             }
