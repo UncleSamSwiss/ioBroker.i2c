@@ -33,7 +33,7 @@ function MCP23017(deviceConfig, i2cAdapter) {
     this.polarities = 0;
     this.pullUps = 0;
     this.readValue = 0;
-    this.writeValue = 0;
+    this.writeValue = 255;
 }
 
 MCP23017.prototype.start = function () {
