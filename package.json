@@ -1,6 +1,6 @@
 {
   "name": "iobroker.i2c",
-  "version": "0.0.41",
+  "version": "0.0.5",
   "description": "Adapter for ioBroker that communicates with devices over I2C bus",
   "main": "i2c.js",
   "scripts": {
