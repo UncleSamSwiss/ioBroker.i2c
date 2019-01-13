@@ -35,17 +35,21 @@ On Raspberry Pi 3, this is "1".
 
 The following devices are currently supported. The numbers in parenthesis are the known addresses of the device in hexadecimal format (without the read bit).
 
+### MCP23008 8-Bit I/O Expander (20-27)
+
+Microchip 8-Bit I/O Expander with Serial Interface.
+
 ### MCP23017 16-Bit I/O Expander (20-27)
 
-Not yet implemented.
+Microchip 16-Bit I/O Expander with Serial Interface.
 
 ### PCF8574 8-Bit I/O Expander (20-27)
 
-Not yet implemented.
+Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 
 ### PCF8574A 8-Bit I/O Expander (38-3F)
 
-Not yet implemented.
+Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 
 ## Compatibility
 
@@ -58,23 +62,26 @@ Please use the GitHub repository to report any bugs or request new features.
 If you require a missing devcies, please provide the type of IC (brand, model, ...) and its address(es) as reported in the adapter configuration.
 
 ## TODO
-* Support interrupts instead of only polling for MCP23017 and PCF8574
+* Support interrupts instead of only polling for MCP230xx and PCF8574
 
 ## Changelog
 
-### 0.0.4
+### 0.0.5 (2019-01-12)
+* (UncleSamSwiss) Added support for MCP23008.
+
+### 0.0.4 (2018-07-23)
 * (UncleSamSwiss) Improved stability of MCP23017.
 * (Apollon77) Latest ioBroker utils and testing including node 10.
 
-### 0.0.3
+### 0.0.3 (2017-11-12)
 * (UncleSamSwiss) Added support for MCP23017.
 
-### 0.0.2
+### 0.0.2 (2017-07-30)
 * (UncleSamSwiss) Added support for inverting PCF8574 inputs and outputs.
 
-### 0.0.1
+### 0.0.1 (2017-07-27)
 * (UncleSamSwiss) Initial version
 
 ## Thanks
 
-This project is based on the [i2c-bus](https://www.npmjs.com/package/i2c-bus) NPM module. Thanks to fivdi for his great modules!
+This project is based on the [i2c-bus](https://www.npmjs.com/package/i2c-bus) NPM module. Thanks to fivdi for his great module!
