@@ -89,7 +89,14 @@ PCF8574.prototype.sendCurrentValue = function () {
 PCF8574.prototype.readCurrentValue = function (force) {
     var oldValue = this.readValue;
     try {
-        this.readValue = this.i2cAdapter.bus.receiveByteSync(this.address);
+        var retries = 3;
+        do {
+            // writing the current value before reading to make sure the "direction" of all pins is set correctly
+            this.i2cAdapter.bus.sendByteSync(this.address, this.writeValue);
+            this.readValue = this.i2cAdapter.bus.receiveByteSync(this.address);
+            
+            // reading all 1's (0xFF) could be because of a reset, let's try 3x
+        } while (!force && this.readValue == 0xFF && --retries > 0);
     } catch (e) {
         this.error("Couldn't read current value: " + e);
         return;
