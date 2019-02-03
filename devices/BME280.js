@@ -82,7 +82,7 @@ BME280.prototype.start = function () {
         {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: that.hexAddress + ' (' + that.name + ')',
                 role: 'thermo'
             },
             native: that.config
@@ -112,7 +112,7 @@ BME280.prototype.stop = function () {
 };
 
 BME280.prototype.loadSystemConfig = function (callback) {
-    that = this;
+    var that = this;
     that.adapter.getForeignObject('system.config', function (err, obj) {
         that.debug('system.config = ' + JSON.stringify(obj));
         that.useAmericanUnits = obj && obj.common && obj.common.tempUnit == '°F';
@@ -122,13 +122,13 @@ BME280.prototype.loadSystemConfig = function (callback) {
 };
 
 BME280.prototype.createStates = function (callback) {
-    that = this;
+    var that = this;
     that.adapter.extendObject(
         that.hexAddress + '.temperature',
         {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Temperature',
+                name: that.hexAddress + ' Temperature',
                 read: true,
                 write: false,
                 type: 'number',
@@ -142,7 +142,7 @@ BME280.prototype.createStates = function (callback) {
                 {
                     type: 'state',
                     common: {
-                        name: this.hexAddress + ' Humidity',
+                        name: that.hexAddress + ' Humidity',
                         read: true,
                         write: false,
                         type: 'number',
@@ -156,7 +156,7 @@ BME280.prototype.createStates = function (callback) {
                         {
                             type: 'state',
                             common: {
-                                name: this.hexAddress + ' Pressure',
+                                name: that.hexAddress + ' Pressure',
                                 read: true,
                                 write: false,
                                 type: 'number',
@@ -167,10 +167,6 @@ BME280.prototype.createStates = function (callback) {
                         callback);
                 });
         });
-        /*
-            temperature_C : temperature_C,
-            humidity      : humidity,
-            pressure_hPa  : pressure_hPa*/
 };
 
 BME280.prototype.checkChipId = function () {
