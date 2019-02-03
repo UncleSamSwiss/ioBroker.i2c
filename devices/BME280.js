@@ -37,7 +37,7 @@ BME280.prototype.stop = function () {
     clearInterval(this.pollingTimer);
 };
 
-PCF8574.prototype.readCurrentValues = function () {
+BME280.prototype.readCurrentValues = function () {
     this.debug('Reading current values');
     try {
         // TODO: implement
