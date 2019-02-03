@@ -21,7 +21,7 @@ function PCF8574(deviceConfig, i2cAdapter) {
 PCF8574.prototype.start = function () {
     var that = this;
     that.debug('Starting');
-    that.adapter.setObject(that.hexAddress, {
+    that.adapter.extendObject(that.hexAddress, {
         type: 'device',
         common: {
             name: this.hexAddress + ' (' + this.name + ')',
@@ -50,7 +50,7 @@ PCF8574.prototype.start = function () {
                 that.writeValue |= 1 << i;
             }
         }
-        that.adapter.setObject(that.hexAddress + '.' + i, {
+        that.adapter.extendObject(that.hexAddress + '.' + i, {
             type: 'state',
             common: {
                 name: that.hexAddress + (isInput ? ' Input ' : ' Output ') + i,
