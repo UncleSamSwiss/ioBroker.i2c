@@ -114,8 +114,8 @@ BME280.prototype.stop = function () {
 BME280.prototype.loadSystemConfig = function (callback) {
     var that = this;
     that.adapter.getForeignObject('system.config', function (err, obj) {
-        that.debug('system.config = ' + JSON.stringify(obj));
         that.useAmericanUnits = obj && obj.common && obj.common.tempUnit == '°F';
+        that.info('Using ' + (that.useAmericanUnits ? 'American' : 'metric') + ' units');
 
         callback();
     });
@@ -228,7 +228,7 @@ BME280.prototype.readCurrentValues = function () {
     try {
         // Grab temperature, humidity, and pressure in a single read
         var buffer = new Buffer(8);
-        this.i2cBus.readI2cBlockSync(this.i2cAddress, this.REGISTER_PRESSURE_DATA, 8, buffer);
+        this.i2cAdapter.bus.readI2cBlockSync(this.address, this.REGISTER_PRESSURE_DATA, 8, buffer);
   
         // Temperature (temperature first since we need t_fine for pressure and humidity)
         var adc_T = this.uint20(buffer[3], buffer[4], buffer[5]);
