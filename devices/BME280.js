@@ -275,13 +275,13 @@ BME280.prototype.readCurrentValues = function () {
             press: pressure_hPa
         }));
 
-        this.setStateAck('humidity', humidity);
+        this.setStateAck('humidity', this.round(humidity));
         if (this.useAmericanUnits) {
-            this.setStateAck('temperature', (temperature_C * 9 / 5) + 32);
-            this.setStateAck('pressure', pressure_hPa * 0.02952998751);
+            this.setStateAck('temperature', this.round((temperature_C * 9 / 5) + 32));
+            this.setStateAck('pressure', this.round(pressure_hPa * 0.02952998751, 1000));
         } else {
-            this.setStateAck('temperature', temperature_C);
-            this.setStateAck('pressure', pressure_hPa); // hPa == mbar :-)
+            this.setStateAck('temperature', this.round(temperature_C));
+            this.setStateAck('pressure', this.round(pressure_hPa)); // hPa == mbar :-)
         }
     } catch (e) {
         this.error("Couldn't read current values: " + e);
@@ -319,6 +319,11 @@ BME280.prototype.uint16 = function (msb, lsb) {
 
 BME280.prototype.uint20 = function (msb, lsb, xlsb) {
     return ((msb << 8 | lsb) << 8 | xlsb) >> 4;
+};
+
+BME280.prototype.round = function (value, multiplicator) {
+    multiplicator = multiplicator || 10;
+    return Math.round(value * multiplicator) / multiplicator;
 };
 
 module.exports.create = create;
