@@ -164,7 +164,26 @@ BME280.prototype.createStates = function (callback) {
                                 unit: that.useAmericanUnits ? 'inHg' : 'mbar'
                             }
                         },
-                        callback);
+                        function() {
+                            that.adapter.extendObject(
+                                that.hexAddress + '.measure',
+                                {
+                                    type: 'state',
+                                    common: {
+                                        name: that.hexAddress + ' Measure',
+                                        read: fasle,
+                                        write: true,
+                                        type: 'boolean',
+                                        role: 'button'
+                                    }
+                                },
+                                function () {
+                                    that.i2cAdapter.addStateChangeListener(
+                                        that.hexAddress + '.measure',
+                                        function () { that.readCurrentValues(); });
+                                    callback();
+                                });
+                        });
                 });
         });
 };
