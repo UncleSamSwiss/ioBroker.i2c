@@ -171,7 +171,7 @@ BME280.prototype.createStates = function (callback) {
                                     type: 'state',
                                     common: {
                                         name: that.hexAddress + ' Measure',
-                                        read: fasle,
+                                        read: false,
                                         write: true,
                                         type: 'boolean',
                                         role: 'button'
