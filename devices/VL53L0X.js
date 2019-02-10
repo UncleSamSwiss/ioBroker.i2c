@@ -230,11 +230,25 @@ VL53L0X.prototype.createStates = function (callback) {
                 unit: 'mm'
             }
         },
-        function () {
-            that.i2cAdapter.addStateChangeListener(
+        function() {
+            that.adapter.extendObject(
                 that.hexAddress + '.measure',
-                function () { that.readCurrentValue(); });
-            callback();
+                {
+                    type: 'state',
+                    common: {
+                        name: that.hexAddress + ' Measure',
+                        read: false,
+                        write: true,
+                        type: 'boolean',
+                        role: 'button'
+                    }
+                },
+                function () {
+                    that.i2cAdapter.addStateChangeListener(
+                        that.hexAddress + '.measure',
+                        function () { that.readCurrentValue(); });
+                    callback();
+                });
         });
 };
 
