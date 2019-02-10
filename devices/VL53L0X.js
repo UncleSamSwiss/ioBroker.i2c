@@ -807,6 +807,10 @@ VL53L0X.prototype.writeReg16 = function (register, value) {
     this.i2cAdapter.bus.writeWordSync(this.address, register, value);
 };
 
+VL53L0X.prototype.readReg16u = function (register) {
+    return this.i2cAdapter.bus.readWordSync(this.address, register);
+};
+
 VL53L0X.prototype.writeRegList = function (register, buffer, count) {
     this.i2cAdapter.bus.writeI2cBlockSync(this.address, register, count, buffer);
 };
