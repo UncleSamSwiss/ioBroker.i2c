@@ -13,7 +13,7 @@
     this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-measurementTimingBudget" data-link="VL53L0X.measurementTimingBudget" /></td></tr>';
     
     this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-preVcselPulsePeriod">{{t:"Pre-Range Pulse Period"}}</label></td><td class="admin-icon"></td>';
-    this.template += '<td><select data-link="dir" id="{{:#parent.parent.data.address}}-preVcselPulsePeriod">';
+    this.template += '<td><select data-link="VL53L0X.preVcselPulsePeriod" id="{{:#parent.parent.data.address}}-preVcselPulsePeriod">';
     this.template += '<option value="12">12 PCLKs</option>';
     this.template += '<option value="14">14 PCLKs</option>';
     this.template += '<option value="16">16 PCLKs</option>';
@@ -21,7 +21,7 @@
     this.template += '</select></td></tr>';
     
     this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-finalVcselPulsePeriod">{{t:"Final Range Pulse Period"}}</label></td><td class="admin-icon"></td>';
-    this.template += '<td><select data-link="dir" id="{{:#parent.parent.data.address}}-finalVcselPulsePeriod">';
+    this.template += '<td><select data-link="VL53L0X.finalVcselPulsePeriod" id="{{:#parent.parent.data.address}}-finalVcselPulsePeriod">';
     this.template += '<option value="8">8 PCLKs</option>';
     this.template += '<option value="10">10 PCLKs</option>';
     this.template += '<option value="12">12 PCLKs</option>';

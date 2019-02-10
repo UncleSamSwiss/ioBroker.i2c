@@ -679,9 +679,9 @@ VL53L0X.prototype.getSequenceStepTimeout = function (preRange) {
 
 VL53L0X.prototype.getVcselPulsePeriod = function (type) {
     if (type === this.VcselPeriodPreRange) {
-        return this.decodeVcselPeriod(this.readReg8u(VL53L0X.PRE_RANGE_CONFIG_VCSEL_PERIOD));
+        return this.decodeVcselPeriod(this.readReg8u(this.PRE_RANGE_CONFIG_VCSEL_PERIOD));
     } else if (type === this.VcselPeriodFinalRange) {
-        return this.decodeVcselPeriod(this.readReg8u(VL53L0X.FINAL_RANGE_CONFIG_VCSEL_PERIOD));
+        return this.decodeVcselPeriod(this.readReg8u(this.FINAL_RANGE_CONFIG_VCSEL_PERIOD));
     }
     return 255;
 };
@@ -836,19 +836,6 @@ VL53L0X.prototype.setStateAck = function (name, value) {
 VL53L0X.prototype.getStateValue = function (name) {
     return this.i2cAdapter.getStateValue(this.hexAddress + '.' + name);
 };
-
-/*VL53L0X.prototype.int16 = function (msb, lsb) {
-    var val = this.uint16(msb, lsb);
-    return val > 32767 ? (val - 65536) : val;
-};
-
-VL53L0X.prototype.uint16 = function (msb, lsb) {
-    return msb << 8 | lsb;
-};
-
-VL53L0X.prototype.uint20 = function (msb, lsb, xlsb) {
-    return ((msb << 8 | lsb) << 8 | xlsb) >> 4;
-};*/
 
 VL53L0X.prototype.round = function (value, multiplicator) {
     multiplicator = multiplicator || 10;
