@@ -149,7 +149,7 @@ VL53L0X.prototype.start = function () {
     try {
         that.initChip();
     } catch(e) {
-        that.error('Chip initialization failed, will not report any values: ' + e);
+        that.error('Chip initialization failed, will not report any values: ' + e + "\n" + e.stack);
         return;
     }
 
@@ -242,10 +242,10 @@ VL53L0X.prototype.initChip = function () {
 
     // added by UncleSam:
     if (!this.setVcselPulsePeriod(this.VcselPeriodPreRange, this.preVcselPulsePeriod)) {
-        throw 'setVcselPulsePeriod(pre-range) error';
+        throw new Error('setVcselPulsePeriod(pre-range) error');
     }
     if (!this.setVcselPulsePeriod(this.VcselPeriodFinalRange, this.finalVcselPulsePeriod)) {
-        throw 'setVcselPulsePeriod(final range) error';
+        throw new Error('setVcselPulsePeriod(final range) error');
     }
 
     //  disable SIGNAL_RATE_MSRC (bit 1) and SIGNAL_RATE_PRE_RANGE (bit 4) limit checks
@@ -264,7 +264,7 @@ VL53L0X.prototype.initChip = function () {
     // spad_count, spad_type_is_aperture, success = this.getSpadInfo()
     var spadInfo = this.getSpadInfo();
     if (!spadInfo[2]) {
-        throw 'GetSpadInfo timeout';
+        throw new Error('GetSpadInfo timeout');
     }
 
     //  The SPAD map (RefGoodSpadMap) is read by VL53L0X_get_info_from_device() in
@@ -429,7 +429,7 @@ VL53L0X.prototype.initChip = function () {
 
     this.writeReg8(this.SYSTEM_SEQUENCE_CONFIG, 0x01);
     if (!this.performSingleRefCalibration(0x40)) {
-        throw 'PerformSingleRefCalibration(0x40) timeout';
+        throw new Error('PerformSingleRefCalibration(0x40) timeout');
     }
 
     // -- VL53L0X_perform_vhv_calibration() end
@@ -438,7 +438,7 @@ VL53L0X.prototype.initChip = function () {
 
     this.writeReg8(this.SYSTEM_SEQUENCE_CONFIG, 0x02);
     if (!this.performSingleRefCalibration(0x00)) {
-        throw 'PerformSingleRefCalibration(0x00) timeout';
+        throw new Error('PerformSingleRefCalibration(0x00) timeout');
     }
 
     // -- VL53L0X_perform_phase_calibration() end
@@ -766,7 +766,7 @@ VL53L0X.prototype.readCurrentValue = function () {
         }
         var distance = this.readRangeContinuousMillimeters();
         if (this.didTimeout) {
-            throw 'Timeout!';
+            throw new Error('Timeout!');
         }
 
         this.setStateAck('distance', this.round(distance));
@@ -791,7 +791,7 @@ VL53L0X.prototype.readRangeContinuousMillimeters = function () {
 };
 
 VL53L0X.prototype.writeReg8 = function (register, value) {
-    this.debug('writeReg8(' + this.i2cAdapter.toHexString(register) + ', ' + this.i2cAdapter.toHexString(value) + ')')
+    this.debug('writeReg8(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')')
     this.i2cAdapter.bus.writeByteSync(this.address, register, value);
 };
 
@@ -800,7 +800,7 @@ VL53L0X.prototype.readReg8u = function (register) {
 };
 
 VL53L0X.prototype.writeReg16 = function (register, value) {
-    this.debug('writeReg16(' + this.i2cAdapter.toHexString(register) + ', ' + this.i2cAdapter.toHexString(value, 4) + ')')
+    this.debug('writeReg16(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')')
     this.i2cAdapter.bus.writeWordSync(this.address, register, value);
 };
 
