@@ -143,8 +143,8 @@ VL53L0X.prototype.start = function () {
     that.preVcselPulsePeriod = that.parseIntConfigValue('preVcselPulsePeriod', 12, 18, 14);
     that.finalVcselPulsePeriod = that.parseIntConfigValue('finalVcselPulsePeriod', 8, 14, 10);
 
-    // TODO: check if this is a good timeout value
-    that.ioTimeout = 3 * that.measurementTimingBudget;
+    // TODO: check if we can get a good timeout value (the following line simply disables timeouts)
+    that.ioTimeout = 0;
 
     try {
         that.initChip();
@@ -183,26 +183,34 @@ VL53L0X.prototype.stop = function () {
 
 VL53L0X.prototype.parseIntConfigValue = function (name, minimum, maximum, defaultValue) {
     var value = this.config[name];
+    var intValue;
     if (!value) {
         this.info('Using ' + name + ': ' + defaultValue);
-        return defaultValue;
+        intValue = defaultValue;
+    } else {
+        intValue = parseInt(value);
+        if (intValue !== defaultValue) {
+            intValue = Math.min(Math.max(intValue, minimum), maximum);
+        }
     }
 
-    var intValue = parseInt(value);
-    intValue = Math.min(Math.max(intValue, minimum), maximum);
     this.info('Using ' + name + ': ' + intValue);
     return intValue;
 };
 
 VL53L0X.prototype.parseFloatConfigValue = function (name, minimum, maximum, defaultValue) {
     var value = this.config[name];
+    var floatValue;
     if (!value) {
         this.info('Using ' + name + ': ' + defaultValue);
-        return defaultValue;
+        floatValue = defaultValue;
+    } else {
+        floatValue = parseFloat(value);
+        if (floatValue !== defaultValue) {
+            floatValue = Math.min(Math.max(floatValue, minimum), maximum);
+        }
     }
 
-    var floatValue = parseFloat(value);
-    floatValue = Math.min(Math.max(floatValue, minimum), maximum);
     this.info('Using ' + name + ': ' + floatValue);
     return floatValue;
 };
