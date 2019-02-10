@@ -138,7 +138,7 @@ VL53L0X.prototype.start = function () {
     that.debug('Starting');
 
     that.measurementTimingBudget = that.parseIntConfigValue('measurementTimingBudget', 20, 1000, 33);
-    that.pollingInterval = that.parseIntConfigValue('pollingInterval', that.measurementTimingBudget * 3, 0x7FFFFFFF, 1000);
+    that.pollingInterval = that.parseIntConfigValue('pollingInterval', that.measurementTimingBudget * 3, 0x7FFFFFFF, 0); // default: disabled
     that.signalRateLimit = that.parseFloatConfigValue('signalRateLimit', 0.01, 511.99, 0.25);
     that.preVcselPulsePeriod = that.parseIntConfigValue('preVcselPulsePeriod', 12, 18, 14);
     that.finalVcselPulsePeriod = that.parseIntConfigValue('finalVcselPulsePeriod', 8, 14, 10);
@@ -167,7 +167,7 @@ VL53L0X.prototype.start = function () {
             that.createStates(
                 function() {
                     that.readCurrentValue();
-                    if (that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
+                    if (that.pollingInterval > 0) {
                         that.pollingTimer = setInterval(
                             function () { that.readCurrentValue(); },
                             that.pollingInterval);
@@ -183,11 +183,12 @@ VL53L0X.prototype.stop = function () {
 
 VL53L0X.prototype.parseIntConfigValue = function (name, minimum, maximum, defaultValue) {
     var value = this.config[name];
-    var intValue = defaultValue;
-    if (!!value) {
-        intValue = parseInt(value);
+    if (!value) {
+        this.info('Using ' + name + ': ' + defaultValue);
+        return defaultValue;
     }
 
+    var intValue = parseInt(value);
     intValue = Math.min(Math.max(intValue, minimum), maximum);
     this.info('Using ' + name + ': ' + intValue);
     return intValue;
@@ -195,11 +196,12 @@ VL53L0X.prototype.parseIntConfigValue = function (name, minimum, maximum, defaul
 
 VL53L0X.prototype.parseFloatConfigValue = function (name, minimum, maximum, defaultValue) {
     var value = this.config[name];
-    var floatValue = defaultValue;
-    if (!!value) {
-        floatValue = parseFloat(value);
+    if (!value) {
+        this.info('Using ' + name + ': ' + defaultValue);
+        return defaultValue;
     }
 
+    var floatValue = parseFloat(value);
     floatValue = Math.min(Math.max(floatValue, minimum), maximum);
     this.info('Using ' + name + ': ' + floatValue);
     return floatValue;
@@ -794,29 +796,35 @@ VL53L0X.prototype.readRangeContinuousMillimeters = function () {
 
 VL53L0X.prototype.writeReg8 = function (register, value) {
     value = parseInt(value, 0);
-    this.debug('writeReg8(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')')
+    this.debug('writeReg8(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')');
     this.i2cAdapter.bus.writeByteSync(this.address, register, value);
 };
 
 VL53L0X.prototype.readReg8u = function (register) {
-    return this.i2cAdapter.bus.readByteSync(this.address, register);
+    var value = this.i2cAdapter.bus.readByteSync(this.address, register);
+    this.debug('readReg8u(' + this.i2cAdapter.toHexString(register) + ') = ' + value);
+    return value;
 };
 
 VL53L0X.prototype.writeReg16 = function (register, value) {
     value = parseInt(value, 0);
-    this.debug('writeReg16(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')')
+    this.debug('writeReg16(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')');
     this.i2cAdapter.bus.writeWordSync(this.address, register, value);
 };
 
 VL53L0X.prototype.readReg16u = function (register) {
-    return this.i2cAdapter.bus.readWordSync(this.address, register);
+    var value = this.i2cAdapter.bus.readWordSync(this.address, register);
+    this.debug('readReg16u(' + this.i2cAdapter.toHexString(register) + ') = ' + value);
+    return value;
 };
 
 VL53L0X.prototype.writeRegList = function (register, buffer) {
+    this.debug('writeRegList(' + this.i2cAdapter.toHexString(register) + ', l=' + buffer.length + ')');
     this.i2cAdapter.bus.writeI2cBlockSync(this.address, register, buffer.length, buffer);
 };
 
 VL53L0X.prototype.readRegList = function (register, count) {
+    this.debug('readRegList(' + this.i2cAdapter.toHexString(register) + ', l=' + count + ')');
     var buffer = Buffer.alloc(count);
     this.i2cAdapter.bus.readI2cBlockSync(this.address, register, count, buffer);
     return buffer;
