@@ -666,7 +666,7 @@ VL53L0X.prototype.getSequenceStepTimeout = function (preRange) {
 
     SequenceStepTimeouts.final_range_vcsel_periodPclks = this.getVcselPulsePeriod(this.VcselPeriodFinalRange);
 
-    SequenceStepTimeouts.final_range_mclks = this.decodeTimeout(this.this.readReg16u(this.FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI));
+    SequenceStepTimeouts.final_range_mclks = this.decodeTimeout(this.readReg16u(this.FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI));
 
     if (preRange) {
         SequenceStepTimeouts.final_range_mclks -= SequenceStepTimeouts.preRangeMclks;
