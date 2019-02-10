@@ -138,13 +138,13 @@ VL53L0X.prototype.start = function () {
     that.debug('Starting');
 
     that.measurementTimingBudget = that.parseIntConfigValue('measurementTimingBudget', 20, 1000, 33);
-    that.pollingInterval = that.parseIntConfigValue('pollingInterval', that.measurementTimingBudget * 1.2, 0x7FFFFFFF, 1000);
+    that.pollingInterval = that.parseIntConfigValue('pollingInterval', that.measurementTimingBudget * 3, 0x7FFFFFFF, 1000);
     that.signalRateLimit = that.parseFloatConfigValue('signalRateLimit', 0.01, 511.99, 0.25);
     that.preVcselPulsePeriod = that.parseIntConfigValue('preVcselPulsePeriod', 12, 18, 14);
     that.finalVcselPulsePeriod = that.parseIntConfigValue('finalVcselPulsePeriod', 8, 14, 10);
 
     // TODO: check if this is a good timeout value
-    that.ioTimeout = that.measurementTimingBudget;
+    that.ioTimeout = 3 * that.measurementTimingBudget;
 
     try {
         that.initChip();
@@ -851,7 +851,7 @@ VL53L0X.prototype.round = function (value, multiplicator) {
 VL53L0X.prototype.checkTimeoutExpired = function () {
     var t1 = new Date().getTime();
     if (this.ioTimeout > 0 && (t1 - this.timeoutStart) > this.ioTimeout) {
-        this.debug('Timeout: ' + (t1 - this.timeoutStart) + ' > ' + this.ioTimeout)
+        this.debug('Timeout: ' + (t1 - this.timeoutStart) + ' > ' + this.ioTimeout);
         return true;
     }
     return false;
