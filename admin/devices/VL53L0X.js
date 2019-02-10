@@ -6,10 +6,10 @@
     this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-pollingInterval">{{t:"Polling Interval (ms)"}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-pollingInterval" data-link="VL53L0X.pollingInterval" /></td></tr>';
     
-    this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-signalRateLimit">{{t:"Signal Rate Limit (MCPS)"}}</label></td><td class="admin-icon"></td>';
+    this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-signalRateLimit">{{t:"Signal Rate Limit (MCPS)"}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-signalRateLimit" data-link="VL53L0X.signalRateLimit" /></td></tr>';
     
-    this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-measurementTimingBudget">{{t:"Measurement Timing Budget (ms)"}}</label></td><td class="admin-icon"></td>';
+    this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-measurementTimingBudget">{{t:"Measurement Timing Budget (ms)"}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-measurementTimingBudget" data-link="VL53L0X.measurementTimingBudget" /></td></tr>';
     
     this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-preVcselPulsePeriod">{{t:"Pre-Range Pulse Period"}}</label></td><td class="admin-icon"></td>';
