@@ -762,6 +762,7 @@ VL53L0X.prototype.readCurrentValue = function () {
             if (this.checkTimeoutExpired()) {
                 this.didTimeout = true;
                 this.error('read_range_single_millimeters timeout');
+                break;
             }
         }
         var distance = this.readRangeContinuousMillimeters();
@@ -782,6 +783,7 @@ VL53L0X.prototype.readRangeContinuousMillimeters = function () {
         if (this.checkTimeoutExpired()) {
             this.didTimeout = true;
             this.error('readRangeContinuousMillimeters timeout');
+            break;
         }
     }
 
@@ -849,6 +851,7 @@ VL53L0X.prototype.round = function (value, multiplicator) {
 VL53L0X.prototype.checkTimeoutExpired = function () {
     var t1 = new Date().getTime();
     if (this.ioTimeout > 0 && (t1 - this.timeoutStart) > this.ioTimeout) {
+        this.debug('Timeout: ' + (t1 - this.timeoutStart) + ' > ' + this.ioTimeout)
         return true;
     }
     return false;
