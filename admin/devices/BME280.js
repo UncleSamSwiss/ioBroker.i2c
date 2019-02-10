@@ -1,5 +1,5 @@
-﻿function BME280(name) {
-    DeviceBase.call(this, name);
+﻿function BME280() {
+    DeviceBase.call(this, 'BME280');
 
     this.addresses.push(0x76);
     this.addresses.push(0x77);
@@ -24,7 +24,7 @@ BME280.prototype.prepareModel = function (device) {
 };
 
 // "exports" of all device types supported by this class
-deviceTypes.BME280 = new BME280('BME280');
+deviceTypes.BME280 = new BME280();
 
 // translations
 systemDictionary['Polling Interval (sec)'] = {

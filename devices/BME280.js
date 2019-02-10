@@ -191,7 +191,7 @@ BME280.prototype.createStates = function (callback) {
 BME280.prototype.checkChipId = function () {
     this.i2cAdapter.bus.writeByteSync(this.address, this.REGISTER_CHIPID, 0);
     var chipId = this.i2cAdapter.bus.readByteSync(this.address, this.REGISTER_CHIPID);
-    this.info('Chip ID: 0x' + this.i2cAdapter.toHexString(chipId));
+    this.info('Chip ID: ' + this.i2cAdapter.toHexString(chipId));
     if (chipId < 0x56 || chipId > 0x60 || chipId == 0x59) {
         throw 'Unsupported chip ID ' + this.i2cAdapter.toHexString(chipId) + '; are you sure this is a BME280?';
     }
