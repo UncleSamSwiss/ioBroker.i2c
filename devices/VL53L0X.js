@@ -791,6 +791,7 @@ VL53L0X.prototype.readRangeContinuousMillimeters = function () {
 };
 
 VL53L0X.prototype.writeReg8 = function (register, value) {
+    value = parseInt(value, 0);
     this.debug('writeReg8(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')')
     this.i2cAdapter.bus.writeByteSync(this.address, register, value);
 };
@@ -800,6 +801,7 @@ VL53L0X.prototype.readReg8u = function (register) {
 };
 
 VL53L0X.prototype.writeReg16 = function (register, value) {
+    value = parseInt(value, 0);
     this.debug('writeReg16(' + this.i2cAdapter.toHexString(register) + ', ' + value + ')')
     this.i2cAdapter.bus.writeWordSync(this.address, register, value);
 };
