@@ -146,9 +146,11 @@ VL53L0X.prototype.start = function () {
     // TODO: check if this is a good timeout value
     that.ioTimeout = that.measurementTimingBudget;
 
-    if (!that.initChip()) {
-       that.error('Chip initialization failed, will not report any values!');
-       return;
+    try {
+        that.initChip();
+    } catch(e) {
+        that.error('Chip initialization failed, will not report any values: ' + e);
+        return;
     }
 
     that.adapter.extendObject(
@@ -240,12 +242,10 @@ VL53L0X.prototype.initChip = function () {
 
     // added by UncleSam:
     if (!this.setVcselPulsePeriod(this.VcselPeriodPreRange, this.preVcselPulsePeriod)) {
-        this.error('setVcselPulsePeriod(pre-range) error');
-        return false;
+        throw 'setVcselPulsePeriod(pre-range) error';
     }
     if (!this.setVcselPulsePeriod(this.VcselPeriodFinalRange, this.finalVcselPulsePeriod)) {
-        this.error('setVcselPulsePeriod(final range) error');
-        return false;
+        throw 'setVcselPulsePeriod(final range) error';
     }
 
     //  disable SIGNAL_RATE_MSRC (bit 1) and SIGNAL_RATE_PRE_RANGE (bit 4) limit checks
@@ -264,8 +264,7 @@ VL53L0X.prototype.initChip = function () {
     // spad_count, spad_type_is_aperture, success = this.getSpadInfo()
     var spadInfo = this.getSpadInfo();
     if (!spadInfo[2]) {
-        this.error('GetSpadInfo timeout');
-        return false;
+        throw 'GetSpadInfo timeout';
     }
 
     //  The SPAD map (RefGoodSpadMap) is read by VL53L0X_get_info_from_device() in
@@ -430,8 +429,7 @@ VL53L0X.prototype.initChip = function () {
 
     this.writeReg8(this.SYSTEM_SEQUENCE_CONFIG, 0x01);
     if (!this.performSingleRefCalibration(0x40)) {
-        this.error('PerformSingleRefCalibration(0x40) timeout');
-        return false;
+        throw 'PerformSingleRefCalibration(0x40) timeout';
     }
 
     // -- VL53L0X_perform_vhv_calibration() end
@@ -440,8 +438,7 @@ VL53L0X.prototype.initChip = function () {
 
     this.writeReg8(this.SYSTEM_SEQUENCE_CONFIG, 0x02);
     if (!this.performSingleRefCalibration(0x00)) {
-        this.error('PerformSingleRefCalibration(0x00) timeout');
-        return false;
+        throw 'PerformSingleRefCalibration(0x00) timeout';
     }
 
     // -- VL53L0X_perform_phase_calibration() end
@@ -450,8 +447,6 @@ VL53L0X.prototype.initChip = function () {
     this.writeReg8(this.SYSTEM_SEQUENCE_CONFIG, 0xE8);
 
     // VL53L0X_PerformRefCalibration() end
-
-    return true;
 };
 
 VL53L0X.prototype.setVcselPulsePeriod = function (type, periodPclks) {
