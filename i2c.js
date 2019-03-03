@@ -4,7 +4,7 @@
 "use strict";
 
 // always required: utils
-var utils = require(__dirname + '/lib/utils');
+var utils = require('@iobroker/adapter-core');
 
 // other dependencies:
 var i2c = require('i2c-bus');
