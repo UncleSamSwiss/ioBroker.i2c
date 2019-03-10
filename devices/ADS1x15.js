@@ -144,7 +144,6 @@ ADS1x15.prototype.start = function () {
     var hasEnabled = false;
     for (var i = 0; i < 4; i++) {
         var channelConfig = that.config.channels[i] || { channelType: 'off' };
-        channelConfig.index = i;
         switch (channelConfig.channelType) {
             case 'single':
                 channelConfig.mux = that.ADS1015_REG_CONFIG_MUX_SINGLE_0 + (0x1000 * i);
@@ -182,7 +181,7 @@ ADS1x15.prototype.start = function () {
 
     that.readCurrentValue();
     if (that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
-        that.pollingTimer = setInterval(function () { that.readCurrentValue(); }, parseInt(that.config.pollingInterval));
+        that.pollingTimer = setInterval(function () { that.readCurrentValue(); }, 1000 * parseInt(that.config.pollingInterval));
     }
 };
 
@@ -231,30 +230,25 @@ ADS1x15.prototype.readAdc = function (index, callback) {
         that.ADS1015_REG_CONFIG_MODE_SINGLE;
     config |= channelConfig.mux;
 
-    if (that.ic == that.IC_ADS1015) {
-        if (that.spsADS1015[channelConfig.samples]) {
-            config |= that.spsADS1015[channelConfig.samples];
-        } else {
-            that.debug('Using default 250 SPS');
-            config |= that.ADS1015_REG_CONFIG_DR_250SPS;
-        }
+    // Set samples per second
+    var spsMap = (that.ic == that.IC_ADS1015) ? that.spsADS1015 : that.spsADS1115;
+    if (spsMap.hasOwnProperty(channelConfig.samples)) {
+        config |= spsMap[channelConfig.samples];
     } else {
-        if (that.spsADS1115[channelConfig.samples]) {
-            config |= that.spsADS1115[channelConfig.samples];
-        } else {
-            that.debug('Using default 250 SPS');
-            config |= that.ADS1115_REG_CONFIG_DR_250SPS;
-        }
+        that.debug('Using default 250 SPS');
+        config |= that.ADS1015_REG_CONFIG_DR_250SPS;
     }
 
     // Set PGA/voltage range
-    if (that.pgaADS1x15[channelConfig.gain]) {
+    if (that.pgaADS1x15.hasOwnProperty(channelConfig.gain)) {
       config |= that.pgaADS1x15[channelConfig.gain];
     } else {
         that.debug('Using default PGA 6.144 V');
         config |= that.ADS1015_REG_CONFIG_PGA_6_144V;
     }
 
+    // Set 'start single-conversion' bit
+    config |= this.ADS1015_REG_CONFIG_OS_SINGLE;
     that.writeWord(that.ADS1015_REG_POINTER_CONFIG, config);
     
     // Wait for the ADC conversion to complete
@@ -276,7 +270,7 @@ ADS1x15.prototype.readAdc = function (index, callback) {
                 value = result * channelConfig.gain / 32.768;
             }
         }
-        that.setStateAck(channelConfig.index, value);
+        that.setStateAck(index, value);
         callback();
     }, delay);
 };
