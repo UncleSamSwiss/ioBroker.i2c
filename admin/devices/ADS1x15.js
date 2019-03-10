@@ -110,7 +110,6 @@ ADS1x15.prototype.prepareModel = function (device) {
     device.ADS1x15.allowedSamples = undefined;
     device.ADS1x15.allowedGains = undefined;
     for (var i = 0; i < 4; i++) {
-        device.ADS1x15.channels[i].available = undefined;
         device.ADS1x15.channels[i].channelTypes = undefined;
         device.ADS1x15.channels[i].getChannelType = undefined;
     }
