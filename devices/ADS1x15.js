@@ -260,14 +260,14 @@ ADS1x15.prototype.readAdc = function (index, callback) {
         var value;
         if (that.ic == that.IC_ADS1015) {
             // Shift right 4 bits for the 12-bit ADS1015 and convert to V
-            value = (result >> 4) * channelConfig.gain / 2.048;
+            value = (result >> 4) * channelConfig.gain / 2048.0 / 1000;
         } else {
             // Return a V value for the ADS1115
             // (Take signed values into account as well)
             if (result > 0x7FFF) {
-                value = (result - 0xFFFF) * channelConfig.gain / 32.768;
+                value = (result - 0xFFFF) * channelConfig.gain / 32768.0 / 1000;
             } else {
-                value = result * channelConfig.gain / 32.768;
+                value = result * channelConfig.gain / 32768.0 / 1000;
             }
         }
         that.setStateAck(index, value);
