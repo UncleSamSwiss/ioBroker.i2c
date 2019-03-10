@@ -276,13 +276,19 @@ ADS1x15.prototype.readAdc = function (index, callback) {
     }, delay);
 };
 
+ADS1x15.prototype.swap = function (value) {
+    return ((value >> 8) & 0xFF) | ((value << 8) & 0xFF00);
+};
+
 ADS1x15.prototype.writeWord = function (register, value) {
+    value = this.swap(value);
     this.debug('Writing ' + this.i2cAdapter.toHexString(register) + ' = ' + this.i2cAdapter.toHexString(value, 4));
     this.i2cAdapter.bus.writeWordSync(this.address, register, value);
 };
 
 ADS1x15.prototype.readWord = function (register) {
     var value = this.i2cAdapter.bus.readWordSync(this.address, register);
+    value = this.swap(value);
     this.debug('Read ' + this.i2cAdapter.toHexString(register) + ' = ' + this.i2cAdapter.toHexString(value, 4));
     return value;
 };
