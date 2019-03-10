@@ -256,7 +256,6 @@ ADS1x15.prototype.readAdc = function (index, callback) {
     // We add 1ms to be sure
     var delay = (1000 / channelConfig.samples) + 1;
     setTimeout(function() {
-        that.readWord(that.ADS1015_REG_POINTER_CONFIG);
         var result = that.readWord(that.ADS1015_REG_POINTER_CONVERT);
         var value;
         if (that.ic == that.IC_ADS1015) {
