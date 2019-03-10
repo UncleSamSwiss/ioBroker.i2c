@@ -136,9 +136,9 @@ ADS1x15.prototype.start = function () {
     });
 
     if (that.config.kind == 1015) {
-        that.ic = this.IC_ADS1015;
+        that.ic = that.IC_ADS1015;
     } else {
-        that.ic = this.IC_ADS1115;
+        that.ic = that.IC_ADS1115;
     }
     
     var hasEnabled = false;
@@ -147,13 +147,13 @@ ADS1x15.prototype.start = function () {
         channelConfig.index = i;
         switch (channelConfig.channelType) {
             case 'single':
-                channelConfig.mux = this.ADS1015_REG_CONFIG_MUX_SINGLE_0 + (0x1000 * i);
+                channelConfig.mux = that.ADS1015_REG_CONFIG_MUX_SINGLE_0 + (0x1000 * i);
                 break;
             case 'diffTo1':
-                channelConfig.mux = this.ADS1015_REG_CONFIG_MUX_DIFF_0_1;
+                channelConfig.mux = that.ADS1015_REG_CONFIG_MUX_DIFF_0_1;
                 break;
             case 'diffTo3':
-                channelConfig.mux = this.ADS1015_REG_CONFIG_MUX_DIFF_0_3 + (0x1000 * i);
+                channelConfig.mux = that.ADS1015_REG_CONFIG_MUX_DIFF_0_3 + (0x1000 * i);
                 break;
             default:
                 channelConfig.mux = 0;
@@ -226,45 +226,45 @@ ADS1x15.prototype.readAdc = function (index, callback) {
 
     // Disable comparator, Non-latching, Alert/Rdy active low
     // traditional comparator, single-shot mode
-    var config = this.ADS1015_REG_CONFIG_CQUE_NONE | this.ADS1015_REG_CONFIG_CLAT_NONLAT |
-        this.ADS1015_REG_CONFIG_CPOL_ACTVLOW | this.ADS1015_REG_CONFIG_CMODE_TRAD |
-        this.ADS1015_REG_CONFIG_MODE_SINGLE;
+    var config = that.ADS1015_REG_CONFIG_CQUE_NONE | that.ADS1015_REG_CONFIG_CLAT_NONLAT |
+        that.ADS1015_REG_CONFIG_CPOL_ACTVLOW | that.ADS1015_REG_CONFIG_CMODE_TRAD |
+        that.ADS1015_REG_CONFIG_MODE_SINGLE;
     config |= channelConfig.mux;
 
-    if (that.ic == this.IC_ADS1015) {
-        if (this.spsADS1015[channelConfig.samples]) {
-            config |= this.spsADS1015[channelConfig.samples];
+    if (that.ic == that.IC_ADS1015) {
+        if (that.spsADS1015[channelConfig.samples]) {
+            config |= that.spsADS1015[channelConfig.samples];
         } else {
             that.debug('Using default 250 SPS');
-            config |= this.ADS1015_REG_CONFIG_DR_250SPS;
+            config |= that.ADS1015_REG_CONFIG_DR_250SPS;
         }
     } else {
-        if (this.spsADS1115[channelConfig.samples]) {
-            config |= this.spsADS1115[channelConfig.samples];
+        if (that.spsADS1115[channelConfig.samples]) {
+            config |= that.spsADS1115[channelConfig.samples];
         } else {
             that.debug('Using default 250 SPS');
-            config |= this.ADS1115_REG_CONFIG_DR_250SPS;
+            config |= that.ADS1115_REG_CONFIG_DR_250SPS;
         }
     }
 
     // Set PGA/voltage range
-    if (this.pgaADS1x15[channelConfig.gain]) {
-      config |= this.pgaADS1x15[channelConfig.gain];
+    if (that.pgaADS1x15[channelConfig.gain]) {
+      config |= that.pgaADS1x15[channelConfig.gain];
     } else {
         that.debug('Using default PGA 6.144 V');
-        config |= this.ADS1015_REG_CONFIG_PGA_6_144V;
+        config |= that.ADS1015_REG_CONFIG_PGA_6_144V;
     }
 
-    that.writeWord(this.ADS1015_REG_POINTER_CONFIG, config);
+    that.writeWord(that.ADS1015_REG_POINTER_CONFIG, config);
     
     // Wait for the ADC conversion to complete
     // The minimum delay depends on the sps: delay >= 1s/sps
     // We add 1ms to be sure
     var delay = (1000 / channelConfig.samples) + 1;
     setTimeout(function() {
-        var result = that.readWord(this.ADS1015_REG_POINTER_CONVERT);
+        var result = that.readWord(that.ADS1015_REG_POINTER_CONVERT);
         var value;
-        if (that.ic == this.IC_ADS1015) {
+        if (that.ic == that.IC_ADS1015) {
             // Shift right 4 bits for the 12-bit ADS1015 and convert to V
             value = (result >> 4) * channelConfig.gain / 2.048;
         } else {
