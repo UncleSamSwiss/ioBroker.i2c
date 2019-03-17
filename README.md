@@ -35,6 +35,18 @@ On Raspberry Pi 3, this is "1".
 
 The following devices are currently supported. The numbers in parenthesis are the known addresses of the device in hexadecimal format (without the read bit).
 
+### ADS1015 (48-4B)
+
+Texas Instruments 4x 3.3-kSPS, 12-Bit ADCs with Internal Reference.
+
+### ADS1115 (48-4B)
+
+Texas Instruments 4x 860-SPS, 16-Bit ADCs with Internal Reference.
+
+### BME280 (76, 77)
+
+Bosch Digital Humidity, Pressure and Temperature Sensor.
+
 ### MCP23008 8-Bit I/O Expander (20-27)
 
 Microchip 8-Bit I/O Expander with Serial Interface.
@@ -66,6 +78,10 @@ If you require a missing devcies, please provide the type of IC (brand, model, .
 
 ## Changelog
 
+### 0.0.6 (2019-03-17)
+* (UncleSamSwiss) Added support for BME280.
+* (UncleSamSwiss) Added support for ADS1015 / ADS1115.
+
 ### 0.0.5 (2019-01-12)
 * (UncleSamSwiss) Added support for MCP23008.
 
@@ -85,3 +101,57 @@ If you require a missing devcies, please provide the type of IC (brand, model, .
 ## Thanks
 
 This project is based on the [i2c-bus](https://www.npmjs.com/package/i2c-bus) NPM module. Thanks to fivdi for his great module!
+
+## Third Party Licenses
+
+### BME280
+The BME280 code is based on https://github.com/skylarstein/bme280-sensor:
+
+MIT License
+
+Copyright (c) 2016 Skylar Stein
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+### ADS1x15
+The ADS1x15 code is based on https://github.com/alphacharlie/node-ads1x15/blob/master/index.js
+
+node-ads1x15 itself is based on https://github.com/adafruit/Adafruit_Python_ADS1x15
+
+The MIT License (MIT)
+
+Copyright (c) 2016 Adafruit Industries
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

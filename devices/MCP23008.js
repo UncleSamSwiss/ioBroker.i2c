@@ -39,7 +39,7 @@ function MCP23008(deviceConfig, i2cAdapter) {
 MCP23008.prototype.start = function () {
     var that = this;
     that.debug('Starting');
-    that.adapter.setObject(that.hexAddress, {
+    that.adapter.extendObject(that.hexAddress, {
         type: 'device',
         common: {
             name: this.hexAddress + ' (' + this.name + ')',
@@ -74,7 +74,7 @@ MCP23008.prototype.start = function () {
                 that.writeValue |= 1 << i;
             }
         }
-        that.adapter.setObject(that.hexAddress + '.' + i, {
+        that.adapter.extendObject(that.hexAddress + '.' + i, {
             type: 'state',
             common: {
                 name: that.hexAddress + (isInput ? ' Input ' : ' Output ') + i,

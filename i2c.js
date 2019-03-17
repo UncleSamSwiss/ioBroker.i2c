@@ -72,11 +72,14 @@ I2CAdapter.prototype.main = function () {
 };
 
 I2CAdapter.prototype.searchDevices = function (busNumber, callback) {
+    var that = this;
     busNumber = parseInt(busNumber);
     
-    if (busNumber == this.adapter.config.busNumber) {
-        this.bus.scan(callback);
+    if (busNumber == that.adapter.config.busNumber) {
+        that.adapter.log.debug('Searching on current bus ' + busNumber);
+        that.bus.scan(callback);
     } else {
+        that.adapter.log.debug('Searching on new bus ' + busNumber);
         var searchBus = i2c.open(busNumber, function (err) {
             if (err) {
                 callback(err);
@@ -151,8 +154,14 @@ I2CAdapter.prototype.onMessage = function (obj) {
         switch (obj.command) {
             case 'search':
                 that.searchDevices(obj.message, function (err, res) {
+                    var result = JSON.stringify(res || []);
+                    if (err) {
+                        that.adapter.log.error('Search failed: ' + err);
+                    } else {
+                        that.adapter.log.info('Search found: ' + result);
+                    }
                     if (obj.callback) {
-                        that.adapter.sendTo(obj.from, obj.command, JSON.stringify(res || []), obj.callback);
+                        that.adapter.sendTo(obj.from, obj.command, result, obj.callback);
                     }
                 });
                 wait = true;
