@@ -37,11 +37,11 @@ The following devices are currently supported. The numbers in parenthesis are th
 
 ### ADS1015 (48-4B)
 
-4x 3.3-kSPS, 12-Bit ADCs with Internal Reference.
+Texas Instruments 4x 3.3-kSPS, 12-Bit ADCs with Internal Reference.
 
 ### ADS1115 (48-4B)
 
-4x 860-SPS, 16-Bit ADCs with Internal Reference.
+Texas Instruments 4x 860-SPS, 16-Bit ADCs with Internal Reference.
 
 ### BME280 (76, 77)
 
@@ -78,7 +78,7 @@ If you require a missing devcies, please provide the type of IC (brand, model, .
 
 ## Changelog
 
-### 0.0.6 (2019-03-11)
+### 0.0.6 (2019-03-17)
 * (UncleSamSwiss) Added support for BME280.
 * (UncleSamSwiss) Added support for ADS1015 / ADS1115.
 

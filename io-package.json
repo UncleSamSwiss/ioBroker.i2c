@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.5",
+        "version": "0.0.6",
         "news": {
             "0.0.1": {
                 "en": "initial version",
@@ -22,6 +22,10 @@
             "0.0.5": {
                 "en": "Added support for MCP23008 I/O expander.",
                 "de": "Unterstüztung für den MCP23008 I/O-Expander hinzugefügt."
+            },
+            "0.0.6": {
+                "en": "Added support for ADS1015, ADS1115 and BME280.",
+                "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
             }
         },
         "title": "I2C Adapter",
@@ -44,7 +48,18 @@
         "readme":                   "https://github.com/UncleSamSwiss/ioBroker.i2c/blob/master/README.md",
         "loglevel":                 "info",
         "type":                     "hardware",
-        "keywords":                 ["I2C", "Raspberry Pi", "BeagleBone", "Intel Edison"],
+        "keywords": [
+            "I2C",
+            "ADS1015",
+            "ADS1115",
+            "BME280",
+            "MCP23008",
+            "MCP23017",
+            "PCF8574",
+            "Raspberry Pi",
+            "BeagleBone",
+            "Intel Edison"
+        ],
         "icon":                     "i2c.png",
         "extIcon":                  "https://raw.githubusercontent.com/UncleSamSwiss/ioBroker.i2c/master/admin/i2c.png"
     },
