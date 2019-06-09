@@ -43,7 +43,7 @@
     "node": ">=1.0"
   },
   "dependencies": {
-    "i2c-bus": "^1.2.2",
+    "i2c-bus": "^4.0.9",
     "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
