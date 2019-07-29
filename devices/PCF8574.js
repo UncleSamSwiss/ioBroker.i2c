@@ -69,7 +69,29 @@ PCF8574.prototype.start = function () {
 
     that.readCurrentValue(true);
     if (hasInput && that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
-        this.pollingTimer = setInterval(function () { that.readCurrentValue(false); }, Math.max(50, parseInt(that.config.pollingInterval)));
+        that.pollingTimer = setInterval(
+            function () { that.readCurrentValue(false); },
+            Math.max(50, parseInt(that.config.pollingInterval)));
+        that.debug('Polling enabled (' + parseInt(that.config.pollingInterval) + ' ms)');
+    }
+
+    if (hasInput && typeof that.config.interrupt === 'string' && that.config.interrupt.length > 0) {
+        // check if interrupt object exists
+        that.adapter.getObject(that.config.interrupt, function(err, obj) {
+            if (err) {
+                that.warn('Interrupt object ' + that.config.interrupt + ' not found!');
+                return;
+            }
+
+            // subscribe to the object and add change listener
+            that.adapter.subscribeForeignStates(that.config.interrupt);
+            that.i2cAdapter.addForeignStateChangeListener(that.config.interrupt, function (state) {
+                that.debug('Interrupt detected');
+                that.readCurrentValue(false);
+            });
+
+            that.debug('Interrupt enabled');
+        });
     }
 };
 

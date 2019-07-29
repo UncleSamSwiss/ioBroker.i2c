@@ -13,6 +13,11 @@
     <script type="text/javascript" src="lib/js/jsviews-jqueryui-widgets.min.js"></script>
     <script type="text/javascript" src="words.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="../../lib/css/fancytree/ui.fancytree.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../../lib/css/iob/selectID.css"/>
+    <script type="text/javascript" src="../../lib/js/jquery.fancytree-all.min.js"></script>
+    <script type="text/javascript" src="../../lib/js/selectID.js"></script>
+
     <!-- supported devices -->
     <script type="text/javascript" src="devices/DeviceBase.js"></script> <!-- this must come before all other devices -->
     <script type="text/javascript" src="devices/PCF8574.js"></script>
@@ -126,6 +131,43 @@
             return '0x' + (str.length == 1 ? '0' + str : str);
         }
 
+        var selectId;
+        function initSelectId(callback) {
+            if (selectId) {
+                return callback(selectId);
+            }
+            socket.emit('getObjects', function (err, objs) {
+                selectId = $('#dialog-select-member').selectId('init',  {
+                    noMultiselect: true,
+                    objects: objs,
+                    imgPath:       '../../lib/css/fancytree/',
+                    filter:        {type: 'state'},
+                    name:          'i2c-select-state',
+                    texts: {
+                        select:          _('Select'),
+                        cancel:          _('Cancel'),
+                        all:             _('All'),
+                        id:              _('ID'),
+                        name:            _('Name'),
+                        role:            _('Role'),
+                        room:            _('Room'),
+                        value:           _('Value'),
+                        selectid:        _('Select ID'),
+                        from:            _('From'),
+                        lc:              _('Last changed'),
+                        ts:              _('Time stamp'),
+                        wait:            _('Processing...'),
+                        ack:             _('Acknowledged'),
+                        selectAll:       _('Select all'),
+                        unselectAll:     _('Deselect all'),
+                        invertSelection: _('Invert selection')
+                    },
+                    columns: ['image', 'name', 'role', 'room']
+                });
+                callback(selectId);
+            });
+        }
+
         // the function loadSettings has to exist ...
         function load(settings, onChange) {
             // prepare the view model
@@ -176,6 +218,18 @@
                     $('#search').button('enable');
                 });
             });
+
+            $('.select-id').button().click(function (evt) {
+                initSelectId(function (sid) {
+                    var $elem = $('#' + $(evt.target).closest('button').data('select-for'));
+                    sid.selectId('show', $elem.val(), function (newId) {
+                        if (newId != $elem.val()) {
+                            $elem.val(newId);
+                            onChange();
+                        }
+                    });
+                });
+            });
         }
 
         // ... and the function save has to exist.
@@ -220,6 +274,23 @@
         <table><tr><td><img src="i2c.png" width="64" height="64"></td><td><h3 class="translate">I²C adapter settings</h3></td></tr></table>
 
         <div id="content"></div>
+    </div>
+
+    <div class="m material-dialogs">
+        <div id="dialog-select-member" class="modal modal-fixed-footer">
+            <div class="modal-content">
+                <div class="row">
+                    <div class="col s12 title"></div>
+                </div>
+                <div class="row">
+                    <div class="col s12 dialog-content"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a class="modal-action modal-close waves-effect waves-green btn btn-set"><i class="large material-icons left">check</i><span class="translate">Select</span></a>
+                <a class="modal-action modal-close waves-effect waves-green btn btn-close"><i class="large material-icons left ">close</i><span class="translate">Cancel</span></a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

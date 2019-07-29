@@ -12,17 +12,18 @@ var i2c = require('i2c-bus');
 function I2CAdapter()
 {
     var that = this;
-    
+
     // private fields
     that._deviceHandlers = {};
     that._stateChangeListeners = {};
+    that._foreignStateChangeListeners = {};
     that._currentStateValues = {};
     that._deviceFactories = {};
-    
+
     // public fields
     that.bus = null;
     that.adapter = utils.Adapter('i2c'); // create the adapter object
-    
+
     // register event handlers
     that.adapter.on('ready', function () {
         that.onReady();
@@ -41,18 +42,18 @@ function I2CAdapter()
 I2CAdapter.prototype.main = function () {
     var that = this;
     that.bus = i2c.openSync(that.adapter.config.busNumber);
-    
+
     if (!that.adapter.config.devices || that.adapter.config.devices.length === 0) {
         // no devices configured, nothing to do in this adapter
         return;
     }
-    
+
     for (var i = 0; i < that.adapter.config.devices.length; i++) {
         var deviceConfig = that.adapter.config.devices[i];
         if (!deviceConfig.type || (!deviceConfig.address && deviceConfig.address !== 0)) {
             continue;
         }
-        
+
         try {
             if (!that._deviceFactories[deviceConfig.type]) {
                 that._deviceFactories[deviceConfig.type] = require(__dirname + '/devices/' + deviceConfig.type);
@@ -63,18 +64,18 @@ I2CAdapter.prototype.main = function () {
             that.adapter.log.warn("Couldn't create " + deviceConfig.type + ' for address ' + that.toHexString(deviceConfig.address) + ': ' + e);
         }
     }
-    
+
     for (var address in that._deviceHandlers) {
         that._deviceHandlers[address].start();
     }
-    
+
     that.adapter.subscribeStates('*');
 };
 
 I2CAdapter.prototype.searchDevices = function (busNumber, callback) {
     var that = this;
     busNumber = parseInt(busNumber);
-    
+
     if (busNumber == that.adapter.config.busNumber) {
         that.adapter.log.debug('Searching on current bus ' + busNumber);
         that.bus.scan(callback);
@@ -96,6 +97,10 @@ I2CAdapter.prototype.searchDevices = function (busNumber, callback) {
 
 I2CAdapter.prototype.addStateChangeListener = function (id, listener) {
     this._stateChangeListeners[this.adapter.namespace + '.' + id] = listener;
+};
+
+I2CAdapter.prototype.addForeignStateChangeListener = function (id, listener) {
+    this._foreignStateChangeListeners[id] = listener;
 };
 
 I2CAdapter.prototype.setStateAck = function (id, value) {
@@ -125,7 +130,7 @@ I2CAdapter.prototype.onReady = function () {
                 that._currentStateValues[id] = states[id].val;
             }
         }
-        
+
         that.main();
     });
 };
@@ -133,16 +138,27 @@ I2CAdapter.prototype.onReady = function () {
 // is called if a subscribed state changes
 I2CAdapter.prototype.onStateChange = function (id, state) {
     // Warning: state can be null if it was deleted!
-    if (!id || !state || state.ack) {
+    if (!id || !state) {
         return;
     }
-    
+
     this.adapter.log.debug('stateChange ' + id + ' ' + JSON.stringify(state));
+
+    // foreign states
+    if (this._foreignStateChangeListeners.hasOwnProperty(id)) {
+      this._foreignStateChangeListeners[id](state.val);
+      return;
+    }
+
+    if (state.ack) {
+        return;
+    }
+
     if (!this._stateChangeListeners.hasOwnProperty(id)) {
         this.adapter.log.error('Unsupported state change: ' + id);
         return;
     }
-    
+
     this._stateChangeListeners[id](this._currentStateValues[id], state.val);
 };
 

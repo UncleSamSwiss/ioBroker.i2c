@@ -1,13 +1,15 @@
 ﻿function MCP23008() {
     DeviceBase.call(this, 'MCP23008');
-    
+
     var baseAddress = 0x20;
     for (var i = 0; i < 8; i++) {
         this.addresses.push(baseAddress + i);
     }
-    
+
     this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-pollingInterval">{{t:"Polling Interval (ms)"}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-pollingInterval" data-link="MCP23008.pollingInterval" /></td></tr>';
+    this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-interrupt">{{t:"Interrupt object"}}</label></td><td class="admin-icon"></td>';
+    this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-interrupt" data-link="MCP23008.interrupt" /><button class="select-id" data-select-for="{{:#parent.parent.data.address}}-interrupt"><i class="material-icons">add_circle_outline</i><span></span></button></td></tr>';
     this.template += '{^{for MCP23008.pins}}';
     this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-pin-{{:#index}}">{{t:"Pin"}} {{:#index}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><select data-link="dir" id="{{:#parent.parent.data.address}}-pin-{{:#index}}">';
@@ -26,6 +28,7 @@ MCP23008.prototype.constructor = MCP23008;
 MCP23008.prototype.prepareViewModel = function (device) {
     device.MCP23008 = device.MCP23008 || {};
     device.MCP23008.pollingInterval = device.MCP23008.pollingInterval || 200;
+    device.MCP23008.interrupt = device.MCP23008.interrupt || '';
     device.MCP23008.pins = device.MCP23008.pins || [];
     for (var i = 0; i < 8; i++) {
         if (!device.MCP23008.pins[i]) {
@@ -39,6 +42,7 @@ MCP23008.prototype.prepareViewModel = function (device) {
 };
 
 MCP23008.prototype.prepareModel = function (device) {
+    device.MCP23008.interrupt = $('#' + device.address + '-interrupt').val(); // needed to fix (sometimes) invalid value
     device.name = this.name;
     return device;
 };
@@ -70,4 +74,8 @@ systemDictionary['Output'] = {
 systemDictionary['inverted'] = {
     "en": "inverted",
     "de": "invertiert"
+};
+systemDictionary['Interrupt object'] = {
+    "en": "Interrupt object",
+    "de": "Interrupt-Objekt"
 };

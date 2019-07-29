@@ -26,7 +26,7 @@ function MCP23008(deviceConfig, i2cAdapter) {
 
     this.i2cAdapter = i2cAdapter;
     this.adapter = this.i2cAdapter.adapter;
-    
+
     this.initialized = false;
     this.hasInput = false;
     this.directions = 0;
@@ -47,7 +47,7 @@ MCP23008.prototype.start = function () {
         },
         native: that.config
     });
-    
+
     for (var i = 0; i < 8; i++) {
         var pinConfig = that.config.pins[i] || { dir: 'out' };
         var isInput = pinConfig.dir != 'out';
@@ -86,13 +86,33 @@ MCP23008.prototype.start = function () {
             native: pinConfig
         });
     }
-    
+
     that.checkInitialized();
 
     if (that.hasInput && that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
         this.pollingTimer = setInterval(
             function () { that.readCurrentValue(false); },
             Math.max(50, parseInt(that.config.pollingInterval)));
+        that.debug('Polling enabled (' + parseInt(that.config.pollingInterval) + ' ms)');
+    }
+
+    if (that.hasInput && typeof that.config.interrupt === 'string' && that.config.interrupt.length > 0) {
+        // check if interrupt object exists
+        that.adapter.getObject(that.config.interrupt, function(err, obj) {
+            if (err) {
+                that.warn('Interrupt object ' + that.config.interrupt + ' not found!');
+                return;
+            }
+
+            // subscribe to the object and add change listener
+            that.adapter.subscribeForeignStates(that.config.interrupt);
+            that.i2cAdapter.addForeignStateChangeListener(that.config.interrupt, function (state) {
+                that.debug('Interrupt detected');
+                that.readCurrentValue(false);
+            });
+
+            that.debug('Interrupt enabled');
+        });
     }
 };
 
@@ -112,7 +132,7 @@ MCP23008.prototype.checkInitialized = function () {
         this.error("GPIO directions unexpectedly changed, reconfiguring the device");
         this.initialized = false;
     }
-    
+
     try {
         this.debug('Setting initial output value to ' + this.i2cAdapter.toHexString(this.writeValue));
         this.writeByte(REG_OLAT, this.writeValue);
@@ -127,7 +147,7 @@ MCP23008.prototype.checkInitialized = function () {
         this.error("Couldn't initialize: " + e);
         return false;
     }
-    
+
     this.readCurrentValue(true);
     return this.initialized;
 };
@@ -165,7 +185,7 @@ MCP23008.prototype.readCurrentValue = function (force) {
     if (oldValue == this.readValue && !force) {
         return;
     }
-    
+
     this.debug('Read ' + this.i2cAdapter.toHexString(this.readValue));
     for (var i = 0; i < 8; i++) {
         var mask = 1 << i;
