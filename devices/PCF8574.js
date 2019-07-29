@@ -13,7 +13,7 @@ function PCF8574(deviceConfig, i2cAdapter) {
 
     this.i2cAdapter = i2cAdapter;
     this.adapter = this.i2cAdapter.adapter;
-    
+
     this.readValue = 0;
     this.writeValue = 0;
 }
@@ -29,13 +29,14 @@ PCF8574.prototype.start = function () {
         },
         native: that.config
     });
-    
+
     var hasInput = false;
     for (var i = 0; i < 8; i++) {
         var pinConfig = that.config.pins[i] || { dir: 'out' };
         var isInput = pinConfig.dir == 'in';
         if (isInput) {
             hasInput = true;
+            that.writeValue |= 1 << i; // input pins must be set to high level
         } else {
             that.addOutputListener(i);
             var value = that.getStateValue(i);
@@ -62,10 +63,10 @@ PCF8574.prototype.start = function () {
             native: pinConfig
         });
     }
-    
+
     that.debug('Setting initial value to ' + that.i2cAdapter.toHexString(that.writeValue));
     that.sendCurrentValue();
-    
+
     that.readCurrentValue(true);
     if (hasInput && that.config.pollingInterval && parseInt(that.config.pollingInterval) > 0) {
         this.pollingTimer = setInterval(function () { that.readCurrentValue(false); }, Math.max(50, parseInt(that.config.pollingInterval)));
@@ -94,7 +95,7 @@ PCF8574.prototype.readCurrentValue = function (force) {
             // writing the current value before reading to make sure the "direction" of all pins is set correctly
             this.i2cAdapter.bus.sendByteSync(this.address, this.writeValue);
             this.readValue = this.i2cAdapter.bus.receiveByteSync(this.address);
-            
+
             // reading all 1's (0xFF) could be because of a reset, let's try 3x
         } while (!force && this.readValue == 0xFF && --retries > 0);
     } catch (e) {
@@ -105,7 +106,7 @@ PCF8574.prototype.readCurrentValue = function (force) {
     if (oldValue == this.readValue && !force) {
         return;
     }
-    
+
     this.debug('Read ' + this.i2cAdapter.toHexString(this.readValue));
     for (var i = 0; i < 8; i++) {
         var mask = 1 << i;
@@ -122,7 +123,7 @@ PCF8574.prototype.readCurrentValue = function (force) {
 PCF8574.prototype.addOutputListener = function (pin) {
     var that = this;
     that.i2cAdapter.addStateChangeListener(that.hexAddress + '.' + pin, function (oldValue, newValue) { that.changeOutput(pin, newValue); })
-}
+};
 
 PCF8574.prototype.changeOutput = function (pin, value) {
     var mask = 1 << pin;
