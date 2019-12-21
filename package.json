@@ -1,6 +1,6 @@
 {
   "name": "iobroker.i2c",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Adapter for ioBroker that communicates with devices over I2C bus",
   "main": "i2c.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "MCP23008",
     "MCP23017",
     "PCF8574",
+    "BH1750",
     "Raspberry Pi",
     "BeagleBone",
     "Intel Edison"
