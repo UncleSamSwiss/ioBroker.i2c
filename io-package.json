@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.6",
+        "version": "0.0.7",
         "news": {
             "0.0.1": {
                 "en": "initial version",
@@ -26,6 +26,10 @@
             "0.0.6": {
                 "en": "Added support for ADS1015, ADS1115 and BME280.",
                 "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
+            },
+            "0.0.7": {
+                "en": "Added support for PCA9865",
+                "de": "Unterstüztung für PCA9685 hinzugefügt."
             }
         },
         "title": "I2C Adapter",
