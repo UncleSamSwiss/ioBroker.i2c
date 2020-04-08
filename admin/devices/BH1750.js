@@ -1,7 +1,8 @@
 ﻿function BH1750() {
     DeviceBase.call(this, 'BH1750');
-
+    
     this.addresses.push(0x23);
+    this.addresses.push(0x5c);
     
     
     this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-pollingInterval">{{t:"Polling Interval (sec)"}}</label></td><td class="admin-icon"></td>';
