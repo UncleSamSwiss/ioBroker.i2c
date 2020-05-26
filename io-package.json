@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.6",
+        "version": "0.0.8",
         "news": {
             "0.0.1": {
                 "en": "initial version",
@@ -26,6 +26,14 @@
             "0.0.6": {
                 "en": "Added support for ADS1015, ADS1115 and BME280.",
                 "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
+            },
+            "0.0.7": {
+                "en": "Added support for interrupts on PCF8574, MCP23008, MCP23017 devices.",
+                "de": "Unterstüztung für Interrupts bei PCF8574, MCP23008, MCP23017 hinzugefügt."
+            },
+            "0.0.8": {
+                "en": "Added support for Generic device. Added support for `read` and `write` commands in scripts using `sendTo`.",
+                "de": "Unterstüztung für Allgemeine Geräte hinzugefügt. Unterstüztung für `read` und `write` Befehle in Skripten über `sendTo` hinzugefügt."
             }
         },
         "title": "I2C Adapter",
