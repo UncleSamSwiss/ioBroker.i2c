@@ -6,7 +6,7 @@
 
 Communicates with devices connected to the local system using the I2C bus.
 
-This adapter should work on Linux boards like the Raspberry Pi, C.H.I.P., BeagleBone or Intel Edison. 
+This adapter should work on Linux boards like the Raspberry Pi, C.H.I.P., BeagleBone or Intel Edison.
 
 ## Install
 
@@ -74,6 +74,10 @@ Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 ### PCF8574A 8-Bit I/O Expander (38-3F)
 
 Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
+
+### Generic device (03-77)
+
+Generic I2C device. Registers can be configured depending on the hardware.
 
 ## Compatibility
 

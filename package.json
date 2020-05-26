@@ -31,6 +31,10 @@
     {
       "name": "UncleSamSwiss",
       "email": "samuel.weibel@gmail.com"
+    },
+    {
+      "name": "Peter Müller",
+      "email": "peter@crycode.de"
     }
   ],
   "license": "Apache-2.0",
