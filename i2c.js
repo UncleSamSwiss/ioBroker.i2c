@@ -182,6 +182,47 @@ I2CAdapter.prototype.onMessage = function (obj) {
                 });
                 wait = true;
                 break;
+
+            case 'read':
+                if (typeof obj.message !== 'object' || typeof obj.message.address !== 'number') {
+                    that.adapter.log.error('Invalid read message');
+                    return false;
+                }
+                var buf = Buffer.alloc(obj.message.bytes || 1);
+                try {
+                    if (typeof obj.message.register === 'number') {
+                        that.bus.readI2cBlockSync(obj.message.address, obj.message.register, buf.length, buf);
+                    } else {
+                        that.bus.i2cReadSync(obj.message.address, buf.length, buf);
+                    }
+                    if (obj.callback) {
+                        that.adapter.sendTo(obj.from, obj.command, buf, obj.callback);
+                    }
+                    wait = true;
+                } catch (e) {
+                  that.adapter.log.error('Error reading from ' + that.toHexString(obj.message.address));
+                }
+                break;
+
+            case 'write':
+                if (typeof obj.message !== 'object' || typeof obj.message.address !== 'number' || !Buffer.isBuffer(obj.message.data)) {
+                    that.adapter.log.error('Invalid write message');
+                    return false;
+                }
+                try {
+                    if (typeof obj.message.register === 'number') {
+                        that.bus.writeI2cBlockSync(obj.message.address, obj.message.register, obj.message.data.length, obj.message.data);
+                    } else {
+                        that.bus.i2cWriteSync(obj.message.address, obj.message.data.length, obj.message.data);
+                    }
+                    if (obj.callback) {
+                        that.adapter.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
+                    }
+                    wait = true;
+                } catch (e) {
+                  that.adapter.log.error('Error writing to ' + that.toHexString(obj.message.address));
+                }
+                break;
             default:
                 that.adapter.log.warn("Unknown command: " + obj.command);
                 break;

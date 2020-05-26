@@ -79,6 +79,40 @@ Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 
 Generic I2C device. Registers can be configured depending on the hardware.
 
+## Usage in scripts
+
+Supported commands for `sendTo` in scripts are `search`, `read` and `write`.
+
+`search` takes as message the bus number and returns a JSON string of an array of found addresses on the bus.
+
+`read` takes as message an object containing the address and optional the register and number of bytes to read. It returns a buffer with the read data.
+
+`write` takes as message an object containing the address, the data as buffer and optional the register to write. It returns the written buffer on success.
+
+### Examples for script usage
+
+```js
+sendTo('i2c.0', 'search', 1, (ret) => {
+    log('Ret: ' + ret, 'info');
+});
+
+sendTo('i2c.0', 'read', {
+    address: 0x40,
+    register: 0x02,
+    bytes: 2
+}, (ret) => {
+    log('Ret: ' + ret.inspect(), 'info');
+});
+
+sendTo('i2c.0', 'write', {
+    address: 0x40,
+    register: 0x00,
+    data: Buffer.from([0x44, 0x27])
+}, (ret) => {
+    log('Ret: ' + ret.inspect(), 'info');
+});
+```
+
 ## Compatibility
 
 Compatibility has been tested with Raspberry Pi 3.
@@ -93,6 +127,13 @@ If you require a missing devcies, please provide the type of IC (brand, model, .
 * Support interrupts instead of only polling for MCP230xx and PCF8574
 
 ## Changelog
+
+### 0.0.8 (2020-05-26)
+* (Peter Müller) Added support for Generic device.
+* (Peter Müller) Added support for `read` and `write` commands in scripts using `sendTo`.
+
+### 0.0.7 (2019-07-29)
+* (Peter Müller) Added support for interrupts on PCF8574, MCP23008, MCP23017 devices.
 
 ### 0.0.6 (2019-03-17)
 * (UncleSamSwiss) Added support for BME280.
