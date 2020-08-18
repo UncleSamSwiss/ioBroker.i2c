@@ -20,6 +20,7 @@
     "MCP23017",
     "PCF8574",
     "PCA9685",
+    "BH1750",
     "Raspberry Pi",
     "BeagleBone",
     "Intel Edison"
@@ -44,16 +45,16 @@
     "node": ">=1.0"
   },
   "dependencies": {
-    "i2c-bus": "^4.0.9",
+    "i2c-bus": "^1.2.2",
     "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
     "grunt": "^1.0.1",
-    "grunt-replace": "^1.0.1",
     "grunt-contrib-jshint": "^1.1.0",
-    "grunt-jscs": "^3.0.1",
     "grunt-http": "^2.2.0",
-    "mocha": "^4.1.0",
-    "chai": "^4.1.2"
+    "grunt-jscs": "^3.0.1",
+    "grunt-replace": "^1.0.1",
+    "mocha": "^4.1.0"
   }
 }
