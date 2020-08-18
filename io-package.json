@@ -1,61 +1,71 @@
 {
     "common": {
         "name": "i2c",
-        "version": "0.0.8",
+        "version": "1.0.0",
         "news": {
-            "0.0.1": {
-                "en": "initial version",
-                "de": "initial version"
+            "2.0.0": {
+                "en": "Updated to the latest development tools and changed to the TypeScript language",
+                "de": "Auf die neusten Entwicklungstools aktualisiert und umgestellt auf TypeScript"
             },
-            "0.0.2": {
-                "en": "Added support for inverting PCF8574 inputs and outputs.",
-                "de": "PCF8574-Eingänge und -Ausgänge können nun invertiert werden."
-            },
-            "0.0.3": {
-                "en": "Added support for MCP23017 I/O expander.",
-                "de": "Unterstüztung für den MCP23017 I/O-Expander hinzugefügt."
-            },
-            "0.0.4": {
-                "en": "Improved stability of MCP23017 I/O expander.",
-                "de": "Stabilität von MCP23017 I/O-Expander verbessert."
-            },
-            "0.0.5": {
-                "en": "Added support for MCP23008 I/O expander.",
-                "de": "Unterstüztung für den MCP23008 I/O-Expander hinzugefügt."
-            },
-            "0.0.6": {
-                "en": "Added support for ADS1015, ADS1115 and BME280.",
-                "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
+            "0.0.8": {
+                "en": "Added support for interrupts on PCF8574, MCP23008, MCP23017 devices. Added support for Generic device. Added support for `read` and `write` commands in scripts using `sendTo`.",
+                "de": "Unterstüztung für Interrupts bei PCF8574, MCP23008, MCP23017 hinzugefügt. Unterstüztung für Allgemeine Geräte hinzugefügt. Unterstüztung für `read` und `write` Befehle in Skripten über `sendTo` hinzugefügt."
             },
             "0.0.7": {
                 "en": "Added support for PCA9865 and BH1750",
                 "de": "Unterstüztung für PCA9685 und BH1750 hinzugefügt."
             },
-            "0.0.8": {
-                "en": "Added support for interrupts on PCF8574, MCP23008, MCP23017 devices. Added support for Generic device. Added support for `read` and `write` commands in scripts using `sendTo`.",
-                "de": "Unterstüztung für Interrupts bei PCF8574, MCP23008, MCP23017 hinzugefügt. Unterstüztung für Allgemeine Geräte hinzugefügt. Unterstüztung für `read` und `write` Befehle in Skripten über `sendTo` hinzugefügt."
+            "0.0.6": {
+                "en": "Added support for ADS1015, ADS1115 and BME280.",
+                "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
+            },
+            "0.0.5": {
+                "en": "Added support for MCP23008 I/O expander.",
+                "de": "Unterstüztung für den MCP23008 I/O-Expander hinzugefügt."
+            },
+            "0.0.4": {
+                "en": "Improved stability of MCP23017 I/O expander.",
+                "de": "Stabilität von MCP23017 I/O-Expander verbessert."
+            },
+            "0.0.3": {
+                "en": "Added support for MCP23017 I/O expander.",
+                "de": "Unterstüztung für den MCP23017 I/O-Expander hinzugefügt."
+            },
+            "0.0.2": {
+                "en": "Added support for inverting PCF8574 inputs and outputs.",
+                "de": "PCF8574-Eingänge und -Ausgänge können nun invertiert werden."
+            },
+            "0.0.1": {
+                "en": "initial version",
+                "de": "initial version"
             }
         },
-        "title": "I2C Adapter",
+        "title": "I2C",
         "titleLang": {
-            "en": "I2C Adapter",
-            "de": "I2C-Adapter",
-            "ru": "Драйвер для I2C"
+            "en": "I2C",
+            "de": "I2C",
+            "ru": "I2C",
+            "pt": "I2C",
+            "nl": "I2C",
+            "fr": "I2C",
+            "it": "I2C",
+            "es": "I2C",
+            "pl": "I2C",
+            "zh-cn": "I2C"
         },
-        "desc":                     {
+        "desc": {
             "en": "Communicates with devices over I2C bus.",
-            "de": "Kommuniziert mit Geräten über den I2C-Bus."
+            "de": "Kommuniziert mit Geräten über den I2C-Bus.",
+            "ru": "Обменивается данными с устройствами по шине I2C.",
+            "pt": "Comunica-se com dispositivos pelo barramento I2C.",
+            "nl": "Communiceert met apparaten via I2C-bus.",
+            "fr": "Communique avec les appareils via le bus I2C.",
+            "it": "Comunica con i dispositivi tramite bus I2C.",
+            "es": "Se comunica con dispositivos a través del bus I2C.",
+            "pl": "Komunikuje się z urządzeniami przez magistralę I2C.",
+            "zh-cn": "通过I2C总线与设备通信。"
         },
-        "authors": [
-            "UncleSamSwiss <samuel.weibel@gmail.com>"
-        ],
-        "license":                  "Apache 2.0",
-        "platform":                 "Javascript/Node.js",
-        "mode":                     "daemon",
-        "messagebox":               true,
-        "readme":                   "https://github.com/UncleSamSwiss/ioBroker.i2c/blob/master/README.md",
-        "loglevel":                 "info",
-        "type":                     "hardware",
+        "authors": ["UncleSamSwiss <samuel.weibel@gmail.com>"],
         "keywords": [
             "I2C",
             "ADS1015",
@@ -64,17 +74,36 @@
             "MCP23008",
             "MCP23017",
             "PCF8574",
+            "PCA9685",
+            "BH1750",
             "Raspberry Pi",
             "BeagleBone",
             "Intel Edison"
         ],
-        "icon":                     "i2c.png",
-        "extIcon":                  "https://raw.githubusercontent.com/UncleSamSwiss/ioBroker.i2c/master/admin/i2c.png"
+        "license": "Apache-2.0",
+        "platform": "Javascript/Node.js",
+        "main": "build/main.js",
+        "icon": "i2c.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/UncleSamSwiss/ioBroker.i2c/master/admin/i2c.png",
+        "readme": "https://github.com/UncleSamSwiss/ioBroker.i2c/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "hardware",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "materialize": true,
+        "dependencies": [
+            {
+                "js-controller": ">=1.4.2"
+            }
+        ]
     },
     "native": {
       "busNumber": 1,
       "devices": [ ]
     },
-    "objects": [
-    ]
+    "objects": [],
+    "instanceObjects": []
 }
