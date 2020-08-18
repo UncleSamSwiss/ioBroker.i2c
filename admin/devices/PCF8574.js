@@ -4,9 +4,11 @@
     for (var i = 0; i < 8; i++) {
         this.addresses.push(baseAddress + i);
     }
-    
+
     this.template = '<tr><td><label for="{{:#parent.parent.data.address}}-pollingInterval">{{t:"Polling Interval (ms)"}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-pollingInterval" data-link="PCF8574.pollingInterval" /></td></tr>';
+    this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-interrupt">{{t:"Interrupt object"}}</label></td><td class="admin-icon"></td>';
+    this.template += '<td><input type="text" id="{{:#parent.parent.data.address}}-interrupt" data-link="PCF8574.interrupt" /><button class="select-id" data-select-for="{{:#parent.parent.data.address}}-interrupt"><i class="material-icons">add_circle_outline</i><span></span></button></td></tr>';
     this.template += '{^{for PCF8574.pins}}';
     this.template += '<tr><td><label for="{{:#parent.parent.data.address}}-pin-{{:#index}}">{{t:"Pin"}} {{:#index}}</label></td><td class="admin-icon"></td>';
     this.template += '<td><select data-link="dir" id="{{:#parent.parent.data.address}}-pin-{{:#index}}">';
@@ -24,6 +26,7 @@ PCF8574.prototype.constructor = PCF8574;
 PCF8574.prototype.prepareViewModel = function (device) {
     device.PCF8574 = device.PCF8574 || {};
     device.PCF8574.pollingInterval = device.PCF8574.pollingInterval || 200;
+    device.PCF8574.interrupt = device.PCF8574.interrupt || '';
     device.PCF8574.pins = device.PCF8574.pins || [];
     for (var i = 0; i < 8; i++) {
         if (!device.PCF8574.pins[i]) {
@@ -37,6 +40,7 @@ PCF8574.prototype.prepareViewModel = function (device) {
 };
 
 PCF8574.prototype.prepareModel = function (device) {
+    device.PCF8574.interrupt = $('#' + device.address + '-interrupt').val(); // needed to fix (sometimes) invalid value
     device.name = this.name;
     return device;
 };
@@ -65,4 +69,8 @@ systemDictionary['Output'] = {
 systemDictionary['inverted'] = {
     "en": "inverted",
     "de": "invertiert"
+};
+systemDictionary['Interrupt object'] = {
+    "en": "Interrupt object",
+    "de": "Interrupt-Objekt"
 };
