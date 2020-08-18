@@ -28,8 +28,8 @@
                 "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
             },
             "0.0.7": {
-                "en": "Added support for BH1750.",
-                "de": "Unterstüztung für BH1750."
+                "en": "Added support for PCA9865 and BH1750",
+                "de": "Unterstüztung für PCA9685 und BH1750 hinzugefügt."
             }
         },
         "title": "I2C Adapter",

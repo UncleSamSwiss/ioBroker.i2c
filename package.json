@@ -19,6 +19,7 @@
     "MCP23008",
     "MCP23017",
     "PCF8574",
+    "PCA9685",
     "BH1750",
     "Raspberry Pi",
     "BeagleBone",
