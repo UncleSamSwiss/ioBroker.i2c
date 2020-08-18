@@ -3,7 +3,7 @@
         "name": "i2c",
         "version": "1.0.0",
         "news": {
-            "2.0.0": {
+            "1.0.0": {
                 "en": "Updated to the latest development tools and changed to the TypeScript language",
                 "de": "Auf die neusten Entwicklungstools aktualisiert und umgestellt auf TypeScript"
             },
@@ -101,8 +101,8 @@
         ]
     },
     "native": {
-      "busNumber": 1,
-      "devices": [ ]
+        "busNumber": 1,
+        "devices": []
     },
     "objects": [],
     "instanceObjects": []

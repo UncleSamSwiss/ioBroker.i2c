@@ -154,7 +154,7 @@ If you require a missing devcies, please provide the type of IC (brand, model, .
 
 ## Changelog
 
-### 2.0.0 (2020-08-19)
+### 1.0.0 (2020-08-19)
 
 -   (UncleSamSwiss) Updated to the latest development tools and changed to the TypeScript language
 
