@@ -11,7 +11,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.i2c.png?downloads=true)](https://nodei.co/npm/iobroker.i2c/)
 
-**Tests:**: [![Travis-CI](http://img.shields.io/travis/UncleSamSwiss/ioBroker.i2c/master.svg)](https://travis-ci.org/UncleSamSwiss/ioBroker.i2c)
+**Tests:** [![Travis-CI](http://img.shields.io/travis/UncleSamSwiss/ioBroker.i2c/master.svg)](https://travis-ci.org/UncleSamSwiss/ioBroker.i2c)
 ![Test and Release](https://github.com/UncleSamSwiss/ioBroker.i2c/workflows/Test%20and%20Release/badge.svg)
 
 ## i2c adapter for ioBroker
