@@ -16,10 +16,12 @@ declare global {
     namespace ioBroker {
         interface AdapterConfig {
             // Define the shape of your options here (recommended)
-            option1: boolean;
-            option2: string;
-            // Or use a catch-all approach
-            [key: string]: any;
+            busNumber: number;
+            devices: DeviceConfig[];
+        }
+
+        interface DeviceConfig {
+            type: string;
         }
     }
 }
@@ -33,7 +35,7 @@ class I2c extends utils.Adapter {
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
+        this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
 
@@ -42,6 +44,9 @@ class I2c extends utils.Adapter {
      */
     private async onReady(): Promise<void> {
         // Initialize your adapter here
+
+        this.log.info('Using bus number: ' + this.config.busNumber);
+        /*
 
         // The adapters config (in the instance object everything under the attribute "native") is accessible via
         // this.config:
@@ -53,7 +58,7 @@ class I2c extends utils.Adapter {
 		Here a simple template for a boolean variable named "testVariable"
 		Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
 		*/
-        await this.setObjectNotExistsAsync('testVariable', {
+        /*await this.setObjectNotExistsAsync('testVariable', {
             type: 'state',
             common: {
                 name: 'testVariable',
@@ -63,19 +68,17 @@ class I2c extends utils.Adapter {
                 write: true,
             },
             native: {},
-        });
-
+        });*/
         // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-        this.subscribeStates('testVariable');
+        //this.subscribeStates('testVariable');
         // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
         // this.subscribeStates('lights.*');
         // Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
-        // this.subscribeStates('*');
-
+        this.subscribeStates('*');
         /*
 			setState examples
 			you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-		*/
+		* /
         // the variable testVariable is set to true as command (ack=false)
         await this.setStateAsync('testVariable', true);
 
@@ -91,7 +94,7 @@ class I2c extends utils.Adapter {
         this.log.info('check user admin pw iobroker: ' + result);
 
         result = await this.checkGroupAsync('admin', 'admin');
-        this.log.info('check group user admin group admin: ' + result);
+        this.log.info('check group user admin group admin: ' + result);*/
     }
 
     /**
@@ -139,22 +142,115 @@ class I2c extends utils.Adapter {
         }
     }
 
-    // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
-    // /**
-    //  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-    //  * Using this method requires "common.message" property to be set to true in io-package.json
-    //  */
-    // private onMessage(obj: ioBroker.Message): void {
-    //     if (typeof obj === 'object' && obj.message) {
-    //         if (obj.command === 'send') {
-    //             // e.g. send email or pushover or whatever
-    //             this.log.info('send command');
+    /**
+     * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
+     * Using this method requires "common.message" property to be set to true in io-package.json
+     */
+    private async onMessage(obj: ioBroker.Message): Promise<void> {
+        this.log.info('onMessage: ' + JSON.stringify(obj));
+        let wait = false;
+        if (typeof obj === 'object' && obj.message) {
+            /*if (obj.command === 'send') {
+                // e.g. send email or pushover or whatever
+                this.log.info('send command');
 
-    //             // Send response in callback if required
-    //             if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-    //         }
-    //     }
-    // }
+                // Send response in callback if required
+                if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+            }*/
+            switch (obj.command) {
+                case 'search':
+                    const res = await this.searchDevicesAsync(obj.message);
+                    const result = JSON.stringify(res || []);
+                    this.log.info('Search found: ' + result);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
+                    }
+                    wait = true;
+                    break;
+
+                /*case 'read':
+                    if (typeof obj.message !== 'object' || typeof obj.message.address !== 'number') {
+                        that.adapter.log.error('Invalid read message');
+                        return false;
+                    }
+                    var buf = Buffer.alloc(obj.message.bytes || 1);
+                    try {
+                        if (typeof obj.message.register === 'number') {
+                            that.bus.readI2cBlockSync(obj.message.address, obj.message.register, buf.length, buf);
+                        } else {
+                            that.bus.i2cReadSync(obj.message.address, buf.length, buf);
+                        }
+                        if (obj.callback) {
+                            that.adapter.sendTo(obj.from, obj.command, buf, obj.callback);
+                        }
+                        wait = true;
+                    } catch (e) {
+                        that.adapter.log.error('Error reading from ' + that.toHexString(obj.message.address));
+                    }
+                    break;
+
+                case 'write':
+                    if (
+                        typeof obj.message !== 'object' ||
+                        typeof obj.message.address !== 'number' ||
+                        !Buffer.isBuffer(obj.message.data)
+                    ) {
+                        that.adapter.log.error('Invalid write message');
+                        return false;
+                    }
+                    try {
+                        if (typeof obj.message.register === 'number') {
+                            that.bus.writeI2cBlockSync(
+                                obj.message.address,
+                                obj.message.register,
+                                obj.message.data.length,
+                                obj.message.data,
+                            );
+                        } else {
+                            that.bus.i2cWriteSync(obj.message.address, obj.message.data.length, obj.message.data);
+                        }
+                        if (obj.callback) {
+                            that.adapter.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
+                        }
+                        wait = true;
+                    } catch (e) {
+                        that.adapter.log.error('Error writing to ' + that.toHexString(obj.message.address));
+                    }
+                    break;*/
+                default:
+                    this.log.warn('Unknown command: ' + obj.command);
+                    break;
+            }
+        }
+
+        if (!wait && obj.callback) {
+            this.sendTo(obj.from, obj.command, obj.message, obj.callback);
+        }
+    }
+
+    private async searchDevicesAsync(busNumber: any): Promise<any> {
+        busNumber = parseInt(busNumber);
+
+        if (busNumber == this.config.busNumber) {
+            this.log.debug('Searching on current bus ' + busNumber);
+
+            return [20];
+            //this.bus.scan(callback);
+        } /* else {
+            that.adapter.log.debug('Searching on new bus ' + busNumber);
+            var searchBus = i2c.open(busNumber, function (err) {
+                if (err) {
+                    callback(err);
+                } else {
+                    searchBus.scan(function (err, result) {
+                        searchBus.close(function () {
+                            callback(err, result);
+                        });
+                    });
+                }
+            });
+        }*/
+    }
 }
 
 if (module.parent) {
