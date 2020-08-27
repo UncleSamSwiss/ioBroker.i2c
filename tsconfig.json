@@ -8,6 +8,7 @@
         // check JS files, but do not compile them => tsconfig.build.json
         "allowJs": true,
         "checkJs": true,
+        "jsx": "react",
 
         "noEmitOnError": true,
         "outDir": "./build/",
@@ -34,6 +35,6 @@
         "inlineSourceMap": false,
         "watch": false
     },
-    "include": ["**/*.ts"],
-    "exclude": ["build/**", "node_modules/**", "admin/**"]
+    "include": ["**/*.ts*", ".eslintrc.js"],
+    "exclude": ["build/**", "node_modules/**"]
 }

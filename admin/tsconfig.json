@@ -1,4 +1,14 @@
 {
     "extends": "../tsconfig.json",
-    "include": ["./**/*.d.ts", "./**/*.js"]
+    "compilerOptions": {
+        "jsx": "react",
+        "noEmit": false,
+        "outDir": "./build",
+        "sourceMap": true,
+        "sourceRoot": "./src",
+        "noImplicitAny": false,
+        "lib": ["es2018", "DOM"]
+    },
+    "include": ["./**/*.ts", "./**/*.tsx", "../src/lib/adapter-config.d.ts", "./src/lib/admin.d.ts"],
+    "exclude": ["./**/*.test.ts*"]
 }
