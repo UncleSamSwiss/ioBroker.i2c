@@ -24,7 +24,7 @@ export function Root(props: RootProps): JSX.Element {
     }, []);
 
     return (
-        <Tabs labels={['General', 'Settings0']}>
+        <Tabs labels={['General', 'Settings']}>
             <General settings={props.settings} onChange={props.onSettingsChanged} />
             <Settings settings={props.settings} onChange={props.onSettingsChanged} />
         </Tabs>
