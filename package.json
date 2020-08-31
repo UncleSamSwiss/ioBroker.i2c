@@ -98,7 +98,7 @@
     "build:ts": "tsc -p tsconfig.build.json",
     "check:ts": "tsc -p tsconfig.build.json --noEmit",
     "build": "npm run build:ts && npm run build:parcel",
-    "watch:parcel": "parcel admin/src/index.tsx -d admin/build",
+    "watch:parcel": "parcel admin/src/index.tsx -d admin/build --hmr-port 1235",
     "watch:ts": "tsc -p tsconfig.build.json --watch",
     "watch": "npm run watch:ts",
     "test:ts": "mocha --opts test/mocha.custom.opts",
