@@ -3,7 +3,7 @@ version: '3'
 services:
     iobroker:
         restart: always
-        build: .
+        build: ./iobroker
         container_name: iobroker-i2c
         hostname: iobroker-i2c
         ports:
