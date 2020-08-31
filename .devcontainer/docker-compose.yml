@@ -17,6 +17,13 @@ services:
             - LC_ALL=en_US.UTF-8
             - TZ=Europe/Zurich
             - SETGID=1000
+    parcel:
+        restart: always
+        build: ./parcel
+        ports:
+            - '1234:1234'
+        volumes:
+            - ./..:/workspace:cached
 
 volumes:
     iobrokerdata-i2c:
