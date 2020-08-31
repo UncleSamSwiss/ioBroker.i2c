@@ -2,15 +2,18 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { Tabs } from 'iobroker-react-components';
-import { Settings, OnSettingsChangedCallback } from './pages/settings';
+import { Settings } from './pages/settings';
+import { OnSettingsChangedCallback } from './lib/common';
+import { I2CAdapterConfig } from '../../src/lib/shared';
+import { General } from './pages/general';
 
 // layout components
 interface RootProps {
-    settings: Record<string, unknown>;
+    settings: I2CAdapterConfig;
     onSettingsChanged: OnSettingsChangedCallback;
 }
 
-export function Root(props: RootProps): React.SFCElement<any> {
+export function Root(props: RootProps): JSX.Element {
     // Subscribe and unsubscribe from states and objects
     function onUnload(): void {
         console.log('onUnload');
@@ -21,15 +24,15 @@ export function Root(props: RootProps): React.SFCElement<any> {
     }, []);
 
     return (
-        <Tabs labels={['Settings A', 'Settings B']}>
-            <Settings settings={props.settings} onChange={props.onSettingsChanged} />
+        <Tabs labels={['General', 'Settings0']}>
+            <General settings={props.settings} onChange={props.onSettingsChanged} />
             <Settings settings={props.settings} onChange={props.onSettingsChanged} />
         </Tabs>
     );
 }
 
-let curSettings: Record<string, unknown>;
-let originalSettings: Record<string, unknown>;
+let curSettings: I2CAdapterConfig;
+let originalSettings: I2CAdapterConfig;
 
 /**
  * Checks if any setting was changed
@@ -43,7 +46,7 @@ function hasChanges(): boolean {
 }
 
 // the function loadSettings has to exist ...
-(window as any).load = (settings: Record<string, unknown>, onChange: (hasChanges: boolean) => void) => {
+(window as any).load = (settings: I2CAdapterConfig, onChange: (hasChanges: boolean) => void) => {
     originalSettings = settings;
 
     const settingsChanged: OnSettingsChangedCallback = (newSettings) => {
@@ -53,7 +56,7 @@ function hasChanges(): boolean {
 
     ReactDOM.render(
         <Root settings={settings} onSettingsChanged={settingsChanged} />,
-        document.getElementById('adapter-container') || document.getElementsByClassName('adapter-container')[0],
+        document.getElementById('adapter-container'),
     );
 
     // Signal to admin, that no changes yet
@@ -62,7 +65,7 @@ function hasChanges(): boolean {
 
 // ... and the function save has to exist.
 // you have to make sure the callback is called with the settings object as first param!
-(window as any).save = (callback: (newSettings: Record<string, unknown>) => void) => {
+(window as any).save = (callback: (newSettings: I2CAdapterConfig) => void) => {
     // save the settings
     callback(curSettings);
     originalSettings = curSettings;

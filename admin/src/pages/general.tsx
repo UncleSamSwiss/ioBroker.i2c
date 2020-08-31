@@ -2,38 +2,31 @@ import * as React from 'react';
 
 import { ReactNode } from 'react';
 
-import { CheckboxLabel } from '../components/checkbox-label';
 import { OnSettingsChangedCallback } from '../lib/common';
 import { I2CAdapterConfig } from '../../../src/lib/shared';
+import { Label } from '../components/label';
 
-interface SettingsProps {
+import { boundMethod } from 'autobind-decorator';
+
+interface GeneralProps {
     onChange: OnSettingsChangedCallback;
     settings: I2CAdapterConfig;
 }
 
-interface SettingsState {
-    [key: string]: unknown;
-    serialport?: string;
-    writeLogFile?: boolean;
-    _serialports?: string[];
-    networkKey?: string;
+interface GeneralState {
+    busNumber: number;
 }
 
-export class Settings extends React.Component<SettingsProps, SettingsState> {
-    constructor(props: SettingsProps) {
+export class General extends React.Component<GeneralProps, GeneralState> {
+    constructor(props: GeneralProps) {
         super(props);
         // settings are our state
         this.state = {
             ...props.settings,
         };
-
-        // setup change handlers
-        this.handleChange = this.handleChange.bind(this);
     }
 
-    private chkWriteLogFile: HTMLInputElement | null | undefined;
-
-    private parseChangedSetting(target: HTMLInputElement | HTMLSelectElement): unknown {
+    private parseChangedSetting(target: HTMLInputElement | HTMLSelectElement): any {
         // Checkboxes in MaterializeCSS are messed up, so we attach our own handler
         // However that one gets called before the underlying checkbox is actually updated,
         // so we need to invert the checked value here
@@ -45,18 +38,18 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
     }
 
     // gets called when the form elements are changed by the user
+    @boundMethod
     private handleChange(event: React.FormEvent<HTMLElement>): boolean {
         const target = event.target as HTMLInputElement | HTMLSelectElement; // TODO: more types
         const value = this.parseChangedSetting(target);
-        return this.doHandleChange(target.id, value);
+        return this.doHandleChange(target.id as keyof GeneralState, value);
     }
 
-    private doHandleChange(setting: string, value: unknown): boolean {
+    private doHandleChange(setting: keyof GeneralState, value: any): boolean {
         // store the setting
         this.putSetting(setting, value, () => {
             // and notify the admin UI about changes
-            // TODO: implement!
-            //this.props.onChange(composeObject(entries(this.state).filter(([k, v]) => !k.startsWith('_'))));
+            this.props.onChange({ ...this.props.settings, ...this.state });
         });
         return false;
     }
@@ -65,7 +58,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
      * Reads a setting from the state object and transforms the value into the correct format
      * @param key The setting key to lookup
      */
-    private getSetting(key: string, defaultValue?: unknown): unknown {
+    private getSetting<T>(key: string, defaultValue?: T): T {
         const ret = this.state[key];
         return ret != undefined ? ret : defaultValue;
     }
@@ -73,7 +66,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
      * Saves a setting in the state object and transforms the value into the correct format
      * @param key The setting key to store at
      */
-    private putSetting(key: string, value: unknown, callback?: () => void): void {
+    private putSetting(key: keyof GeneralState, value: any, callback?: () => void): void {
         this.setState({ [key]: value }, callback);
     }
 
@@ -81,7 +74,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         // update floating labels in materialize design
         M.updateTextFields();
 
-        // Fix materialize checkboxes
+        /*// Fix materialize checkboxes
         if (this.chkWriteLogFile != null) {
             $(this.chkWriteLogFile).on('click', this.handleChange as any);
         }
@@ -93,14 +86,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
             } else if (result && result.length) {
                 this.setState({ _serialports: result });
             }
-        });
-    }
-
-    public componentWillUnmount(): void {
-        // Fix materialize checkboxes
-        if (this.chkWriteLogFile != null) {
-            $(this.chkWriteLogFile).off('click', this.handleChange as any);
-        }
+        });*/
     }
 
     public componentDidUpdate(): void {
@@ -109,27 +95,20 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
     }
 
     public render(): ReactNode {
-        // Add the currently configured serial port to the list if it is not in there
-        const serialports = this.state._serialports;
-        if (serialports && this.state.serialport && !serialports.includes(this.state.serialport)) {
-            serialports.unshift(this.state.serialport);
-        }
         return (
             <>
                 <div className="row">
                     <div className="col s6">
-                        <label htmlFor="writeLogFile">
+                        <label htmlFor="busNumber">
                             <input
-                                type="checkbox"
+                                type="number"
                                 className="value"
-                                id="writeLogFile"
-                                defaultChecked={this.getSetting('writeLogFile') as any}
-                                ref={(me) => (this.chkWriteLogFile = me)}
+                                id="busNumber"
+                                value={this.state.busNumber}
+                                onChange={this.handleChange}
                             />
-                            <CheckboxLabel text="Write a detailed logfile" />
+                            <Label for="busNumber" text="Bus Number" />
                         </label>
-                        <br />
-                        <span>{_('This should only be set for debugging purposes.')}</span>
                     </div>
                 </div>
             </>

@@ -33,7 +33,9 @@
 
         "sourceMap": false,
         "inlineSourceMap": false,
-        "watch": false
+        "watch": false,
+
+        "experimentalDecorators": true
     },
     "include": ["**/*.ts*", ".eslintrc.js"],
     "exclude": ["build/**", "node_modules/**"]

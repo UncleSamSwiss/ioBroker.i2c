@@ -28442,7 +28442,65 @@ exports.Tooltip = tooltip_1.Tooltip;
 var cancelable_input_1 = require("./components/cancelable-input");
 exports.CancelableInput = cancelable_input_1.CancelableInput;
 
-},{"./components/label":"../../node_modules/iobroker-react-components/build/components/label.js","./components/multi-dropdown":"../../node_modules/iobroker-react-components/build/components/multi-dropdown.js","./components/tabs":"../../node_modules/iobroker-react-components/build/components/tabs.js","./components/tooltip":"../../node_modules/iobroker-react-components/build/components/tooltip.js","./components/cancelable-input":"../../node_modules/iobroker-react-components/build/components/cancelable-input.js"}],"pages/settings.tsx":[function(require,module,exports) {
+},{"./components/label":"../../node_modules/iobroker-react-components/build/components/label.js","./components/multi-dropdown":"../../node_modules/iobroker-react-components/build/components/multi-dropdown.js","./components/tabs":"../../node_modules/iobroker-react-components/build/components/tabs.js","./components/tooltip":"../../node_modules/iobroker-react-components/build/components/tooltip.js","./components/cancelable-input":"../../node_modules/iobroker-react-components/build/components/cancelable-input.js"}],"components/checkbox-label.tsx":[function(require,module,exports) {
+"use strict";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CheckboxLabel = void 0;
+
+var React = __importStar(require("react"));
+
+var iobroker_react_components_1 = require("iobroker-react-components");
+/** Inner label for a Materializes CSS checkbox (span, no for property) */
+
+
+function CheckboxLabel(props) {
+  var classNames = props.class || [];
+  return React.createElement("span", {
+    className: classNames.join(' ')
+  }, _(props.text), props.tooltip != null && React.createElement(iobroker_react_components_1.Tooltip, {
+    text: props.tooltip
+  }));
+}
+
+exports.CheckboxLabel = CheckboxLabel;
+},{"react":"../../node_modules/react/index.js","iobroker-react-components":"../../node_modules/iobroker-react-components/build/index.js"}],"pages/settings.tsx":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -28524,37 +28582,11 @@ var __importStar = this && this.__importStar || function (mod) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Settings = exports.CheckboxLabel = exports.Label = void 0;
+exports.Settings = void 0;
 
 var React = __importStar(require("react"));
 
-var iobroker_react_components_1 = require("iobroker-react-components");
-/** Helper component for a settings label */
-
-
-function Label(props) {
-  var classNames = props.class || [];
-  return React.createElement("label", {
-    htmlFor: props.for,
-    className: classNames.join(' ')
-  }, _(props.text), props.tooltip != null && React.createElement(iobroker_react_components_1.Tooltip, {
-    text: props.tooltip
-  }));
-}
-
-exports.Label = Label;
-/** Inner label for a Materializes CSS checkbox (span, no for property) */
-
-function CheckboxLabel(props) {
-  var classNames = props.class || [];
-  return React.createElement("span", {
-    className: classNames.join(' ')
-  }, _(props.text), props.tooltip != null && React.createElement(iobroker_react_components_1.Tooltip, {
-    text: props.tooltip
-  }));
-}
-
-exports.CheckboxLabel = CheckboxLabel;
+var checkbox_label_1 = require("../components/checkbox-label");
 
 var Settings =
 /** @class */
@@ -28677,7 +28709,7 @@ function (_super) {
       ref: function ref(me) {
         return _this.chkWriteLogFile = me;
       }
-    }), React.createElement(CheckboxLabel, {
+    }), React.createElement(checkbox_label_1.CheckboxLabel, {
       text: "Write a detailed logfile"
     })), React.createElement("br", null), React.createElement("span", null, _('This should only be set for debugging purposes.')))));
   };
@@ -28686,7 +28718,387 @@ function (_super) {
 }(React.Component);
 
 exports.Settings = Settings;
-},{"react":"../../node_modules/react/index.js","iobroker-react-components":"../../node_modules/iobroker-react-components/build/index.js"}],"index.tsx":[function(require,module,exports) {
+},{"react":"../../node_modules/react/index.js","../components/checkbox-label":"components/checkbox-label.tsx"}],"components/label.tsx":[function(require,module,exports) {
+"use strict";
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Label = void 0;
+
+var React = __importStar(require("react"));
+
+var iobroker_react_components_1 = require("iobroker-react-components");
+/** Helper component for a settings label */
+
+
+function Label(props) {
+  var classNames = props.class || [];
+  return React.createElement("label", {
+    htmlFor: props.for,
+    className: classNames.join(' ')
+  }, _(props.text), props.tooltip != null && React.createElement(iobroker_react_components_1.Tooltip, {
+    text: props.tooltip
+  }));
+}
+
+exports.Label = Label;
+},{"react":"../../node_modules/react/index.js","iobroker-react-components":"../../node_modules/iobroker-react-components/build/index.js"}],"../../node_modules/autobind-decorator/lib/esm/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.boundMethod = boundMethod;
+exports.boundClass = boundClass;
+exports.default = autobind;
+
+function _typeof2(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
+
+function _typeof(obj) {
+  if (typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol") {
+    _typeof = function _typeof(obj) {
+      return _typeof2(obj);
+    };
+  } else {
+    _typeof = function _typeof(obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof2(obj);
+    };
+  }
+
+  return _typeof(obj);
+}
+/**
+ * Return a descriptor removing the value and returning a getter
+ * The getter will return a .bind version of the function
+ * and memoize the result against a symbol on the instance
+ */
+
+
+function boundMethod(target, key, descriptor) {
+  var fn = descriptor.value;
+
+  if (typeof fn !== 'function') {
+    throw new TypeError("@boundMethod decorator can only be applied to methods not: ".concat(_typeof(fn)));
+  } // In IE11 calling Object.defineProperty has a side-effect of evaluating the
+  // getter for the property which is being replaced. This causes infinite
+  // recursion and an "Out of stack space" error.
+
+
+  var definingProperty = false;
+  return {
+    configurable: true,
+    get: function get() {
+      // eslint-disable-next-line no-prototype-builtins
+      if (definingProperty || this === target.prototype || this.hasOwnProperty(key) || typeof fn !== 'function') {
+        return fn;
+      }
+
+      var boundFn = fn.bind(this);
+      definingProperty = true;
+      Object.defineProperty(this, key, {
+        configurable: true,
+        get: function get() {
+          return boundFn;
+        },
+        set: function set(value) {
+          fn = value;
+          delete this[key];
+        }
+      });
+      definingProperty = false;
+      return boundFn;
+    },
+    set: function set(value) {
+      fn = value;
+    }
+  };
+}
+/**
+ * Use boundMethod to bind all methods on the target.prototype
+ */
+
+
+function boundClass(target) {
+  // (Using reflect to get all keys including symbols)
+  var keys; // Use Reflect if exists
+
+  if (typeof Reflect !== 'undefined' && typeof Reflect.ownKeys === 'function') {
+    keys = Reflect.ownKeys(target.prototype);
+  } else {
+    keys = Object.getOwnPropertyNames(target.prototype); // Use symbols if support is provided
+
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      keys = keys.concat(Object.getOwnPropertySymbols(target.prototype));
+    }
+  }
+
+  keys.forEach(function (key) {
+    // Ignore special case target method
+    if (key === 'constructor') {
+      return;
+    }
+
+    var descriptor = Object.getOwnPropertyDescriptor(target.prototype, key); // Only methods need binding
+
+    if (typeof descriptor.value === 'function') {
+      Object.defineProperty(target.prototype, key, boundMethod(target, key, descriptor));
+    }
+  });
+  return target;
+}
+
+function autobind() {
+  if (arguments.length === 1) {
+    return boundClass.apply(void 0, arguments);
+  }
+
+  return boundMethod.apply(void 0, arguments);
+}
+},{}],"pages/general.tsx":[function(require,module,exports) {
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (b.hasOwnProperty(p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __assign = this && this.__assign || function () {
+  __assign = Object.assign || function (t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) {
+        if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+      }
+    }
+
+    return t;
+  };
+
+  return __assign.apply(this, arguments);
+};
+
+var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function get() {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+});
+
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+});
+
+var __decorate = this && this.__decorate || function (decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) {
+    if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  }
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var __importStar = this && this.__importStar || function (mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) {
+    if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+  }
+
+  __setModuleDefault(result, mod);
+
+  return result;
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.General = void 0;
+
+var React = __importStar(require("react"));
+
+var label_1 = require("../components/label");
+
+var autobind_decorator_1 = require("autobind-decorator");
+
+var General =
+/** @class */
+function (_super) {
+  __extends(General, _super);
+
+  function General(props) {
+    var _this = _super.call(this, props) || this; // settings are our state
+
+
+    _this.state = __assign({}, props.settings);
+    return _this;
+  }
+
+  General.prototype.parseChangedSetting = function (target) {
+    // Checkboxes in MaterializeCSS are messed up, so we attach our own handler
+    // However that one gets called before the underlying checkbox is actually updated,
+    // so we need to invert the checked value here
+    return target.type === 'checkbox' ? !target.checked : target.type === 'number' ? parseInt(target.value, 10) : target.value;
+  }; // gets called when the form elements are changed by the user
+
+
+  General.prototype.handleChange = function (event) {
+    var target = event.target; // TODO: more types
+
+    var value = this.parseChangedSetting(target);
+    return this.doHandleChange(target.id, value);
+  };
+
+  General.prototype.doHandleChange = function (setting, value) {
+    var _this = this; // store the setting
+
+
+    this.putSetting(setting, value, function () {
+      // and notify the admin UI about changes
+      _this.props.onChange(__assign(__assign({}, _this.props.settings), _this.state));
+    });
+    return false;
+  };
+  /**
+   * Reads a setting from the state object and transforms the value into the correct format
+   * @param key The setting key to lookup
+   */
+
+
+  General.prototype.getSetting = function (key, defaultValue) {
+    var ret = this.state[key];
+    return ret != undefined ? ret : defaultValue;
+  };
+  /**
+   * Saves a setting in the state object and transforms the value into the correct format
+   * @param key The setting key to store at
+   */
+
+
+  General.prototype.putSetting = function (key, value, callback) {
+    var _a;
+
+    this.setState((_a = {}, _a[key] = value, _a), callback);
+  };
+
+  General.prototype.componentDidMount = function () {
+    // update floating labels in materialize design
+    M.updateTextFields();
+    /*// Fix materialize checkboxes
+    if (this.chkWriteLogFile != null) {
+        $(this.chkWriteLogFile).on('click', this.handleChange as any);
+    }
+     // Try to retrieve a list of serial ports
+    sendTo(null, 'getSerialPorts', null, ({ error, result }) => {
+        if (error) {
+            console.error(error);
+        } else if (result && result.length) {
+            this.setState({ _serialports: result });
+        }
+    });*/
+  };
+
+  General.prototype.componentDidUpdate = function () {
+    // update floating labels in materialize design
+    M.updateTextFields();
+  };
+
+  General.prototype.render = function () {
+    return React.createElement(React.Fragment, null, React.createElement("div", {
+      className: "row"
+    }, React.createElement("div", {
+      className: "col s6"
+    }, React.createElement("label", {
+      htmlFor: "busNumber"
+    }, React.createElement("input", {
+      type: "number",
+      className: "value",
+      id: "busNumber",
+      value: this.state.busNumber,
+      onChange: this.handleChange
+    }), React.createElement(label_1.Label, {
+      for: "busNumber",
+      text: "Bus Number"
+    })))));
+  };
+
+  __decorate([autobind_decorator_1.boundMethod], General.prototype, "handleChange", null);
+
+  return General;
+}(React.Component);
+
+exports.General = General;
+},{"react":"../../node_modules/react/index.js","../components/label":"components/label.tsx","autobind-decorator":"../../node_modules/autobind-decorator/lib/esm/index.js"}],"index.tsx":[function(require,module,exports) {
 "use strict";
 
 var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
@@ -28736,6 +29148,8 @@ var iobroker_react_components_1 = require("iobroker-react-components");
 
 var settings_1 = require("./pages/settings");
 
+var general_1 = require("./pages/general");
+
 function Root(props) {
   // Subscribe and unsubscribe from states and objects
   function onUnload() {
@@ -28746,8 +29160,8 @@ function Root(props) {
     return onUnload;
   }, []);
   return React.createElement(iobroker_react_components_1.Tabs, {
-    labels: ['Settings A', 'Settings B']
-  }, React.createElement(settings_1.Settings, {
+    labels: ['General', 'Settings0']
+  }, React.createElement(general_1.General, {
     settings: props.settings,
     onChange: props.onSettingsChanged
   }), React.createElement(settings_1.Settings, {
@@ -28786,7 +29200,7 @@ window.load = function (settings, onChange) {
   ReactDOM.render(React.createElement(Root, {
     settings: settings,
     onSettingsChanged: settingsChanged
-  }), document.getElementById('adapter-container') || document.getElementsByClassName('adapter-container')[0]); // Signal to admin, that no changes yet
+  }), document.getElementById('adapter-container')); // Signal to admin, that no changes yet
 
   onChange(false);
 }; // ... and the function save has to exist.
@@ -28798,7 +29212,7 @@ window.save = function (callback) {
   callback(curSettings);
   originalSettings = curSettings;
 };
-},{"react":"../../node_modules/react/index.js","react-dom":"../../node_modules/react-dom/index.js","iobroker-react-components":"../../node_modules/iobroker-react-components/build/index.js","./pages/settings":"pages/settings.tsx"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"react":"../../node_modules/react/index.js","react-dom":"../../node_modules/react-dom/index.js","iobroker-react-components":"../../node_modules/iobroker-react-components/build/index.js","./pages/settings":"pages/settings.tsx","./pages/general":"pages/general.tsx"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -28826,7 +29240,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38097" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43889" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

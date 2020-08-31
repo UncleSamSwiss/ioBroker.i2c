@@ -49,8 +49,9 @@
     "node": ">=10"
   },
   "dependencies": {
-    "i2c-bus": "^5.2.0",
-    "@iobroker/adapter-core": "^2.4.0"
+    "@iobroker/adapter-core": "^2.4.0",
+    "autobind-decorator": "^2.4.0",
+    "i2c-bus": "^5.2.0"
   },
   "devDependencies": {
     "@iobroker/testing": "^2.2.0",
@@ -92,12 +93,13 @@
   },
   "main": "build/main.js",
   "scripts": {
-    "prebuild": "rimraf ./build",
+    "prebuild": "rimraf ./build && rimraf ./admin/build",
     "build:parcel": "parcel build admin/src/index.tsx -d admin/build --public-url .",
     "build:ts": "tsc -p tsconfig.build.json",
     "check:ts": "tsc -p tsconfig.build.json --noEmit",
     "build": "npm run build:ts && npm run build:parcel",
     "watch:parcel": "parcel admin/src/index.tsx -d admin/build --public-url .",
+    "watch:parcel-container": "parcel watch admin/src/index.tsx -d admin/build --public-url . --log-level 4",
     "watch:ts": "tsc -p tsconfig.build.json --watch",
     "watch": "npm run watch:ts",
     "test:ts": "mocha --opts test/mocha.custom.opts",

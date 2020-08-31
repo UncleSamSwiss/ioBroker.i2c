@@ -5,6 +5,7 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
+import { I2CAdapterConfig } from './lib/shared';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -14,10 +15,8 @@ import * as utils from '@iobroker/adapter-core';
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace ioBroker {
-        interface AdapterConfig {
-            // Define the shape of your options here (recommended)
-            busNumber: number;
-            devices: DeviceConfig[];
+        interface AdapterConfig extends I2CAdapterConfig {
+            _dummy: undefined;
         }
 
         interface DeviceConfig {

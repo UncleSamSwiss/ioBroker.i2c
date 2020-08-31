@@ -6,7 +6,13 @@
         {
             "label": "Install Adapter",
             "type": "shell",
-            "command": "NPM_PACK=$(npm pack) && /opt/iobroker/iobroker url \"$(pwd)/$NPM_PACK\" --debug && rm \"$NPM_PACK\""
+            "command": "NPM_PACK=$(npm pack) && /opt/iobroker/iobroker url \"$(pwd)/$NPM_PACK\" --debug && rm \"$NPM_PACK\"",
+            "dependsOn": ["Build all"]
+        },
+        {
+            "label": "Build all",
+            "type": "shell",
+            "command": "npm run build"
         }
     ]
 }
