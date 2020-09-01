@@ -18,10 +18,6 @@ declare global {
         interface AdapterConfig extends I2CAdapterConfig {
             _dummy: undefined;
         }
-
-        interface DeviceConfig {
-            type: string;
-        }
     }
 }
 
@@ -233,7 +229,7 @@ class I2c extends utils.Adapter {
         if (busNumber == this.config.busNumber) {
             this.log.debug('Searching on current bus ' + busNumber);
 
-            return [20];
+            return [20, 35, 63, 77];
             //this.bus.scan(callback);
         } /* else {
             that.adapter.log.debug('Searching on new bus ' + busNumber);

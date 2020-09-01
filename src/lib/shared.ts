@@ -4,5 +4,7 @@ export interface I2CAdapterConfig {
 }
 
 export interface I2CDeviceConfig {
-    type: string;
+    address: number;
+    name?: string;
+    type?: string;
 }

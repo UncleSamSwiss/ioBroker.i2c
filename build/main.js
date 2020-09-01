@@ -215,7 +215,7 @@ class I2c extends utils.Adapter {
             busNumber = parseInt(busNumber);
             if (busNumber == this.config.busNumber) {
                 this.log.debug('Searching on current bus ' + busNumber);
-                return [20];
+                return [20, 35, 63, 77];
                 //this.bus.scan(callback);
             } /* else {
                 that.adapter.log.debug('Searching on new bus ' + busNumber);

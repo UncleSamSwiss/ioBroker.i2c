@@ -9,13 +9,12 @@ declare function sendTo(
     instance: any | null,
     command: string,
     message: any,
-    callback: (result: SendToResult) => void | Promise<void>,
+    callback: (result: ioBroker.MessagePayload) => void | Promise<void>,
 ): void;
 
-interface SendToResult {
-    error?: string | Error;
-    result?: any;
-}
+declare function getIsAdapterAlive(callback: (result: boolean) => void | Promise<void>): void;
+
+declare function showMessage(message: string, title: string, type: 'info' | 'warning'): void;
 
 // tslint:disable-next-line:class-name
 /*interface ioBrokerSocket {

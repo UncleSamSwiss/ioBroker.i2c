@@ -18,6 +18,8 @@ interface GeneralState {
 }
 
 export class General extends React.Component<GeneralProps, GeneralState> {
+    private active = false;
+
     constructor(props: GeneralProps) {
         super(props);
         // settings are our state
@@ -43,6 +45,34 @@ export class General extends React.Component<GeneralProps, GeneralState> {
         const target = event.target as HTMLInputElement | HTMLSelectElement; // TODO: more types
         const value = this.parseChangedSetting(target);
         return this.doHandleChange(target.id as keyof GeneralState, value);
+    }
+
+    @boundMethod
+    private searchDevices(_event: React.FormEvent<HTMLElement>): boolean {
+        if (!this.active) {
+            showMessage(_('Enable adapter first'), _('Warning'), 'warning');
+            return false;
+        }
+
+        sendTo(null, 'search', this.state.busNumber, (result) => {
+            if (typeof result === 'string') {
+                const addresses = JSON.parse(result) as number[];
+                const oldCount = this.props.settings.devices.length;
+                addresses.forEach((address) => {
+                    if (!this.props.settings.devices.find((d) => d.address === address)) {
+                        this.props.settings.devices.push({ address: address });
+                        this.props.settings.devices.sort((a, b) => a.address - b.address);
+                    }
+                });
+
+                if (oldCount != this.props.settings.devices.length) {
+                    this.props.onChange(this.props.settings);
+                    console.log(this.props.settings);
+                }
+            }
+        });
+
+        return false;
     }
 
     private doHandleChange(setting: keyof GeneralState, value: any): boolean {
@@ -74,19 +104,12 @@ export class General extends React.Component<GeneralProps, GeneralState> {
         // update floating labels in materialize design
         M.updateTextFields();
 
-        /*// Fix materialize checkboxes
-        if (this.chkWriteLogFile != null) {
-            $(this.chkWriteLogFile).on('click', this.handleChange as any);
-        }
-
-        // Try to retrieve a list of serial ports
-        sendTo(null, 'getSerialPorts', null, ({ error, result }) => {
-            if (error) {
-                console.error(error);
-            } else if (result && result.length) {
-                this.setState({ _serialports: result });
+        // read if instance is active or enabled
+        getIsAdapterAlive((isAlive: boolean) => {
+            if (isAlive) {
+                this.active = true;
             }
-        });*/
+        });
     }
 
     public componentDidUpdate(): void {
@@ -98,17 +121,23 @@ export class General extends React.Component<GeneralProps, GeneralState> {
         return (
             <>
                 <div className="row">
-                    <div className="col s6">
-                        <label htmlFor="busNumber">
-                            <input
-                                type="number"
-                                className="value"
-                                id="busNumber"
-                                value={this.state.busNumber}
-                                onChange={this.handleChange}
-                            />
-                            <Label for="busNumber" text="Bus Number" />
-                        </label>
+                    <div className="col s3 input-field">
+                        <input
+                            type="number"
+                            className="value"
+                            id="busNumber"
+                            value={this.state.busNumber}
+                            onChange={this.handleChange}
+                        />
+                        <Label for="busNumber" text="Bus Number" />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col s6 input-field">
+                        <button onClick={this.searchDevices} className="btn">
+                            <i className="material-icons left">youtube_searched_for</i>
+                            {_('Search Devices')}
+                        </button>
                     </div>
                 </div>
             </>

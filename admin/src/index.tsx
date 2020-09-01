@@ -1,11 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { Tabs } from 'iobroker-react-components';
-import { Settings } from './pages/settings';
+import { AllTabs } from './pages/all-tabs';
 import { OnSettingsChangedCallback } from './lib/common';
 import { I2CAdapterConfig } from '../../src/lib/shared';
-import { General } from './pages/general';
 
 // layout components
 interface RootProps {
@@ -23,31 +21,22 @@ export function Root(props: RootProps): JSX.Element {
         return onUnload;
     }, []);
 
-    return (
-        <Tabs labels={['General', 'Settings']}>
-            <General settings={props.settings} onChange={props.onSettingsChanged} />
-            <Settings settings={props.settings} onChange={props.onSettingsChanged} />
-        </Tabs>
-    );
+    return <AllTabs settings={props.settings} onChange={props.onSettingsChanged}></AllTabs>;
 }
 
 let curSettings: I2CAdapterConfig;
-let originalSettings: I2CAdapterConfig;
+let originalSettings: string;
 
 /**
  * Checks if any setting was changed
  */
 function hasChanges(): boolean {
-    if (Object.keys(originalSettings).length !== Object.keys(curSettings).length) return true;
-    for (const key of Object.keys(originalSettings)) {
-        if (originalSettings[key] !== curSettings[key]) return true;
-    }
-    return false;
+    return originalSettings !== JSON.stringify(curSettings);
 }
 
 // the function loadSettings has to exist ...
 (window as any).load = (settings: I2CAdapterConfig, onChange: (hasChanges: boolean) => void) => {
-    originalSettings = settings;
+    originalSettings = JSON.stringify(settings);
 
     const settingsChanged: OnSettingsChangedCallback = (newSettings) => {
         curSettings = newSettings;
@@ -68,5 +57,5 @@ function hasChanges(): boolean {
 (window as any).save = (callback: (newSettings: I2CAdapterConfig) => void) => {
     // save the settings
     callback(curSettings);
-    originalSettings = curSettings;
+    originalSettings = JSON.stringify(curSettings);
 };
