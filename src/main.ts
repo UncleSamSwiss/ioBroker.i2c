@@ -5,6 +5,8 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
+// lint doesn't know it is being used inside the ioBroker namespace below
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { I2CAdapterConfig } from './lib/shared';
 
 // Load your modules here, e.g.:
