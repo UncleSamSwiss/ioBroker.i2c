@@ -15,9 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require("@iobroker/adapter-core");
+const i2c = require("i2c-bus");
+const client_1 = require("./debug/client");
+const server_1 = require("./debug/server");
 class I2c extends utils.Adapter {
     constructor(options = {}) {
-        super(Object.assign(Object.assign({}, options), { name: 'i2c' }));
+        super(Object.assign(Object.assign({ dirname: __dirname.indexOf('node_modules') !== -1 ? undefined : __dirname + '/../' }, options), { name: 'i2c' }));
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         // this.on('objectChange', this.onObjectChange.bind(this));
@@ -29,57 +32,13 @@ class I2c extends utils.Adapter {
      */
     onReady() {
         return __awaiter(this, void 0, void 0, function* () {
-            // Initialize your adapter here
             this.log.info('Using bus number: ' + this.config.busNumber);
-            /*
-    
-            // The adapters config (in the instance object everything under the attribute "native") is accessible via
-            // this.config:
-            this.log.info('config option1: ' + this.config.option1);
-            this.log.info('config option2: ' + this.config.option2);
-    
-            /*
-            For every state in the system there has to be also an object of type state
-            Here a simple template for a boolean variable named "testVariable"
-            Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-            */
-            /*await this.setObjectNotExistsAsync('testVariable', {
-                type: 'state',
-                common: {
-                    name: 'testVariable',
-                    type: 'boolean',
-                    role: 'indicator',
-                    read: true,
-                    write: true,
-                },
-                native: {},
-            });*/
-            // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-            //this.subscribeStates('testVariable');
-            // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
-            // this.subscribeStates('lights.*');
-            // Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
+            this.bus = yield this.openBusAsync(this.config.busNumber);
+            if (this.config.serverPort) {
+                this.server = new server_1.I2CServer(this.config.serverPort, this.bus);
+                this.server.start();
+            }
             this.subscribeStates('*');
-            /*
-                setState examples
-                you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-            * /
-            // the variable testVariable is set to true as command (ack=false)
-            await this.setStateAsync('testVariable', true);
-    
-            // same thing, but the value is flagged "ack"
-            // ack should be always set to true if the value is received from or acknowledged from the target system
-            await this.setStateAsync('testVariable', { val: true, ack: true });
-    
-            // same thing, but the state is deleted after 30s (getState will return null afterwards)
-            await this.setStateAsync('testVariable', { val: true, ack: true, expire: 30 });
-    
-            // examples for the checkPassword/checkGroup functions
-            let result = await this.checkPasswordAsync('admin', 'iobroker');
-            this.log.info('check user admin pw iobroker: ' + result);
-    
-            result = await this.checkGroupAsync('admin', 'admin');
-            this.log.info('check group user admin group admin: ' + result);*/
         });
     }
     /**
@@ -92,6 +51,9 @@ class I2c extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
+            if (this.server) {
+                this.server.stop();
+            }
             callback();
         }
         catch (e) {
@@ -134,16 +96,9 @@ class I2c extends utils.Adapter {
             this.log.info('onMessage: ' + JSON.stringify(obj));
             let wait = false;
             if (typeof obj === 'object' && obj.message) {
-                /*if (obj.command === 'send') {
-                    // e.g. send email or pushover or whatever
-                    this.log.info('send command');
-    
-                    // Send response in callback if required
-                    if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-                }*/
                 switch (obj.command) {
                     case 'search':
-                        const res = yield this.searchDevicesAsync(obj.message);
+                        const res = yield this.searchDevicesAsync(parseInt(obj.message));
                         const result = JSON.stringify(res || []);
                         this.log.info('Search found: ' + result);
                         if (obj.callback) {
@@ -212,25 +167,28 @@ class I2c extends utils.Adapter {
     }
     searchDevicesAsync(busNumber) {
         return __awaiter(this, void 0, void 0, function* () {
-            busNumber = parseInt(busNumber);
             if (busNumber == this.config.busNumber) {
                 this.log.debug('Searching on current bus ' + busNumber);
-                return [20, 35, 63, 77];
-                //this.bus.scan(callback);
-            } /* else {
-                that.adapter.log.debug('Searching on new bus ' + busNumber);
-                var searchBus = i2c.open(busNumber, function (err) {
-                    if (err) {
-                        callback(err);
-                    } else {
-                        searchBus.scan(function (err, result) {
-                            searchBus.close(function () {
-                                callback(err, result);
-                            });
-                        });
-                    }
-                });
-            }*/
+                //return [20, 35, 63, 77];
+                return yield this.bus.scan();
+            }
+            else {
+                this.log.debug('Searching on new bus ' + busNumber);
+                const searchBus = yield this.openBusAsync(busNumber);
+                const result = yield this.bus.scan();
+                yield searchBus.close();
+                return result;
+            }
+        });
+    }
+    openBusAsync(busNumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.config.clientAddress) {
+                return new client_1.I2CClient(this.config.clientAddress);
+            }
+            else {
+                return yield i2c.openPromisified(busNumber);
+            }
         });
     }
 }
