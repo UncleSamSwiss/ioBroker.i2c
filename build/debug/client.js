@@ -12,8 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.I2CClient = void 0;
 const http_1 = require("http");
 class I2CClient {
-    constructor(address) {
+    constructor(address, log) {
         this.address = address;
+        this.log = log;
     }
     close() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -97,7 +98,7 @@ class I2CClient {
     }
     sendRequest(method, args) {
         return __awaiter(this, void 0, void 0, function* () {
-            const postData = JSON.stringify(args || {});
+            const postData = JSON.stringify({ method, args: args || {} });
             return new Promise((resolve, reject) => {
                 const options = {
                     method: 'POST',
@@ -106,14 +107,20 @@ class I2CClient {
                         'Content-Length': Buffer.byteLength(postData),
                     },
                 };
+                this.log.debug(`Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
                 const req = http_1.request(this.address, options, (resp) => {
                     let data = '';
+                    if (resp.statusCode !== 200) {
+                        reject(new Error(`Got status code ${resp.statusCode}`));
+                        return;
+                    }
                     // A chunk of data has been recieved.
                     resp.on('data', (chunk) => {
                         data += chunk;
                     });
                     // The whole response has been received. Print out the result.
                     resp.on('end', () => {
+                        this.log.debug('Received ' + data);
                         resolve(JSON.parse(data));
                     });
                 }).on('error', (err) => {

@@ -2,7 +2,7 @@ import { request } from 'http';
 import * as i2c from 'i2c-bus';
 
 export class I2CClient implements i2c.PromisifiedBus {
-    constructor(private readonly address: string) {}
+    constructor(private readonly address: string, private readonly log: ioBroker.Logger) {}
 
     public async close(): Promise<void> {
         // close does nothing
@@ -81,7 +81,7 @@ export class I2CClient implements i2c.PromisifiedBus {
     }
 
     private async sendRequest(method: string, args?: any): Promise<any> {
-        const postData = JSON.stringify(args || {});
+        const postData = JSON.stringify({ method, args: args || {} });
         return new Promise<any>((resolve, reject) => {
             const options = {
                 method: 'POST',
@@ -90,8 +90,14 @@ export class I2CClient implements i2c.PromisifiedBus {
                     'Content-Length': Buffer.byteLength(postData),
                 },
             };
+            this.log.debug(`Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
             const req = request(this.address, options, (resp) => {
                 let data = '';
+
+                if (resp.statusCode !== 200) {
+                    reject(new Error(`Got status code ${resp.statusCode}`));
+                    return;
+                }
 
                 // A chunk of data has been recieved.
                 resp.on('data', (chunk) => {
@@ -100,6 +106,7 @@ export class I2CClient implements i2c.PromisifiedBus {
 
                 // The whole response has been received. Print out the result.
                 resp.on('end', () => {
+                    this.log.debug('Received ' + data);
                     resolve(JSON.parse(data));
                 });
             }).on('error', (err) => {

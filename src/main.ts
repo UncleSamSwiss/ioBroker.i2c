@@ -51,8 +51,8 @@ class I2c extends utils.Adapter {
         this.bus = await this.openBusAsync(this.config.busNumber);
 
         if (this.config.serverPort) {
-            this.server = new I2CServer(this.config.serverPort, this.bus);
-            this.server.start();
+            this.server = new I2CServer(this.bus, this.log);
+            this.server.start(this.config.serverPort);
         }
 
         this.subscribeStates('*');
@@ -204,7 +204,7 @@ class I2c extends utils.Adapter {
 
     private async openBusAsync(busNumber: number): Promise<i2c.PromisifiedBus> {
         if (this.config.clientAddress) {
-            return new I2CClient(this.config.clientAddress);
+            return new I2CClient(this.config.clientAddress, this.log);
         } else {
             return await i2c.openPromisified(busNumber);
         }

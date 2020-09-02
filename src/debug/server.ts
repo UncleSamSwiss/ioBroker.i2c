@@ -4,13 +4,13 @@ import { parse } from 'url';
 
 export class I2CServer {
     private readonly server: Server;
-    constructor(private port: number, private bus: i2c.PromisifiedBus) {
+    constructor(private bus: i2c.PromisifiedBus, private readonly log: ioBroker.Logger) {
         this.server = createServer((req: IncomingMessage, res: ServerResponse) => this.handleRequest(req, res));
     }
 
-    start(): void {
-        console.log(`Debug RPC server listening on port ${this.port}`);
-        this.server.listen(this.port);
+    start(port: number): void {
+        this.log.debug(`Debug RPC server listening on port ${port}`);
+        this.server.listen(port);
     }
 
     stop(): void {
@@ -43,7 +43,7 @@ export class I2CServer {
 
             let compute: Promise<any>;
 
-            console.log('Handling request', parseUrl, body);
+            this.log.debug(`Handling request ${JSON.stringify(parseUrl)}; ${body}`);
             switch (pathname) {
                 case '/rpc':
                     compute = this.rpc(body);
@@ -56,7 +56,7 @@ export class I2CServer {
 
             compute
                 .then((res) => {
-                    console.log('Sending response', res);
+                    this.log.debug('Sending response ' + JSON.stringify(res));
                     response.end(JSON.stringify(res));
                 })
                 .catch((err) => {

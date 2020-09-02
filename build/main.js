@@ -35,8 +35,8 @@ class I2c extends utils.Adapter {
             this.log.info('Using bus number: ' + this.config.busNumber);
             this.bus = yield this.openBusAsync(this.config.busNumber);
             if (this.config.serverPort) {
-                this.server = new server_1.I2CServer(this.config.serverPort, this.bus);
-                this.server.start();
+                this.server = new server_1.I2CServer(this.bus, this.log);
+                this.server.start(this.config.serverPort);
             }
             this.subscribeStates('*');
         });
@@ -54,6 +54,7 @@ class I2c extends utils.Adapter {
             if (this.server) {
                 this.server.stop();
             }
+            this.bus.close(); // ignore the returned promise (we can't do anything if close doesn't work)
             callback();
         }
         catch (e) {
@@ -184,7 +185,7 @@ class I2c extends utils.Adapter {
     openBusAsync(busNumber) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.config.clientAddress) {
-                return new client_1.I2CClient(this.config.clientAddress);
+                return new client_1.I2CClient(this.config.clientAddress, this.log);
             }
             else {
                 return yield i2c.openPromisified(busNumber);

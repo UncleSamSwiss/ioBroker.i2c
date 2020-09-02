@@ -13,14 +13,14 @@ exports.I2CServer = void 0;
 const http_1 = require("http");
 const url_1 = require("url");
 class I2CServer {
-    constructor(port, bus) {
-        this.port = port;
+    constructor(bus, log) {
         this.bus = bus;
+        this.log = log;
         this.server = http_1.createServer((req, res) => this.handleRequest(req, res));
     }
-    start() {
-        console.log(`Debug RPC server listening on port ${this.port}`);
-        this.server.listen(this.port);
+    start(port) {
+        this.log.debug(`Debug RPC server listening on port ${port}`);
+        this.server.listen(port);
     }
     stop() {
         this.server.close();
@@ -46,7 +46,7 @@ class I2CServer {
         request.on('end', () => {
             const body = buf !== null ? buf.toString() : null;
             let compute;
-            console.log('Handling request', parseUrl, body);
+            this.log.debug(`Handling request ${JSON.stringify(parseUrl)}; ${body}`);
             switch (pathname) {
                 case '/rpc':
                     compute = this.rpc(body);
@@ -58,6 +58,7 @@ class I2CServer {
             }
             compute
                 .then((res) => {
+                this.log.debug('Sending response ' + JSON.stringify(res));
                 response.end(JSON.stringify(res));
             })
                 .catch((err) => {
@@ -75,10 +76,10 @@ class I2CServer {
             }
             switch (json.method) {
                 case 'scan':
-                    if (json.args.address) {
+                    if (json.args && json.args.address) {
                         return yield this.bus.scan(json.args.address);
                     }
-                    else if (json.args.startAddr) {
+                    else if (json.args && json.args.startAddr) {
                         return yield this.bus.scan(json.args.startAddr, json.args.endAddr);
                     }
                     else {

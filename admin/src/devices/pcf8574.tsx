@@ -12,6 +12,8 @@ class PCF8574 extends DeviceBase<PCF8574Config> {
     constructor(props: DeviceProps<PCF8574Config>) {
         super(props);
 
+        // TODO: add support for interrupt (as was available in JS version of this adapter)
+
         let config: PCF8574Config;
         if (!props.config) {
             config = {
