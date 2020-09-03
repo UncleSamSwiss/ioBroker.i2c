@@ -107,7 +107,7 @@ class I2CClient {
                         'Content-Length': Buffer.byteLength(postData),
                     },
                 };
-                this.log.debug(`Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
+                this.log.debug(`RPC Client: Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
                 const req = http_1.request(this.address, options, (resp) => {
                     let data = '';
                     if (resp.statusCode !== 200) {
@@ -120,7 +120,7 @@ class I2CClient {
                     });
                     // The whole response has been received. Print out the result.
                     resp.on('end', () => {
-                        this.log.debug('Received ' + data);
+                        this.log.debug('RPC Client: Received ' + data);
                         resolve(JSON.parse(data));
                     });
                 }).on('error', (err) => {

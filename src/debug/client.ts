@@ -90,7 +90,7 @@ export class I2CClient implements i2c.PromisifiedBus {
                     'Content-Length': Buffer.byteLength(postData),
                 },
             };
-            this.log.debug(`Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
+            this.log.debug(`RPC Client: Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
             const req = request(this.address, options, (resp) => {
                 let data = '';
 
@@ -106,7 +106,7 @@ export class I2CClient implements i2c.PromisifiedBus {
 
                 // The whole response has been received. Print out the result.
                 resp.on('end', () => {
-                    this.log.debug('Received ' + data);
+                    this.log.debug('RPC Client: Received ' + data);
                     resolve(JSON.parse(data));
                 });
             }).on('error', (err) => {

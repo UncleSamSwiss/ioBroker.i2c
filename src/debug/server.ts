@@ -9,7 +9,7 @@ export class I2CServer {
     }
 
     start(port: number): void {
-        this.log.debug(`Debug RPC server listening on port ${port}`);
+        this.log.debug(`RPC Server: listening on port ${port}`);
         this.server.listen(port);
     }
 
@@ -43,7 +43,7 @@ export class I2CServer {
 
             let compute: Promise<any>;
 
-            this.log.debug(`Handling request ${JSON.stringify(parseUrl)}; ${body}`);
+            this.log.debug(`RPC Server: Handling request ${JSON.stringify(parseUrl)}; ${body}`);
             switch (pathname) {
                 case '/rpc':
                     compute = this.rpc(body);
@@ -56,7 +56,7 @@ export class I2CServer {
 
             compute
                 .then((res) => {
-                    this.log.debug('Sending response ' + JSON.stringify(res));
+                    this.log.debug('RPC Server: Sending response ' + JSON.stringify(res));
                     response.end(JSON.stringify(res));
                 })
                 .catch((err) => {

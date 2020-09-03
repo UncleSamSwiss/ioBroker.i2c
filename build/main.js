@@ -12,32 +12,81 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.I2cAdapter = void 0;
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require("@iobroker/adapter-core");
 const i2c = require("i2c-bus");
 const client_1 = require("./debug/client");
 const server_1 = require("./debug/server");
-class I2c extends utils.Adapter {
+class I2cAdapter extends utils.Adapter {
     constructor(options = {}) {
         super(Object.assign(Object.assign({ dirname: __dirname.indexOf('node_modules') !== -1 ? undefined : __dirname + '/../' }, options), { name: 'i2c' }));
+        this.stateChangeListeners = {};
+        this.foreignStateChangeListeners = {};
+        this.currentStateValues = {};
+        this.deviceHandlers = [];
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
-        // this.on('objectChange', this.onObjectChange.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
+    }
+    get i2cBus() {
+        return this.bus;
+    }
+    addStateChangeListener(id, listener) {
+        const key = this.namespace + '.' + id;
+        if (!this.stateChangeListeners[key]) {
+            this.stateChangeListeners[key] = [];
+        }
+        this.stateChangeListeners[key].push(listener);
+    }
+    addForeignStateChangeListener(id, listener) {
+        if (!this.foreignStateChangeListeners[id]) {
+            this.foreignStateChangeListeners[id] = [];
+        }
+        this.foreignStateChangeListeners[id].push(listener);
+    }
+    setStateAckAsync(id, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.currentStateValues[this.namespace + '.' + id] = value;
+            yield this.setStateAsync(id, value, true);
+        });
+    }
+    getStateValue(id) {
+        return this.currentStateValues[this.namespace + '.' + id];
     }
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     onReady() {
         return __awaiter(this, void 0, void 0, function* () {
+            const allStates = yield this.getStatesAsync('*');
+            for (const id in allStates) {
+                if (allStates[id] && allStates[id].ack) {
+                    this.currentStateValues[id] = allStates[id].val;
+                }
+            }
             this.log.info('Using bus number: ' + this.config.busNumber);
             this.bus = yield this.openBusAsync(this.config.busNumber);
             if (this.config.serverPort) {
                 this.server = new server_1.I2CServer(this.bus, this.log);
                 this.server.start(this.config.serverPort);
             }
+            if (!this.config.devices || this.config.devices.length === 0) {
+                // no devices configured, nothing to do in this adapter
+                return;
+            }
+            for (let i = 0; i < this.config.devices.length; i++) {
+                const deviceConfig = this.config.devices[i];
+                if (!deviceConfig.name || !deviceConfig.type) {
+                    continue;
+                }
+                const module = yield Promise.resolve().then(() => require(__dirname + '/devices/' + deviceConfig.type.toLowerCase()));
+                const handler = new module.default(deviceConfig, this);
+                this.deviceHandlers.push(handler);
+            }
+            yield Promise.all(this.deviceHandlers.map((h) => h.startAsync()));
             this.subscribeStates('*');
         });
     }
@@ -45,48 +94,51 @@ class I2c extends utils.Adapter {
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      */
     onUnload(callback) {
-        try {
-            // Here you must clear all timeouts or intervals that may still be active
-            // clearTimeout(timeout1);
-            // clearTimeout(timeout2);
-            // ...
-            // clearInterval(interval1);
-            if (this.server) {
-                this.server.stop();
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Here you must clear all timeouts or intervals that may still be active
+                // clearTimeout(timeout1);
+                // clearTimeout(timeout2);
+                // ...
+                // clearInterval(interval1);
+                if (this.server) {
+                    this.server.stop();
+                }
+                yield Promise.all(this.deviceHandlers.map((h) => h.stopAsync()));
+                yield this.bus.close();
+                callback();
             }
-            this.bus.close(); // ignore the returned promise (we can't do anything if close doesn't work)
-            callback();
-        }
-        catch (e) {
-            callback();
-        }
+            catch (e) {
+                callback();
+            }
+        });
     }
-    // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
-    // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
-    // /**
-    //  * Is called if a subscribed object changes
-    //  */
-    // private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-    //     if (obj) {
-    //         // The object was changed
-    //         this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-    //     } else {
-    //         // The object was deleted
-    //         this.log.info(`object ${id} deleted`);
-    //     }
-    // }
     /**
      * Is called if a subscribed state changes
      */
     onStateChange(id, state) {
-        if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-        }
-        else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!state) {
+                this.log.debug(`State ${id} deleted`);
+                return;
+            }
+            this.log.debug(`stateChange ${id} ${JSON.stringify(state)}`);
+            if (this.foreignStateChangeListeners[id]) {
+                const listeners = this.foreignStateChangeListeners[id];
+                yield Promise.all(listeners.map((listener) => listener(state.val)));
+                return;
+            }
+            if (state.ack) {
+                return;
+            }
+            if (!this.stateChangeListeners[id]) {
+                this.log.error('Unsupported state change: ' + id);
+                return;
+            }
+            const listeners = this.stateChangeListeners[id];
+            const oldValue = this.currentStateValues[id];
+            yield Promise.all(listeners.map((listener) => listener(oldValue, state.val)));
+        });
     }
     /**
      * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
@@ -193,12 +245,13 @@ class I2c extends utils.Adapter {
         });
     }
 }
+exports.I2cAdapter = I2cAdapter;
 if (module.parent) {
     // Export the constructor in compact mode
-    module.exports = (options) => new I2c(options);
+    module.exports = (options) => new I2cAdapter(options);
 }
 else {
     // otherwise start the instance directly
-    (() => new I2c())();
+    (() => new I2cAdapter())();
 }
 //# sourceMappingURL=main.js.map

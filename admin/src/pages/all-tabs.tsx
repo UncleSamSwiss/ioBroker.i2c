@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import { ReactNode } from 'react';
 
-import { OnSettingsChangedCallback, toHexString } from '../lib/common';
-import { I2CAdapterConfig, I2CDeviceConfig } from '../../../src/lib/shared';
+import { OnSettingsChangedCallback } from '../lib/common';
+import { I2CAdapterConfig, I2CDeviceConfig, toHexString } from '../../../src/lib/shared';
 import { General } from './general';
 import { DeviceTab } from './device-tab';
 
@@ -41,7 +41,7 @@ export class AllTabs extends React.Component<AllTabsProps, I2CAdapterConfig> {
     private get labels(): string[] {
         const all = [_('General')];
         this.state.devices.forEach((device) => {
-            all.push(toHexString(device.address));
+            all.push(toHexString(device.address).replace('x', '𝗑')); // replace the regular x with a math symbol to show it in lowercase
         });
         return all;
     }

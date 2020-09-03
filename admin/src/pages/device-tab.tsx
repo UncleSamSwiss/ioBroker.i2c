@@ -2,8 +2,7 @@ import * as React from 'react';
 
 import { ReactNode } from 'react';
 
-import { toHexString } from '../lib/common';
-import { I2CDeviceConfig } from '../../../src/lib/shared';
+import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../../../src/lib/shared';
 import { Label } from '../components/label';
 import { Dropdown } from '../components/dropdown';
 import { DeviceFactory, DeviceInfo } from '../devices/device-factory';
@@ -69,10 +68,11 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
         if (!DeviceComponent) {
             this.oldComponent = undefined;
         } else {
+            const implConfig: ImplementationConfigBase = this.state.config[this.state.config.type ?? ''];
             this.oldComponent = (
                 <DeviceComponent
                     onChange={this.onDeviceConfigChanged}
-                    config={this.state.config[this.state.config.type ?? '']}
+                    config={implConfig}
                     baseConfig={this.state.config}
                 />
             );
