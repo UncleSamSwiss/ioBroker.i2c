@@ -39,7 +39,9 @@ function hasChanges(): boolean {
     originalSettings = JSON.stringify(settings);
 
     const settingsChanged: OnSettingsChangedCallback = (newSettings) => {
-        curSettings = newSettings;
+        const settings = { ...newSettings };
+        settings.devices = newSettings.devices.filter((device) => !!device.name && !!device.type);
+        curSettings = settings;
         onChange(hasChanges());
     };
 
