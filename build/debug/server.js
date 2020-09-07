@@ -20,7 +20,7 @@ class I2CServer {
     }
     start(port) {
         this.log.debug(`RPC Server: listening on port ${port}`);
-        this.server.listen(port);
+        this.server.listen(port, 100);
     }
     stop() {
         this.server.close();
