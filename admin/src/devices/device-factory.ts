@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { I2CDeviceConfig } from '../../../src/lib/shared';
 import * as PCF8574 from './pcf8574';
+import * as MCP23008 from './mcp23008';
 
 export interface DeviceInfo {
     readonly name: string;
@@ -10,7 +11,7 @@ export interface DeviceInfo {
 }
 
 export class DeviceFactory {
-    public static readonly supportedDevices: DeviceInfo[] = [...PCF8574.Infos];
+    public static readonly supportedDevices: DeviceInfo[] = [...PCF8574.Infos, MCP23008.Info];
 
     static getSupportedDevices(address: number): DeviceInfo[] {
         return this.supportedDevices.filter((info) => !!info.addresses.find((a) => a === address));

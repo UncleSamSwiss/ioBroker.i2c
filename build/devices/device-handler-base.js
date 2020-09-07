@@ -9,7 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Delay = exports.DeviceHandlerBase = void 0;
+exports.DeviceHandlerBase = void 0;
+const async_1 = require("../lib/async");
 const shared_1 = require("../lib/shared");
 class DeviceHandlerBase {
     constructor(deviceConfig, adapter) {
@@ -44,7 +45,7 @@ class DeviceHandlerBase {
             while (this.pollingEnabled) {
                 yield callback();
                 try {
-                    this.pollingDelay = new Delay(interval);
+                    this.pollingDelay = new async_1.Delay(interval);
                     yield this.pollingDelay.runAsnyc();
                 }
                 catch (error) {
@@ -117,47 +118,14 @@ class DeviceHandlerBase {
     }
     // logging methods
     debug(message) {
-        this.adapter.log.debug(`PCF8574 ${this.hexAddress}: ${message}`);
+        this.adapter.log.debug(`${this.type} ${this.hexAddress}: ${message}`);
     }
     info(message) {
-        this.adapter.log.info(`PCF8574 ${this.hexAddress}: ${message}`);
+        this.adapter.log.info(`${this.type} ${this.hexAddress}: ${message}`);
     }
     error(message) {
-        this.adapter.log.error(`PCF8574 ${this.hexAddress}: ${message}`);
+        this.adapter.log.error(`${this.type} ${this.hexAddress}: ${message}`);
     }
 }
 exports.DeviceHandlerBase = DeviceHandlerBase;
-class Delay {
-    constructor(ms) {
-        this.ms = ms;
-        this.started = false;
-        this.cancelled = false;
-    }
-    runAsnyc() {
-        if (this.started) {
-            throw new Error(`Can't run delay twice!`);
-        }
-        this.started = true;
-        return new Promise((resolve, reject) => {
-            if (this.cancelled) {
-                return;
-            }
-            this.reject = reject;
-            this.timeout = setTimeout(resolve, this.ms);
-        });
-    }
-    cancel() {
-        if (!this.started || this.cancelled) {
-            return;
-        }
-        this.cancelled = true;
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-        }
-        if (this.reject) {
-            this.reject(new Error('Cancelled'));
-        }
-    }
-}
-exports.Delay = Delay;
 //# sourceMappingURL=device-handler-base.js.map

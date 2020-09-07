@@ -114,14 +114,14 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
 
     // logging methods
     protected debug(message: string): void {
-        this.adapter.log.debug(`PCF8574 ${this.hexAddress}: ${message}`);
+        this.adapter.log.debug(`${this.type} ${this.hexAddress}: ${message}`);
     }
 
     protected info(message: string): void {
-        this.adapter.log.info(`PCF8574 ${this.hexAddress}: ${message}`);
+        this.adapter.log.info(`${this.type} ${this.hexAddress}: ${message}`);
     }
 
     protected error(message: string): void {
-        this.adapter.log.error(`PCF8574 ${this.hexAddress}: ${message}`);
+        this.adapter.log.error(`${this.type} ${this.hexAddress}: ${message}`);
     }
 }

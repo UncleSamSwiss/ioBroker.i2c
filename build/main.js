@@ -44,6 +44,7 @@ class I2cAdapter extends utils.Adapter {
     addForeignStateChangeListener(id, listener) {
         if (!this.foreignStateChangeListeners[id]) {
             this.foreignStateChangeListeners[id] = [];
+            this.subscribeForeignStates(id);
         }
         this.foreignStateChangeListeners[id].push(listener);
     }

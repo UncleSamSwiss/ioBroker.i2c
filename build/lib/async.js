@@ -1,13 +1,13 @@
-export class Delay {
-    private started = false;
-    private cancelled = false;
-    private timeout?: any;
-
-    private reject?: (reason?: any) => void;
-
-    constructor(private ms: number) {}
-
-    public runAsnyc(): Promise<void> {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Delay = void 0;
+class Delay {
+    constructor(ms) {
+        this.ms = ms;
+        this.started = false;
+        this.cancelled = false;
+    }
+    runAsnyc() {
         if (this.started) {
             throw new Error(`Can't run delay twice!`);
         }
@@ -20,12 +20,10 @@ export class Delay {
             this.timeout = setTimeout(resolve, this.ms);
         });
     }
-
-    public cancel(): void {
+    cancel() {
         if (!this.started || this.cancelled) {
             return;
         }
-
         this.cancelled = true;
         if (this.timeout) {
             clearTimeout(this.timeout);
@@ -35,3 +33,5 @@ export class Delay {
         }
     }
 }
+exports.Delay = Delay;
+//# sourceMappingURL=async.js.map

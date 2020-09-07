@@ -11,9 +11,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const shared_1 = require("../lib/shared");
 const device_handler_base_1 = require("./device-handler-base");
-class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
+// register addresses (always for register "A" in IOCON.BANK = 0)
+var Register;
+(function (Register) {
+    Register[Register["IODIR"] = 0] = "IODIR";
+    Register[Register["IPOL"] = 1] = "IPOL";
+    Register[Register["GPINTEN"] = 2] = "GPINTEN";
+    Register[Register["DEFVAL"] = 3] = "DEFVAL";
+    Register[Register["INTCON"] = 4] = "INTCON";
+    Register[Register["IOCON"] = 5] = "IOCON";
+    Register[Register["GPPU"] = 6] = "GPPU";
+    Register[Register["INTF"] = 7] = "INTF";
+    Register[Register["INTCAP"] = 8] = "INTCAP";
+    Register[Register["GPIO"] = 9] = "GPIO";
+    Register[Register["OLAT"] = 10] = "OLAT";
+})(Register || (Register = {}));
+class MCP23008 extends device_handler_base_1.DeviceHandlerBase {
     constructor() {
         super(...arguments);
+        this.initialized = false;
+        this.hasInput = false;
+        this.directions = 0;
+        this.polarities = 0;
+        this.pullUps = 0;
         this.readValue = 0;
         this.writeValue = 0;
     }
@@ -28,13 +48,18 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
                 },
                 native: this.config,
             });
-            let hasInput = false;
             for (let i = 0; i < 8; i++) {
                 const pinConfig = this.config.pins[i] || { dir: 'out' };
-                const isInput = pinConfig.dir == 'in';
+                const isInput = pinConfig.dir !== 'out';
                 if (isInput) {
-                    hasInput = true;
-                    this.writeValue |= 1 << i; // input pins must be set to high level
+                    this.directions |= 1 << i;
+                    if (pinConfig.dir == 'in-pu') {
+                        this.pullUps |= 1 << i;
+                    }
+                    if (pinConfig.inv) {
+                        this.polarities |= 1 << i;
+                    }
+                    this.hasInput = true;
                 }
                 else {
                     this.addOutputListener(i);
@@ -62,13 +87,11 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
                     native: pinConfig,
                 });
             }
-            this.debug('Setting initial value to ' + shared_1.toHexString(this.writeValue));
-            yield this.sendCurrentValueAsync();
-            yield this.readCurrentValueAsync(true);
-            if (hasInput && this.config.pollingInterval > 0) {
+            yield this.checkInitializedAsync();
+            if (this.hasInput && this.config.pollingInterval > 0) {
                 this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(false); }), this.config.pollingInterval, 50);
             }
-            if (hasInput && this.config.interrupt) {
+            if (this.hasInput && this.config.interrupt) {
                 try {
                     // check if interrupt object exists
                     yield this.adapter.getObjectAsync(this.config.interrupt);
@@ -91,31 +114,66 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             this.stopPolling();
         });
     }
+    checkInitializedAsync() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.initialized) {
+                // checking if the directions are still the same, if not, the chip might have reset itself
+                const readDirections = yield this.readByte(Register.IODIR);
+                if (readDirections === this.directions) {
+                    return true;
+                }
+                this.error('GPIO directions unexpectedly changed, reconfiguring the device');
+                this.initialized = false;
+            }
+            try {
+                this.debug('Setting initial output value to ' + shared_1.toHexString(this.writeValue));
+                yield this.writeByte(Register.OLAT, this.writeValue);
+                this.debug('Setting polarities to ' + shared_1.toHexString(this.polarities));
+                yield this.writeByte(Register.IPOL, this.polarities);
+                this.debug('Setting pull-ups to ' + shared_1.toHexString(this.pullUps));
+                yield this.writeByte(Register.GPPU, this.pullUps);
+                this.debug('Setting directions to ' + shared_1.toHexString(this.directions));
+                yield this.writeByte(Register.IODIR, this.directions);
+                this.initialized = true;
+            }
+            catch (e) {
+                this.error("Couldn't initialize: " + e);
+                return false;
+            }
+            yield this.readCurrentValueAsync(true);
+            return this.initialized;
+        });
+    }
     sendCurrentValueAsync() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!(yield this.checkInitializedAsync())) {
+                return;
+            }
             this.debug('Sending ' + shared_1.toHexString(this.writeValue));
             try {
-                yield this.sendByte(this.writeValue);
+                yield this.writeByte(Register.OLAT, this.writeValue);
             }
             catch (e) {
                 this.error("Couldn't send current value: " + e);
+                this.initialized = false;
             }
         });
     }
     readCurrentValueAsync(force) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!this.hasInput) {
+                return;
+            }
+            if (!(yield this.checkInitializedAsync())) {
+                return;
+            }
             const oldValue = this.readValue;
             try {
-                let retries = 3;
-                do {
-                    // writing the current value before reading to make sure the "direction" of all pins is set correctly
-                    yield this.sendByte(this.writeValue);
-                    this.readValue = yield this.receiveByte();
-                    // reading all 1's (0xFF) could be because of a reset, let's try 3x
-                } while (!force && this.readValue == 0xff && --retries > 0);
+                this.readValue = yield this.readByte(Register.GPIO);
             }
             catch (e) {
                 this.error("Couldn't read current value: " + e);
+                this.initialized = false;
                 return;
             }
             if (oldValue == this.readValue && !force) {
@@ -124,11 +182,8 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             this.debug('Read ' + shared_1.toHexString(this.readValue));
             for (let i = 0; i < 8; i++) {
                 const mask = 1 << i;
-                if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir == 'in') {
-                    let value = (this.readValue & mask) > 0;
-                    if (this.config.pins[i].inv) {
-                        value = !value;
-                    }
+                if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir != 'out') {
+                    const value = (this.readValue & mask) > 0;
                     yield this.setStateAckAsync(i, value);
                 }
             }
@@ -148,10 +203,9 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             else {
                 this.writeValue |= mask;
             }
-            if (this.writeValue == oldValue) {
-                return;
+            if (this.writeValue != oldValue) {
+                yield this.sendCurrentValueAsync();
             }
-            yield this.sendCurrentValueAsync();
             yield this.setStateAckAsync(pin, value);
         });
     }
@@ -164,5 +218,5 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
         return this.adapter.getStateValue(this.hexAddress + '.' + pin);
     }
 }
-exports.default = PCF8574;
-//# sourceMappingURL=pcf8574.js.map
+exports.default = MCP23008;
+//# sourceMappingURL=mcp23008.js.map
