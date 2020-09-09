@@ -2,7 +2,6 @@ version: '3'
 
 services:
     iobroker:
-        restart: always
         build: ./iobroker
         container_name: iobroker-i2c
         hostname: iobroker-i2c
@@ -18,7 +17,6 @@ services:
             - TZ=Europe/Zurich
             - SETGID=1000
     parcel:
-        restart: always
         container_name: parcel-i2c
         build: ./parcel
         expose:
@@ -37,7 +35,6 @@ services:
         links:
             - iobroker
             - parcel
-        restart: always
         container_name: nginx-i2c
         volumes:
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf
