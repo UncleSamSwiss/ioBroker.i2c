@@ -20,8 +20,12 @@ export interface I2CDeviceConfig {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ImplementationConfigBase {}
 
-export function toHexString(value: number): string {
+export function toHexString(value: number, length?: number): string {
+    length = length || 2;
     // Convert a number to a hex string "0xXX"
-    const str = value.toString(16);
-    return '0x' + (str.length == 1 ? '0' + str : str).toUpperCase();
+    let str = value.toString(16).toUpperCase();
+    while (str.length < length) {
+        str = '0' + str;
+    }
+    return '0x' + str;
 }

@@ -1,10 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toHexString = void 0;
-function toHexString(value) {
+function toHexString(value, length) {
+    length = length || 2;
     // Convert a number to a hex string "0xXX"
-    const str = value.toString(16);
-    return '0x' + (str.length == 1 ? '0' + str : str).toUpperCase();
+    let str = value.toString(16).toUpperCase();
+    while (str.length < length) {
+        str = '0' + str;
+    }
+    return '0x' + str;
 }
 exports.toHexString = toHexString;
 //# sourceMappingURL=shared.js.map
