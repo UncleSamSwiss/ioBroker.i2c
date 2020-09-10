@@ -1,7 +1,7 @@
 import * as i2c from 'i2c-bus';
 import { Delay } from '../lib/async';
 import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../lib/shared';
-import { I2cAdapter } from '../main';
+import { I2cAdapter, StateValue } from '../main';
 
 export type PollingCallback = () => Promise<void>;
 
@@ -102,6 +102,11 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
 
     protected async writeI2cBlock(command: number, length: number, buffer: Buffer): Promise<i2c.BytesWritten> {
         return await this.adapter.i2cBus.writeI2cBlock(this.deviceConfig.address, command, length, buffer);
+    }
+
+    // adapter methods
+    protected async setStateAckAsync<T extends StateValue>(state: string | number, value: T): Promise<void> {
+        await this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
     }
 
     // logging methods

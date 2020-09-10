@@ -75,7 +75,7 @@ export abstract class MCP230xxBase extends LittleEndianDeviceHandlerBase<MCP230x
                 let value = this.getStateValue(i);
                 if (value === undefined) {
                     value = pinConfig.inv === true;
-                    await this.setStateAckAsync(i, value);
+                    await this.setStateAckAsync(this.indexToName(i), value);
                 }
                 if (pinConfig.inv) {
                     value = !value;
@@ -197,7 +197,7 @@ export abstract class MCP230xxBase extends LittleEndianDeviceHandlerBase<MCP230x
             const mask = 1 << i;
             if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir != 'out') {
                 const value = (this.readValue & mask) > 0;
-                await this.setStateAckAsync(i, value);
+                await this.setStateAckAsync(this.indexToName(i), value);
             }
         }
     }
@@ -222,11 +222,7 @@ export abstract class MCP230xxBase extends LittleEndianDeviceHandlerBase<MCP230x
             await this.sendCurrentValueAsync();
         }
 
-        await this.setStateAckAsync(pin, value);
-    }
-
-    private async setStateAckAsync(pin: number, value: boolean): Promise<void> {
-        await this.adapter.setStateAckAsync(`${this.hexAddress}.${this.indexToName(pin)}`, value);
+        await this.setStateAckAsync(this.indexToName(pin), value);
     }
 
     private getStateValue(pin: number): boolean | undefined {

@@ -106,6 +106,12 @@ class DeviceHandlerBase {
             return yield this.adapter.i2cBus.writeI2cBlock(this.deviceConfig.address, command, length, buffer);
         });
     }
+    // adapter methods
+    setStateAckAsync(state, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
+        });
+    }
     // logging methods
     debug(message) {
         this.adapter.log.debug(`${this.type} ${this.hexAddress}: ${message}`);

@@ -205,11 +205,6 @@ class PCA9685 extends device_handler_base_1.DeviceHandlerBase {
             return (yield this.readByte(Register.MODE1)) != Mode.ALLCALL;
         });
     }
-    setStateAckAsync(channel, value) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.adapter.setStateAckAsync(this.hexAddress + '.' + channel, value);
-        });
-    }
     getStateValue(channel) {
         return this.adapter.getStateValue(this.hexAddress + '.' + channel);
     }

@@ -1,4 +1,31 @@
+/*
+ * NOTICE:
+ * A lot of this code is based on https://github.com/skylarstein/BH1750-sensor
+ * We need this to use the same I2C instance as for all other devices; thus the rewrite.
+MIT License
+
+Copyright (c) 2016 Skylar Stein
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
 import { ImplementationConfigBase } from '../lib/shared';
+import { round } from '../lib/utils';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface BH1750Config extends ImplementationConfigBase {
@@ -82,8 +109,7 @@ export default class BH1750 extends DeviceHandlerBase<BH1750Config> {
                     }),
             );
 
-            const rounded = Math.round(lux * 10) / 10;
-            await this.adapter.setStateAckAsync(this.hexAddress + '.' + 'lux', rounded);
+            await this.setStateAckAsync('lux', round(lux));
         } catch (e) {
             this.error("Couldn't read current values: " + e);
         }

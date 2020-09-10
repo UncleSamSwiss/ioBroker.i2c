@@ -212,10 +212,6 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
         return (await this.readByte(Register.MODE1)) != Mode.ALLCALL;
     }
 
-    private async setStateAckAsync(channel: number, value: number): Promise<void> {
-        await this.adapter.setStateAckAsync(this.hexAddress + '.' + channel, value);
-    }
-
     private getStateValue(channel: number): number | undefined {
         return this.adapter.getStateValue<number>(this.hexAddress + '.' + channel);
     }

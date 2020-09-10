@@ -158,10 +158,6 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
         await this.setStateAckAsync(pin, value);
     }
 
-    private async setStateAckAsync(pin: number, value: boolean): Promise<void> {
-        await this.adapter.setStateAckAsync(this.hexAddress + '.' + pin, value);
-    }
-
     private getStateValue(pin: number): boolean | undefined {
         return this.adapter.getStateValue<boolean>(this.hexAddress + '.' + pin);
     }

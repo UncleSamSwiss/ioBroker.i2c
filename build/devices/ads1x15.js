@@ -303,11 +303,6 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
             return value;
         });
     }
-    setStateAckAsync(channel, value) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.adapter.setStateAckAsync(this.hexAddress + '.' + channel, value);
-        });
-    }
 }
 exports.default = ADS1x15;
 //# sourceMappingURL=ads1x15.js.map

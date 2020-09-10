@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../lib/utils");
 const device_handler_base_1 = require("./device-handler-base");
 class BH1750 extends device_handler_base_1.DeviceHandlerBase {
     startAsync() {
@@ -72,8 +73,7 @@ class BH1750 extends device_handler_base_1.DeviceHandlerBase {
                     JSON.stringify({
                         lux: lux,
                     }));
-                const rounded = Math.round(lux * 10) / 10;
-                yield this.adapter.setStateAckAsync(this.hexAddress + '.' + 'lux', rounded);
+                yield this.setStateAckAsync('lux', utils_1.round(lux));
             }
             catch (e) {
                 this.error("Couldn't read current values: " + e);

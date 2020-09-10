@@ -155,11 +155,6 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             yield this.setStateAckAsync(pin, value);
         });
     }
-    setStateAckAsync(pin, value) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.adapter.setStateAckAsync(this.hexAddress + '.' + pin, value);
-        });
-    }
     getStateValue(pin) {
         return this.adapter.getStateValue(this.hexAddress + '.' + pin);
     }

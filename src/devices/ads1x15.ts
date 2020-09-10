@@ -317,8 +317,4 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
         this.debug('Read ' + toHexString(register) + ' = ' + toHexString(value, 4));
         return value;
     }
-
-    private async setStateAckAsync(channel: number, value: number): Promise<void> {
-        await this.adapter.setStateAckAsync(this.hexAddress + '.' + channel, value);
-    }
 }
