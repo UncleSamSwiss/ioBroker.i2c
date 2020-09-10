@@ -82,6 +82,7 @@
         ],
         "license": "Apache-2.0",
         "platform": "Javascript/Node.js",
+        "os": ["linux"],
         "main": "build/main.js",
         "icon": "i2c.png",
         "enabled": true,
