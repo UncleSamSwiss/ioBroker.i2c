@@ -1,9 +1,7 @@
 import * as i2c from 'i2c-bus';
-import { Delay } from '../lib/async';
+import { Polling, PollingCallback } from '../lib/async';
 import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../lib/shared';
 import { I2cAdapter, StateValue } from '../main';
-
-export type PollingCallback = () => Promise<void>;
 
 export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
     protected readonly type: string;
@@ -11,8 +9,7 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
     protected readonly config: T;
     protected readonly hexAddress: string;
 
-    private pollingEnabled = false;
-    private pollingDelay?: Delay;
+    private polling?: Polling;
 
     constructor(private readonly deviceConfig: I2CDeviceConfig, protected readonly adapter: I2cAdapter) {
         if (!deviceConfig.type || !deviceConfig.name) {
@@ -33,34 +30,12 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
     // polling related methods
     protected startPolling(callback: PollingCallback, interval: number, minInterval?: number): void {
         this.stopPolling();
-        this.runPolling(callback, Math.max(interval, minInterval || 0)).catch((error) =>
-            this.error('Polling error: ' + error),
-        );
+        this.polling = new Polling(callback);
+        this.polling.runAsync(interval, minInterval).catch((error) => this.error('Polling error: ' + error));
     }
 
     protected stopPolling(): void {
-        this.pollingEnabled = false;
-        if (this.pollingDelay) {
-            this.pollingDelay.cancel();
-        }
-    }
-
-    private async runPolling(callback: PollingCallback, interval: number): Promise<void> {
-        if (this.pollingEnabled) {
-            return;
-        }
-
-        this.pollingEnabled = true;
-        while (this.pollingEnabled) {
-            await callback();
-            try {
-                this.pollingDelay = new Delay(interval);
-                await this.pollingDelay.runAsnyc();
-            } catch (error) {
-                // delay got cancelled, let's break out of the loop
-                break;
-            }
-        }
+        this.polling?.stop();
     }
 
     // I2C related methods
@@ -107,6 +82,10 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
     // adapter methods
     protected async setStateAckAsync<T extends StateValue>(state: string | number, value: T): Promise<void> {
         await this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
+    }
+
+    protected getStateValue<T extends StateValue>(state: string | number): T | undefined {
+        return this.adapter.getStateValue<T>(this.hexAddress + '.' + state);
     }
 
     // logging methods

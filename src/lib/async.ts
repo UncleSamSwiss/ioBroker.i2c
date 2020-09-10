@@ -35,3 +35,36 @@ export class Delay {
         }
     }
 }
+
+export type PollingCallback = () => Promise<void>;
+
+export class Polling {
+    private enabled = false;
+    private delay?: Delay;
+
+    constructor(private callback: PollingCallback) {}
+
+    async runAsync(interval: number, minInterval?: number): Promise<void> {
+        if (this.enabled) {
+            return;
+        }
+
+        this.enabled = true;
+        interval = Math.max(interval, minInterval || 1);
+        while (this.enabled) {
+            await this.callback();
+            try {
+                this.delay = new Delay(interval);
+                await this.delay.runAsnyc();
+            } catch (error) {
+                // delay got cancelled, let's break out of the loop
+                break;
+            }
+        }
+    }
+
+    stop(): void {
+        this.enabled = false;
+        this.delay?.cancel();
+    }
+}

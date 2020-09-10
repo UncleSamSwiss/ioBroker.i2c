@@ -65,7 +65,7 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
                 }
                 else {
                     this.addOutputListener(i);
-                    let value = this.getStateValue(i);
+                    let value = this.getStateValue(this.indexToName(i));
                     if (value === undefined) {
                         value = pinConfig.inv === true;
                         yield this.setStateAckAsync(this.indexToName(i), value);
@@ -210,9 +210,6 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
             }
             yield this.setStateAckAsync(this.indexToName(pin), value);
         });
-    }
-    getStateValue(pin) {
-        return this.adapter.getStateValue(`${this.hexAddress}.${this.indexToName(pin)}`);
     }
 }
 exports.MCP230xxBase = MCP230xxBase;

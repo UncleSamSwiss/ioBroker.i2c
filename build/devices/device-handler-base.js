@@ -16,7 +16,6 @@ class DeviceHandlerBase {
     constructor(deviceConfig, adapter) {
         this.deviceConfig = deviceConfig;
         this.adapter = adapter;
-        this.pollingEnabled = false;
         if (!deviceConfig.type || !deviceConfig.name) {
             throw new Error('Type and name of device must be specified');
         }
@@ -28,32 +27,12 @@ class DeviceHandlerBase {
     // polling related methods
     startPolling(callback, interval, minInterval) {
         this.stopPolling();
-        this.runPolling(callback, Math.max(interval, minInterval || 0)).catch((error) => this.error('Polling error: ' + error));
+        this.polling = new async_1.Polling(callback);
+        this.polling.runAsync(interval, minInterval).catch((error) => this.error('Polling error: ' + error));
     }
     stopPolling() {
-        this.pollingEnabled = false;
-        if (this.pollingDelay) {
-            this.pollingDelay.cancel();
-        }
-    }
-    runPolling(callback, interval) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.pollingEnabled) {
-                return;
-            }
-            this.pollingEnabled = true;
-            while (this.pollingEnabled) {
-                yield callback();
-                try {
-                    this.pollingDelay = new async_1.Delay(interval);
-                    yield this.pollingDelay.runAsnyc();
-                }
-                catch (error) {
-                    // delay got cancelled, let's break out of the loop
-                    break;
-                }
-            }
-        });
+        var _a;
+        (_a = this.polling) === null || _a === void 0 ? void 0 : _a.stop();
     }
     // I2C related methods
     deviceId() {
@@ -111,6 +90,9 @@ class DeviceHandlerBase {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
         });
+    }
+    getStateValue(state) {
+        return this.adapter.getStateValue(this.hexAddress + '.' + state);
     }
     // logging methods
     debug(message) {

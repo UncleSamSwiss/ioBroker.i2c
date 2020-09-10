@@ -155,9 +155,6 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             yield this.setStateAckAsync(pin, value);
         });
     }
-    getStateValue(pin) {
-        return this.adapter.getStateValue(this.hexAddress + '.' + pin);
-    }
 }
 exports.default = PCF8574;
 //# sourceMappingURL=pcf8574.js.map

@@ -212,10 +212,6 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
         return (await this.readByte(Register.MODE1)) != Mode.ALLCALL;
     }
 
-    private getStateValue(channel: number): number | undefined {
-        return this.adapter.getStateValue<number>(this.hexAddress + '.' + channel);
-    }
-
     private addOutputListener(channel: number): void {
         this.adapter.addStateChangeListener<number>(
             this.hexAddress + '.' + channel,
