@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MCP230xxBase = exports.Register = void 0;
 const shared_1 = require("../lib/shared");
-const device_handler_base_1 = require("./device-handler-base");
+const little_endian_device_handler_base_1 = require("./little-endian-device-handler-base");
 // register addresses (for MCP23008, for MCP23017 register "A" in IOCON.BANK = 0 you must multiply by 2)
 var Register;
 (function (Register) {
@@ -27,7 +27,7 @@ var Register;
     Register[Register["GPIO"] = 9] = "GPIO";
     Register[Register["OLAT"] = 10] = "OLAT";
 })(Register = exports.Register || (exports.Register = {}));
-class MCP230xxBase extends device_handler_base_1.DeviceHandlerBase {
+class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDeviceHandlerBase {
     constructor(pinCount, deviceConfig, adapter) {
         super(deviceConfig, adapter);
         this.pinCount = pinCount;

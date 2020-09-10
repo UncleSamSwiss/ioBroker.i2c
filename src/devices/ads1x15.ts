@@ -3,7 +3,7 @@
 
 import { Delay } from '../lib/async';
 import { ImplementationConfigBase, toHexString } from '../lib/shared';
-import { DeviceHandlerBase } from './device-handler-base';
+import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
 
 export interface ADS1x15Config extends ImplementationConfigBase {
     pollingInterval: number;
@@ -153,7 +153,7 @@ const pgaADS1x15: Record<number, ADS1x15_REG_CONFIG_PGA> = {
     256: ADS1x15_REG_CONFIG_PGA.VAL_0_256V,
 };
 
-export default class ADS1x15 extends DeviceHandlerBase<ADS1x15Config> {
+export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
     private pga = 6144; // set this to a sane default...
     private busy = false;
     private readAgain = false;
@@ -307,19 +307,13 @@ export default class ADS1x15 extends DeviceHandlerBase<ADS1x15Config> {
         await this.setStateAckAsync(index, value);
     }
 
-    private swap(value: number): number {
-        return ((value >> 8) & 0xff) | ((value << 8) & 0xff00);
-    }
-
     private async writeRegister(register: ADS1x15_REG_POINTER, value: number): Promise<void> {
-        value = this.swap(value);
         this.debug('Writing ' + toHexString(register) + ' = ' + toHexString(value, 4));
         await this.writeWord(register, value);
     }
 
     private async readRegister(register: ADS1x15_REG_POINTER): Promise<number> {
-        let value = await this.readWord(register);
-        value = this.swap(value);
+        const value = await this.readWord(register);
         this.debug('Read ' + toHexString(register) + ' = ' + toHexString(value, 4));
         return value;
     }

@@ -76,11 +76,6 @@ class DeviceHandlerBase {
             return yield this.adapter.i2cBus.readByte(this.deviceConfig.address, command);
         });
     }
-    readWord(command) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.readWord(this.deviceConfig.address, command);
-        });
-    }
     readI2cBlock(command, length, buffer) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.adapter.i2cBus.readI2cBlock(this.deviceConfig.address, command, length, buffer);
@@ -99,11 +94,6 @@ class DeviceHandlerBase {
     writeByte(command, byte) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.adapter.i2cBus.writeByte(this.deviceConfig.address, command, byte);
-        });
-    }
-    writeWord(command, word) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.writeWord(this.deviceConfig.address, command, word);
         });
     }
     writeQuick(command, bit) {

@@ -80,10 +80,6 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
         return await this.adapter.i2cBus.readByte(this.deviceConfig.address, command);
     }
 
-    protected async readWord(command: number): Promise<number> {
-        return await this.adapter.i2cBus.readWord(this.deviceConfig.address, command);
-    }
-
     protected async readI2cBlock(command: number, length: number, buffer: Buffer): Promise<i2c.BytesRead> {
         return await this.adapter.i2cBus.readI2cBlock(this.deviceConfig.address, command, length, buffer);
     }
@@ -98,10 +94,6 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
 
     protected async writeByte(command: number, byte: number): Promise<void> {
         return await this.adapter.i2cBus.writeByte(this.deviceConfig.address, command, byte);
-    }
-
-    protected async writeWord(command: number, word: number): Promise<void> {
-        return await this.adapter.i2cBus.writeWord(this.deviceConfig.address, command, word);
     }
 
     protected async writeQuick(command: number, bit: number): Promise<void> {

@@ -13,7 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const async_1 = require("../lib/async");
 const shared_1 = require("../lib/shared");
-const device_handler_base_1 = require("./device-handler-base");
+const big_endian_device_handler_base_1 = require("./big-endian-device-handler-base");
 // chip
 var IC;
 (function (IC) {
@@ -139,7 +139,7 @@ const pgaADS1x15 = {
     512: ADS1x15_REG_CONFIG_PGA.VAL_0_512V,
     256: ADS1x15_REG_CONFIG_PGA.VAL_0_256V,
 };
-class ADS1x15 extends device_handler_base_1.DeviceHandlerBase {
+class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase {
     constructor() {
         super(...arguments);
         this.pga = 6144; // set this to a sane default...
@@ -290,20 +290,15 @@ class ADS1x15 extends device_handler_base_1.DeviceHandlerBase {
             yield this.setStateAckAsync(index, value);
         });
     }
-    swap(value) {
-        return ((value >> 8) & 0xff) | ((value << 8) & 0xff00);
-    }
     writeRegister(register, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            value = this.swap(value);
             this.debug('Writing ' + shared_1.toHexString(register) + ' = ' + shared_1.toHexString(value, 4));
             yield this.writeWord(register, value);
         });
     }
     readRegister(register) {
         return __awaiter(this, void 0, void 0, function* () {
-            let value = yield this.readWord(register);
-            value = this.swap(value);
+            const value = yield this.readWord(register);
             this.debug('Read ' + shared_1.toHexString(register) + ' = ' + shared_1.toHexString(value, 4));
             return value;
         });

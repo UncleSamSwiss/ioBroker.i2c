@@ -1,6 +1,6 @@
 import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../lib/shared';
 import { I2cAdapter } from '../main';
-import { DeviceHandlerBase } from './device-handler-base';
+import { LittleEndianDeviceHandlerBase } from './little-endian-device-handler-base';
 
 export interface MCP230xxConfig extends ImplementationConfigBase {
     pollingInterval: number;
@@ -28,7 +28,7 @@ export enum Register {
     OLAT = 0x0a,
 }
 
-export abstract class MCP230xxBase extends DeviceHandlerBase<MCP230xxConfig> {
+export abstract class MCP230xxBase extends LittleEndianDeviceHandlerBase<MCP230xxConfig> {
     private initialized = false;
     private hasInput = false;
     private directions = 0;
