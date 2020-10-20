@@ -1,93 +1,39 @@
 import * as React from 'react';
-import { isObject, isArray } from 'alcalzone-shared/typeguards';
-import { composeObject } from 'alcalzone-shared/objects';
-import { boundMethod } from 'autobind-decorator';
-import { ReactNode } from 'react';
+import { FormControl, FormHelperText, Input, MenuItem, Select } from '@material-ui/core';
+import I18n from '@iobroker/adapter-react/i18n';
 
-const M_Select = M.FormSelect || ((M as any).Select as typeof M.FormSelect);
-
-export interface DropdownProps {
-    id?: string;
-    options: { [key: string]: string } | string[];
-    selectedOption?: string;
-    selectedChanged: (selected: string) => void;
+export interface DropdownOption {
+    value: string;
+    title: string;
 }
 
-interface DropdownState {
-    selectedOption?: string;
+interface DropdownProps {
+    title?: string;
+    attr: string;
+    options: DropdownOption[];
+    value?: string;
+    onChange: (value: string) => void;
+    style?: any;
 }
 
-export class Dropdown extends React.Component<DropdownProps, DropdownState> {
-    private static defaultProps = {
-        selectedOption: undefined,
-    };
-
-    constructor(props: DropdownProps) {
-        super(props);
-
-        this.state = {
-            selectedOption: props.selectedOption,
-        };
-    }
-
-    private dropdown: HTMLSelectElement | null | undefined;
-    private mcssSelect: M_Select | null | undefined;
-
-    public componentDidMount(): void {
-        if (this.dropdown != null) {
-            //$(this.dropdown).on('change', this.readStateFromUI);
-
-            this.mcssSelect = M_Select.getInstance(this.dropdown) || new M_Select(this.dropdown);
-        }
-    }
-
-    public componentDidUpdate(prevProps: DropdownProps, _prevState: any): void {
-        if (!this.dropdown) return;
-        if (prevProps.options !== this.props.options) {
-            this.mcssSelect = new M_Select(this.dropdown);
-        }
-        if (prevProps.selectedOption !== this.props.selectedOption) {
-            this.setState((_, props) => ({
-                selectedOption: props.selectedOption,
-            }));
-        }
-    }
-
-    public componentWillUnmount(): void {
-        if (this.dropdown != null) {
-            //$(this.dropdown).off('change', this.readStateFromUI);
-        }
-    }
-
-    @boundMethod
-    private readStateFromUI(event: React.FormEvent<HTMLSelectElement>): void {
-        if (!this.mcssSelect) return;
-        // update the adapter settings
-        this.setState({
-            selectedOption: (event.target as any).value,
-        });
-        this.props.selectedChanged((event.target as any).value);
-    }
-
-    public render(): ReactNode {
-        const options = isArray(this.props.options)
-            ? composeObject(this.props.options.map((o) => [o, o]))
-            : isObject(this.props.options)
-            ? this.props.options
-            : {};
+export default class Dropdown extends React.Component<DropdownProps> {
+    render(): React.ReactNode {
+        const { title, attr, options, value } = this.props;
         return (
-            <select
-                id={this.props.id}
-                ref={(me) => (this.dropdown = me)}
-                value={this.state.selectedOption ?? ''}
-                onChange={this.readStateFromUI}
-            >
-                {Object.keys(options).map((k) => (
-                    <option key={k} value={k}>
-                        {options[k]}
-                    </option>
-                ))}
-            </select>
+            <FormControl style={{ paddingTop: 10, ...this.props.style }}>
+                {title && <FormHelperText>{I18n.t(title)}</FormHelperText>}
+                <Select
+                    value={value || '_'}
+                    onChange={(e) => this.props.onChange(e.target.value === '_' ? '' : (e.target.value as string))}
+                    input={<Input name={attr} id={attr + '-helper'} />}
+                >
+                    {options.map((item) => (
+                        <MenuItem key={'key-' + item.value} value={item.value || '_'}>
+                            {I18n.t(item.title)}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
         );
     }
 }

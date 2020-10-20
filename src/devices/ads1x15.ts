@@ -1,8 +1,9 @@
 // this class is based on https://github.com/alphacharlie/node-ads1x15/blob/master/index.js
 // probably MIT license (not explicitely mentioned, but it is based on the Adafruit Python code which is MIT)
 
+import { ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
-import { ImplementationConfigBase, toHexString } from '../lib/shared';
+import { toHexString } from '../lib/shared';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
 
 export interface ADS1x15Config extends ImplementationConfigBase {

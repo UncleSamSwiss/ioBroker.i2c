@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { I2CDeviceConfig } from '../../../src/lib/shared';
-import * as PCF8574 from './pcf8574';
+import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import * as MCP23008 from './mcp23008';
+import * as PCF8574 from './pcf8574';
 
 export interface DeviceInfo {
     readonly name: string;

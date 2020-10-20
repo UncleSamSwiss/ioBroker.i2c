@@ -1,12 +1,11 @@
 import * as React from 'react';
-
-import { ReactNode } from 'react';
-
-import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../../../src/lib/shared';
-import { Label } from '../components/label';
-import { Dropdown } from '../components/dropdown';
-import { DeviceFactory, DeviceInfo } from '../devices/device-factory';
 import { boundMethod } from 'autobind-decorator';
+import { Grid, TextField } from '@material-ui/core';
+import I18n from '@iobroker/adapter-react/i18n';
+import { I2CDeviceConfig, ImplementationConfigBase } from '../../../src/lib/adapter-config';
+import { DeviceFactory, DeviceInfo } from '../devices/device-factory';
+import Dropdown, { DropdownOption } from '../components/dropdown';
+import { toHexString } from '../../../src/lib/shared';
 
 type OnConfigChangedCallback = (newConfig: I2CDeviceConfig) => void;
 
@@ -21,7 +20,7 @@ interface DeviceTabState {
 
 export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
     private oldConfig?: I2CDeviceConfig;
-    private oldComponent?: ReactNode;
+    private oldComponent?: React.ReactNode;
 
     constructor(props: DeviceTabProps) {
         super(props);
@@ -34,13 +33,11 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
         return this.props.config.address;
     }
 
-    private get deviceOptions(): Record<string, string> {
-        const options = {
-            '': _('Unused'),
-        };
-        const supportedDevices = DeviceFactory.getSupportedDevices(this.state.config.address);
+    private get deviceOptions(): DropdownOption[] {
+        const options = [{ title: I18n.t('Unused'), value: '' }];
+        const supportedDevices = DeviceFactory.getSupportedDevices(this.address);
         supportedDevices.forEach((device) => {
-            options[JSON.stringify(device)] = device.name;
+            options.push({ title: device.name, value: JSON.stringify(device) });
         });
         return options;
     }
@@ -53,7 +50,7 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
         return device ? JSON.stringify(device) : undefined;
     }
 
-    private get component(): ReactNode {
+    private renderDeviceComponent(): React.ReactNode {
         if (
             this.oldConfig &&
             this.oldConfig.name === this.state.config.name &&
@@ -102,31 +99,31 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
         this.setState({ config: baseConfig }, () => this.props.onChange(this.state.config));
     }
 
-    public render(): ReactNode {
+    public render(): React.ReactNode {
         return (
             <>
-                <div className="row">
-                    <div className="col s2 input-field">
-                        <input
+                <Grid container spacing={3}>
+                    <Grid item xs>
+                        <TextField
+                            name="address"
+                            label={I18n.t('Address')}
+                            value={toHexString(this.state.config.address)}
                             type="text"
-                            className="value"
-                            id={`${this.address}-address`}
-                            value={toHexString(this.address)}
-                            disabled
+                            margin="normal"
+                            disabled={true}
                         />
-                        <Label for={`${this.address}-address`} text="Address" />
-                    </div>
-                    <div className="col s4 input-field">
+                    </Grid>
+                    <Grid item xs>
                         <Dropdown
-                            id={`${this.address}-type`}
+                            title="Device Type"
+                            attr="type"
                             options={this.deviceOptions}
-                            selectedOption={this.selectedDeviceOption}
-                            selectedChanged={this.onDeviceTypeSelected}
-                        />
-                        <Label for={`${this.address}-type`} text={_('Device Type')} />
-                    </div>
-                </div>
-                {this.component}
+                            value={this.selectedDeviceOption}
+                            onChange={this.onDeviceTypeSelected}
+                        ></Dropdown>
+                    </Grid>
+                </Grid>
+                {this.renderDeviceComponent()}
             </>
         );
     }

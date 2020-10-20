@@ -1,6 +1,6 @@
 "use strict";
 /*
- * Created with @iobroker/create-adapter v1.26.1
+ * Created with @iobroker/create-adapter v1.29.1
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }

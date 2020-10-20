@@ -1,4 +1,4 @@
-import { I2CDeviceConfig } from '../lib/shared';
+import { I2CDeviceConfig } from '../lib/adapter-config';
 import { I2cAdapter } from '../main';
 import { MCP230xxBase, Register } from './mcp230xx-base';
 

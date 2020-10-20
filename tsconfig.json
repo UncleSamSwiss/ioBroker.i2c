@@ -1,3 +1,4 @@
+// Root tsconfig to set the settings and power editor support for all TS files
 {
     "compileOnSave": true,
     "compilerOptions": {
@@ -8,8 +9,8 @@
         // check JS files, but do not compile them => tsconfig.build.json
         "allowJs": true,
         "checkJs": true,
-        "jsx": "react",
 
+        "skipLibCheck": true, // Don't report errors in 3rd party definitions
         "noEmitOnError": true,
         "outDir": "./build/",
         "removeComments": false,
@@ -17,6 +18,9 @@
         "moduleResolution": "node",
         // this is necessary for the automatic typing of the adapter config
         "resolveJsonModule": true,
+
+        // Support React
+        "jsx": "react",
 
         // Set this to false if you want to disable the very strict rules (not recommended)
         "strict": true,
@@ -37,6 +41,6 @@
 
         "experimentalDecorators": true
     },
-    "include": ["**/*.ts*", ".eslintrc.js"],
+    "include": ["src/**/*.ts", "admin/**/*.ts", "admin/**/*.tsx"],
     "exclude": ["build/**", "node_modules/**"]
 }

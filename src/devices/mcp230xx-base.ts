@@ -1,4 +1,5 @@
-import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../lib/shared';
+import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import { toHexString } from '../lib/shared';
 import { I2cAdapter } from '../main';
 import { LittleEndianDeviceHandlerBase } from './little-endian-device-handler-base';
 
@@ -8,8 +9,10 @@ export interface MCP230xxConfig extends ImplementationConfigBase {
     pins: PinConfig[];
 }
 
+export type PinDirection = 'in-no' | 'in-pu' | 'out';
+
 export interface PinConfig {
-    dir: 'in-no' | 'in-pu' | 'out';
+    dir: PinDirection;
     inv?: boolean;
 }
 

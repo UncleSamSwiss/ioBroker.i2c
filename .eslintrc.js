@@ -14,7 +14,12 @@ module.exports = {
         'plugin:prettier/recommended', // Enables eslint-plugin-prettier and displays prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
         'plugin:react/recommended', // Supports React JSX
     ],
-    plugins: [],
+    plugins: ['react'],
+    settings: {
+        react: {
+            version: 'detect',
+        },
+    },
     rules: {
         '@typescript-eslint/no-floating-promises': 'error',
         '@typescript-eslint/no-parameter-properties': 'off',
@@ -46,10 +51,11 @@ module.exports = {
         '@typescript-eslint/no-non-null-assertion': 'off', // This is necessary for Map.has()/get()!
         'no-var': 'error',
         'prefer-const': 'error',
+        'no-trailing-spaces': 'error',
     },
     overrides: [
         {
-            files: ['*.test.ts'],
+            files: ['*.test.ts', '*.tsx'],
             rules: {
                 '@typescript-eslint/explicit-function-return-type': 'off',
             },

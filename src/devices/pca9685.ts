@@ -32,8 +32,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+import { ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
-import { ImplementationConfigBase } from '../lib/shared';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface PCA9685Config extends ImplementationConfigBase {

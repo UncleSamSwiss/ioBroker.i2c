@@ -1,26 +1,75 @@
 import * as React from 'react';
-
+import { boundMethod } from 'autobind-decorator';
+import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
+import I18n from '@iobroker/adapter-react/i18n';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { Label } from 'iobroker-react-components';
+import { MCP230xxConfig, PinConfig, PinDirection } from '../../../src/devices/mcp230xx-base';
+import Dropdown, { DropdownOption } from '../components/dropdown';
 
-import { MCP23008Config } from '../../../src/devices/mcp23008';
-import { boundMethod } from 'autobind-decorator';
-import { CheckboxLabel } from '../components/checkbox-label';
-import { Dropdown } from '../components/dropdown';
+interface PinEditorProps {
+    index: number;
+    config: PinConfig;
+    onChange: (index: number, config: PinConfig) => void;
+}
 
-class MCP23008 extends DeviceBase<MCP23008Config> {
-    private readonly dirOptions = {
-        'in-no': _('Input without pull-up resistor'),
-        'in-pu': _('Input with pull-up resistor'),
-        out: _('Output'),
-    };
-    constructor(props: DeviceProps<MCP23008Config>) {
+class PinEditor extends React.Component<PinEditorProps, PinConfig> {
+    private readonly dirOptions: DropdownOption[] = [
+        { value: 'in-no', title: 'Input without pull-up resistor' },
+        { value: 'in-pu', title: 'Input with pull-up resistor' },
+        { value: 'out', title: 'Output' },
+    ];
+
+    constructor(props: PinEditorProps) {
+        super(props);
+
+        this.state = { ...props.config };
+    }
+
+    @boundMethod
+    private onDirChange(value: string) {
+        this.setState({ dir: value as PinDirection }, () => this.props.onChange(this.props.index, this.state));
+    }
+
+    @boundMethod
+    private onInvChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
+        this.setState({ inv: checked ? true : undefined }, () => this.props.onChange(this.props.index, this.state));
+    }
+
+    public render(): React.ReactNode {
+        const { index } = this.props;
+        return (
+            <Grid container spacing={3}>
+                <Grid item xs style={{ paddingTop: '23px' }}>
+                    {`${I18n.t('Pin')} ${index + 1}`}
+                </Grid>
+                <Grid item xs>
+                    <Dropdown
+                        attr="dir"
+                        options={this.dirOptions}
+                        value={this.state.dir}
+                        onChange={this.onDirChange}
+                        style={{ paddingTop: '3px' }}
+                    />
+                </Grid>
+                <Grid item xs style={{ paddingTop: '11px' }}>
+                    <FormControlLabel
+                        control={<Checkbox checked={this.state.inv} onChange={this.onInvChange} name="inv" />}
+                        label={I18n.t('inverted')}
+                    />
+                </Grid>
+            </Grid>
+        );
+    }
+}
+
+class MCP23008 extends DeviceBase<MCP230xxConfig> {
+    constructor(props: DeviceProps<MCP230xxConfig>) {
         super(props);
 
         // TODO: add support for interrupt (as was available in JS version of this adapter)
 
-        let config: MCP23008Config;
+        let config: MCP230xxConfig;
         if (!props.config) {
             config = {
                 pollingInterval: 200,
@@ -50,77 +99,29 @@ class MCP23008 extends DeviceBase<MCP23008Config> {
     }
 
     @boundMethod
-    protected onDirSelected(index: number, value: string): void {
+    protected onPinChange(index: number, config: PinConfig): void {
         const pins = [...this.state.pins];
-        pins[index].dir = value as any;
-
-        this.doHandleChange('pins', pins);
-    }
-
-    @boundMethod
-    protected onInvChange(event: React.FormEvent<HTMLElement>): boolean {
-        this.handleCheckboxChange(event, true);
-        return false;
-    }
-
-    protected handleCheckboxChange(
-        event: React.FormEvent<HTMLElement>,
-        onValue: string | boolean,
-        offValue?: string | boolean,
-    ): void {
-        const target = event.target as HTMLInputElement;
-        const parts = target.id.split('-');
-        const index = parseInt(parts[2]);
-
-        const pins = [...this.state.pins];
-        const wasChecked = pins[index][parts[1]] === onValue;
-        const value = wasChecked ? offValue : onValue;
-        pins[index][parts[1]] = value;
-
+        pins[index] = config;
         this.doHandleChange('pins', pins);
     }
 
     public render(): React.ReactNode {
         return (
             <>
-                <div className="row">
-                    <div className="col s6 input-field">
-                        <input
-                            type="number"
-                            className="value"
-                            id={`${this.address}-pollingInterval`}
+                <Grid container spacing={3}>
+                    <Grid item xs>
+                        <TextField
+                            name="pollingInterval"
+                            label={I18n.t('Polling Interval (ms)')}
                             value={this.state.pollingInterval}
+                            type="number"
+                            margin="normal"
                             onChange={this.handleChange}
                         />
-                        <Label for={`${this.address}-pollingInterval`} text="Polling Interval (ms)" />
-                    </div>
-                </div>
+                    </Grid>
+                </Grid>
                 {this.state.pins.map((pin, i) => (
-                    <div key={i} className="row">
-                        <div className="col s2 input-field">{`${_('Pin')} ${i + 1}`}</div>
-                        <div className="col s4">
-                            <Dropdown
-                                id={`${this.address}-dir-${i}`}
-                                options={this.dirOptions}
-                                selectedOption={this.state.pins[i].dir}
-                                selectedChanged={(value) => this.onDirSelected(i, value)}
-                            />
-                        </div>
-                        <div className="col s3">
-                            <p>
-                                <label htmlFor={`${this.address}-inv-${i}`}>
-                                    <input
-                                        type="checkbox"
-                                        className="value"
-                                        id={`${this.address}-inv-${i}`}
-                                        checked={!!pin.inv}
-                                        onChange={this.onInvChange}
-                                    />
-                                    <CheckboxLabel text="inverted" />
-                                </label>
-                            </p>
-                        </div>
-                    </div>
+                    <PinEditor key={`pin-${i}`} index={i} config={pin} onChange={this.onPinChange}></PinEditor>
                 ))}
             </>
         );

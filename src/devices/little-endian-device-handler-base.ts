@@ -1,4 +1,4 @@
-import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/shared';
+import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { I2cAdapter } from '../main';
 import { DeviceHandlerBase } from './device-handler-base';
 

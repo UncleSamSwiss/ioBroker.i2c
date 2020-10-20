@@ -1,4 +1,5 @@
-import { ImplementationConfigBase, toHexString } from '../lib/shared';
+import { ImplementationConfigBase } from '../lib/adapter-config';
+import { toHexString } from '../lib/shared';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface PCF8574Config extends ImplementationConfigBase {

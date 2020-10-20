@@ -1,12 +1,61 @@
 import * as React from 'react';
-
+import { boundMethod } from 'autobind-decorator';
+import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
+import I18n from '@iobroker/adapter-react/i18n';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { Label } from 'iobroker-react-components';
+import ToggleSwitch from '../components/toggle-switch';
+import { PCF8574Config, PinConfig } from '../../../src/devices/pcf8574';
 
-import { PCF8574Config } from '../../../src/devices/pcf8574';
-import { boundMethod } from 'autobind-decorator';
-import { CheckboxLabel } from '../components/checkbox-label';
+interface PinEditorProps {
+    index: number;
+    config: PinConfig;
+    onChange: (index: number, config: PinConfig) => void;
+}
+
+class PinEditor extends React.Component<PinEditorProps, PinConfig> {
+    constructor(props: PinEditorProps) {
+        super(props);
+
+        this.state = { ...props.config };
+    }
+
+    @boundMethod
+    private onDirChange(value: boolean) {
+        this.setState({ dir: value ? 'in' : 'out' }, () => this.props.onChange(this.props.index, this.state));
+    }
+
+    @boundMethod
+    private onInvChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) {
+        this.setState({ inv: checked ? true : undefined }, () => this.props.onChange(this.props.index, this.state));
+    }
+
+    public render(): React.ReactNode {
+        const { index } = this.props;
+        return (
+            <Grid container spacing={3}>
+                <Grid item xs style={{ paddingTop: '23px' }}>
+                    {`${I18n.t('Pin')} ${index + 1}`}
+                </Grid>
+                <Grid item xs>
+                    <ToggleSwitch
+                        attr="dir"
+                        offLabel="Output"
+                        onLabel="Input"
+                        value={this.state.dir === 'in'}
+                        onChange={this.onDirChange}
+                    ></ToggleSwitch>
+                </Grid>
+                <Grid item xs style={{ paddingTop: '11px' }}>
+                    <FormControlLabel
+                        control={<Checkbox checked={this.state.inv} onChange={this.onInvChange} name="inv" />}
+                        label={I18n.t('inverted')}
+                    />
+                </Grid>
+            </Grid>
+        );
+    }
+}
 
 class PCF8574 extends DeviceBase<PCF8574Config> {
     constructor(props: DeviceProps<PCF8574Config>) {
@@ -43,82 +92,29 @@ class PCF8574 extends DeviceBase<PCF8574Config> {
     }
 
     @boundMethod
-    protected onDirChange(event: React.FormEvent<HTMLElement>): boolean {
-        this.handleCheckboxChange(event, 'in', 'out');
-        return false;
-    }
-
-    @boundMethod
-    protected onInvChange(event: React.FormEvent<HTMLElement>): boolean {
-        this.handleCheckboxChange(event, true);
-        return false;
-    }
-
-    protected handleCheckboxChange(
-        event: React.FormEvent<HTMLElement>,
-        onValue: string | boolean,
-        offValue?: string | boolean,
-    ): void {
-        const target = event.target as HTMLInputElement;
-        const parts = target.id.split('-');
-        const index = parseInt(parts[2]);
-
+    protected onPinChange(index: number, config: PinConfig): void {
         const pins = [...this.state.pins];
-        const wasChecked = pins[index][parts[1]] === onValue;
-        const value = wasChecked ? offValue : onValue;
-        pins[index][parts[1]] = value;
-
+        pins[index] = config;
         this.doHandleChange('pins', pins);
     }
 
     public render(): React.ReactNode {
         return (
             <>
-                <div className="row">
-                    <div className="col s6 input-field">
-                        <input
-                            type="number"
-                            className="value"
-                            id={`${this.address}-pollingInterval`}
+                <Grid container spacing={3}>
+                    <Grid item xs>
+                        <TextField
+                            name="pollingInterval"
+                            label={I18n.t('Polling Interval (ms)')}
                             value={this.state.pollingInterval}
+                            type="number"
+                            margin="normal"
                             onChange={this.handleChange}
                         />
-                        <Label for={`${this.address}-pollingInterval`} text="Polling Interval (ms)" />
-                    </div>
-                </div>
+                    </Grid>
+                </Grid>
                 {this.state.pins.map((pin, i) => (
-                    <div key={i} className="row">
-                        <div className="col s2 input-field">{`${_('Pin')} ${i + 1}`}</div>
-                        <div className="col s4 input-field">
-                            <div className="switch">
-                                <label>
-                                    {_('Output')}
-                                    <input
-                                        type="checkbox"
-                                        id={`${this.address}-dir-${i}`}
-                                        checked={pin.dir === 'in'}
-                                        onChange={this.onDirChange}
-                                    />
-                                    <span className="lever"></span>
-                                    {_('Input')}
-                                </label>
-                            </div>
-                        </div>
-                        <div className="col s3">
-                            <p>
-                                <label htmlFor={`${this.address}-inv-${i}`}>
-                                    <input
-                                        type="checkbox"
-                                        className="value"
-                                        id={`${this.address}-inv-${i}`}
-                                        checked={!!pin.inv}
-                                        onChange={this.onInvChange}
-                                    />
-                                    <CheckboxLabel text="inverted" />
-                                </label>
-                            </p>
-                        </div>
-                    </div>
+                    <PinEditor key={`pin-${i}`} index={i} config={pin} onChange={this.onPinChange}></PinEditor>
                 ))}
             </>
         );

@@ -24,7 +24,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-import { ImplementationConfigBase, toHexString } from '../lib/shared';
+import { ImplementationConfigBase } from '../lib/adapter-config';
+import { toHexString } from '../lib/shared';
 import { int16, round, uint16, uint20 } from '../lib/utils';
 import { LittleEndianDeviceHandlerBase } from './little-endian-device-handler-base';
 

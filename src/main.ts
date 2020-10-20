@@ -1,5 +1,5 @@
 /*
- * Created with @iobroker/create-adapter v1.26.1
+ * Created with @iobroker/create-adapter v1.29.1
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
@@ -9,23 +9,6 @@ import * as i2c from 'i2c-bus';
 import { I2CClient } from './debug/client';
 import { I2CServer } from './debug/server';
 import { DeviceHandlerBase } from './devices/device-handler-base';
-// lint doesn't know it is being used inside the ioBroker namespace below
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { I2CAdapterConfig } from './lib/shared';
-
-// Load your modules here, e.g.:
-// import * as fs from "fs";
-
-// Augment the adapter.config object with the actual types
-// TODO: delete this in the next version
-declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
-    namespace ioBroker {
-        interface AdapterConfig extends I2CAdapterConfig {
-            _dummy: undefined;
-        }
-    }
-}
 
 export type StateValue = string | number | boolean | null;
 

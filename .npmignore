@@ -6,6 +6,7 @@ nbproject/
 .vs*/
 .devcontainer/
 *.code-workspace
+.create-adapter.json
 Thumbs.db
 .prettierrc.js
 gulpfile.js
@@ -20,6 +21,7 @@ appveyor.yaml
 
 # TypeScript sources and project configuration
 src/
+admin/src/
 tsconfig.json
 tsconfig.*.json
 *.d.ts
@@ -30,13 +32,11 @@ tsconfig.*.json
 
 # Sourcemaps
 **/*.js.map
+**/*.css.map
 
 # npm package files
 iobroker.*.tgz
 package-lock.json
-
-# i18n intermediate files
-admin/i18n
 
 # maintenance scripts
 maintenance/**

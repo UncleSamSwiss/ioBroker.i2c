@@ -1,5 +1,6 @@
+import { ImplementationConfigBase } from '../lib/adapter-config';
 import { Polling } from '../lib/async';
-import { ImplementationConfigBase, toHexString } from '../lib/shared';
+import { toHexString } from '../lib/shared';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface GenericConfig extends ImplementationConfigBase {

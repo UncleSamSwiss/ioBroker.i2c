@@ -1,6 +1,7 @@
 import * as i2c from 'i2c-bus';
+import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { Polling, PollingCallback } from '../lib/async';
-import { I2CDeviceConfig, ImplementationConfigBase, toHexString } from '../lib/shared';
+import { toHexString } from '../lib/shared';
 import { I2cAdapter, StateValue } from '../main';
 
 export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {

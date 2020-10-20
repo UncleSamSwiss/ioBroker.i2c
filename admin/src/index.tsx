@@ -1,63 +1,25 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { MuiThemeProvider } from '@material-ui/core/styles';
+import theme from '@iobroker/adapter-react/Theme';
+import Utils from '@iobroker/adapter-react/Components/Utils';
+import App from './app';
 
-import { AllTabs } from './pages/all-tabs';
-import { OnSettingsChangedCallback } from './lib/common';
-import { I2CAdapterConfig } from '../../src/lib/shared';
+window['adapterName'] = 'i2c';
+let themeName = Utils.getThemeName();
 
-// layout components
-interface RootProps {
-    settings: I2CAdapterConfig;
-    onSettingsChanged: OnSettingsChangedCallback;
-}
-
-export function Root(props: RootProps): JSX.Element {
-    // Subscribe and unsubscribe from states and objects
-    function onUnload(): void {
-        console.log('onUnload');
-    }
-
-    React.useEffect(() => {
-        return onUnload;
-    }, []);
-
-    return <AllTabs settings={props.settings} onChange={props.onSettingsChanged}></AllTabs>;
-}
-
-let curSettings: I2CAdapterConfig;
-let originalSettings: string;
-
-/**
- * Checks if any setting was changed
- */
-function hasChanges(): boolean {
-    return originalSettings !== JSON.stringify(curSettings);
-}
-
-// the function loadSettings has to exist ...
-(window as any).load = (settings: I2CAdapterConfig, onChange: (hasChanges: boolean) => void) => {
-    originalSettings = JSON.stringify(settings);
-
-    const settingsChanged: OnSettingsChangedCallback = (newSettings) => {
-        const settings = { ...newSettings };
-        settings.devices = newSettings.devices.filter((device) => !!device.name && !!device.type);
-        curSettings = settings;
-        onChange(hasChanges());
-    };
-
+function build(): void {
     ReactDOM.render(
-        <Root settings={settings} onSettingsChanged={settingsChanged} />,
-        document.getElementById('adapter-container'),
+        <MuiThemeProvider theme={theme(themeName)}>
+            <App
+                onThemeChange={(_theme) => {
+                    themeName = _theme;
+                    build();
+                }}
+            />
+        </MuiThemeProvider>,
+        document.getElementById('root'),
     );
+}
 
-    // Signal to admin, that no changes yet
-    onChange(false);
-};
-
-// ... and the function save has to exist.
-// you have to make sure the callback is called with the settings object as first param!
-(window as any).save = (callback: (newSettings: I2CAdapterConfig) => void) => {
-    // save the settings
-    callback(curSettings);
-    originalSettings = JSON.stringify(curSettings);
-};
+build();

@@ -1,20 +1,21 @@
 import * as React from 'react';
 
-import { ReactNode } from 'react';
-
-import { OnSettingsChangedCallback } from '../lib/common';
-import { I2CAdapterConfig } from '../../../src/lib/shared';
-import { Label } from '../components/label';
-
+import { Button, Grid, TextField } from '@material-ui/core';
+import I18n from '@iobroker/adapter-react/i18n';
 import { boundMethod } from 'autobind-decorator';
+import Connection from '@iobroker/adapter-react/Connection';
 
 interface GeneralProps {
-    onChange: OnSettingsChangedCallback;
-    settings: I2CAdapterConfig;
+    onChange: (attr: string, value: any) => void;
+    settings: ioBroker.AdapterConfig;
+    socket: Connection;
+    instanceId: string;
 }
 
 interface GeneralState {
     busNumber: number;
+    alive: boolean;
+    busy: boolean;
 }
 
 export class General extends React.Component<GeneralProps, GeneralState> {
@@ -25,31 +26,31 @@ export class General extends React.Component<GeneralProps, GeneralState> {
         // settings are our state
         this.state = {
             ...props.settings,
+            alive: false,
+            busy: false,
         };
     }
 
-    private parseChangedSetting(target: HTMLInputElement | HTMLSelectElement): any {
-        // Checkboxes in MaterializeCSS are messed up, so we attach our own handler
-        // However that one gets called before the underlying checkbox is actually updated,
-        // so we need to invert the checked value here
-        return target.type === 'checkbox'
-            ? !(target as any).checked
-            : target.type === 'number'
-            ? parseInt(target.value, 10)
-            : target.value;
-    }
-
-    // gets called when the form elements are changed by the user
     @boundMethod
     private handleChange(event: React.FormEvent<HTMLElement>): boolean {
-        const target = event.target as HTMLInputElement | HTMLSelectElement; // TODO: more types
-        const value = this.parseChangedSetting(target);
-        return this.doHandleChange(target.id as keyof GeneralState, value);
+        const target = event.target as HTMLInputElement;
+        const newState = {};
+        let value: any;
+        if (target.type === 'number') {
+            value = parseInt(target.value);
+        } else {
+            value = target.value;
+        }
+        newState[target.name] = value;
+        this.setState(newState, () => this.props.onChange(target.name, value));
+        return false;
     }
 
     @boundMethod
     private searchDevices(_event: React.FormEvent<HTMLElement>): boolean {
-        if (!this.active) {
+        this.sendSearch(this.state.busNumber).catch((error) => console.log(error));
+        //socket.
+        /*if (!this.active) {
             showMessage(_('Enable adapter first'), _('Warning'), 'warning');
             return false;
         }
@@ -70,77 +71,69 @@ export class General extends React.Component<GeneralProps, GeneralState> {
                     console.log(this.props.settings);
                 }
             }
-        });
+        });*/
 
         return false;
     }
 
-    private doHandleChange(setting: keyof GeneralState, value: any): boolean {
-        // store the setting
-        this.putSetting(setting, value, () => {
-            // and notify the admin UI about changes
-            this.props.onChange({ ...this.props.settings, ...this.state });
-        });
-        return false;
+    private async sendSearch(busNumber: number): Promise<void> {
+        const { socket, instanceId } = this.props;
+        this.setState({ busy: true });
+        try {
+            const result = await socket.sendTo(instanceId, 'search', busNumber.toString());
+            if (typeof result === 'string') {
+                const addresses = JSON.parse(result) as number[];
+                const devices = [...this.props.settings.devices];
+                addresses.forEach((address) => {
+                    if (!devices.find((d) => d.address === address)) {
+                        devices.push({ address: address });
+                        devices.sort((a, b) => a.address - b.address);
+                    }
+                });
+
+                if (this.props.settings.devices.length != devices.length) {
+                    this.props.onChange('devices', devices);
+                }
+            }
+        } finally {
+            this.setState({ busy: false });
+        }
     }
 
-    /**
-     * Reads a setting from the state object and transforms the value into the correct format
-     * @param key The setting key to lookup
-     */
-    private getSetting<T>(key: string, defaultValue?: T): T {
-        const ret = this.state[key];
-        return ret != undefined ? ret : defaultValue;
-    }
-    /**
-     * Saves a setting in the state object and transforms the value into the correct format
-     * @param key The setting key to store at
-     */
-    private putSetting(key: keyof GeneralState, value: any, callback?: () => void): void {
-        this.setState({ [key]: value }, callback);
+    @boundMethod
+    private handleAliveChange(id: string, obj?: ioBroker.State | null) {
+        this.setState({ alive: !!(obj && obj.val) });
     }
 
     public componentDidMount(): void {
-        // update floating labels in materialize design
-        M.updateTextFields();
-
-        // read if instance is active or enabled
-        getIsAdapterAlive((isAlive: boolean) => {
-            if (isAlive) {
-                this.active = true;
-            }
-        });
+        const { socket, instanceId } = this.props;
+        socket.subscribeState(instanceId + '.alive', false, this.handleAliveChange);
     }
 
-    public componentDidUpdate(): void {
-        // update floating labels in materialize design
-        M.updateTextFields();
+    public componentWillUnmount(): void {
+        const { socket, instanceId } = this.props;
+        socket.unsubscribeState(instanceId + '.alive', this.handleAliveChange);
     }
 
-    public render(): ReactNode {
+    public render(): React.ReactNode {
         return (
-            <>
-                <div className="row">
-                    <div className="col s3 input-field">
-                        <input
-                            type="number"
-                            className="value"
-                            id="busNumber"
-                            value={this.state.busNumber}
-                            onChange={this.handleChange}
-                        />
-                        <Label for="busNumber" text="Bus Number" />
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col s6 input-field">
-                        <button onClick={this.searchDevices} className="btn">
-                            <i className="material-icons left">youtube_searched_for</i>
-                            {_('Search Devices')}
-                        </button>
-                    </div>
-                </div>
-            </>
+            <Grid container direction="column" justify="flex-start" alignItems="flex-start">
+                <TextField
+                    name="busNumber"
+                    label={I18n.t('Bus number')}
+                    value={this.state.busNumber}
+                    type={'number'}
+                    onChange={this.handleChange}
+                    margin="normal"
+                />
+                <Button
+                    variant="contained"
+                    disabled={!this.state.alive || this.state.busy}
+                    onClick={this.searchDevices}
+                >
+                    {I18n.t('Search Devices')}
+                </Button>
+            </Grid>
         );
     }
 }
