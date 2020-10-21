@@ -37,7 +37,7 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
         return (
             <Grid container spacing={3}>
                 <Grid item xs={2} md={1} style={{ paddingTop: '23px' }}>
-                    {`${I18n.t('Pin')} ${index + 1}`}
+                    <strong>{`${I18n.t('Pin')} ${index + 1}`}</strong>
                 </Grid>
                 <Grid item xs={4} md={3} lg={2}>
                     <ToggleSwitch

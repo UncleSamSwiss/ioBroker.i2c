@@ -3,7 +3,6 @@ import { boundMethod } from 'autobind-decorator';
 import { Box, Tab, Tabs, Theme } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { CreateCSSProperties } from '@material-ui/core/styles/withStyles';
-import Connection from '@iobroker/adapter-react/Connection';
 import I18n from '@iobroker/adapter-react/i18n';
 import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import { toHexString } from '../../../src/lib/shared';
@@ -23,6 +22,8 @@ const styles = (theme: Theme): Record<string, CreateCSSProperties> => ({
     },
     tabpanel: {
         width: '100%',
+        overflowY: 'scroll',
+        height: 'calc(100% - 86px)',
     },
 });
 
