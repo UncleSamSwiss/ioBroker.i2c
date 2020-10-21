@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { boundMethod } from 'autobind-decorator';
-import { Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
+import { Button, Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import I18n from '@iobroker/adapter-react/i18n';
+import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
 import { MCP230xxConfig, PinConfig, PinDirection } from '../../../src/devices/mcp230xx-base';
@@ -40,10 +42,10 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
         const { index } = this.props;
         return (
             <Grid container spacing={3}>
-                <Grid item xs style={{ paddingTop: '23px' }}>
+                <Grid item xs={2} md={1} style={{ paddingTop: '23px' }}>
                     {`${I18n.t('Pin')} ${index + 1}`}
                 </Grid>
-                <Grid item xs>
+                <Grid item xs={7} sm={6} md={4} lg={3}>
                     <Dropdown
                         attr={`dir-${index}`}
                         options={this.dirOptions}
@@ -52,7 +54,7 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
                         style={{ paddingTop: '3px' }}
                     />
                 </Grid>
-                <Grid item xs style={{ paddingTop: '11px' }}>
+                <Grid item xs={2} style={{ paddingTop: '11px' }}>
                     <FormControlLabel
                         control={<Checkbox checked={this.state.inv} onChange={this.onInvChange} name="inv" />}
                         label={I18n.t('inverted')}
@@ -63,11 +65,9 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
     }
 }
 
-class MCP23008 extends DeviceBase<MCP230xxConfig> {
+class MCP23008 extends DeviceBase<MCP230xxConfig, { showIdDialog: boolean }> {
     constructor(props: DeviceProps<MCP230xxConfig>) {
         super(props);
-
-        // TODO: add support for interrupt (as was available in JS version of this adapter)
 
         let config: MCP230xxConfig;
         if (!props.config) {
@@ -84,8 +84,9 @@ class MCP23008 extends DeviceBase<MCP230xxConfig> {
         } else {
             config = { ...props.config };
         }
+        config.interrupt = config.interrupt || '';
         console.log('new MCP23008()', props, config);
-        this.state = { config };
+        this.state = { config: config, extra: { showIdDialog: false } };
     }
 
     static getAllAddresses(): number[] {
@@ -99,17 +100,38 @@ class MCP23008 extends DeviceBase<MCP230xxConfig> {
     }
 
     @boundMethod
+    protected selectInterruptId(): void {
+        this.setExtraState({ showIdDialog: true });
+    }
+
+    @boundMethod
     protected onPinChange(index: number, config: PinConfig): void {
         const pins = [...this.state.config.pins];
         pins[index] = config;
         this.doHandleChange('pins', pins);
     }
 
+    private onInterruptSelected(selected?: string) {
+        this.setExtraState({ showIdDialog: false });
+        if (selected) {
+            this.doHandleChange('interrupt', selected);
+        }
+    }
+
     public render(): React.ReactNode {
         return (
             <>
+                {this.state.extra?.showIdDialog && (
+                    <SelectID
+                        socket={this.props.context.socket}
+                        notEditable={false}
+                        selected={this.state.config.interrupt}
+                        onClose={() => this.onInterruptSelected()}
+                        onOk={(selected) => this.onInterruptSelected(selected)}
+                    ></SelectID>
+                )}
                 <Grid container spacing={3}>
-                    <Grid item xs>
+                    <Grid item xs={12}>
                         <TextField
                             name="pollingInterval"
                             label={I18n.t('Polling Interval (ms)')}
@@ -118,6 +140,24 @@ class MCP23008 extends DeviceBase<MCP230xxConfig> {
                             margin="normal"
                             onChange={this.handleChange}
                         />
+                    </Grid>
+                </Grid>
+                <Grid container spacing={3}>
+                    <Grid item xs={9} md={6}>
+                        <TextField
+                            name="interrupt"
+                            label={I18n.t('Interrupt object')}
+                            value={this.state.config.interrupt}
+                            type="text"
+                            margin="normal"
+                            onChange={this.handleChange}
+                            style={{ width: '100%' }}
+                        />
+                    </Grid>
+                    <Grid item xs={3} md={6}>
+                        <Button variant="contained" onClick={this.selectInterruptId} style={{ marginTop: '22px' }}>
+                            <AddCircleOutlineIcon />
+                        </Button>
                     </Grid>
                 </Grid>
                 {this.state.config.pins.map((pin, i) => (

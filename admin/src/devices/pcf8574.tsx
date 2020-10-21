@@ -48,7 +48,7 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
                         onChange={this.onDirChange}
                     ></ToggleSwitch>
                 </Grid>
-                <Grid item xs={2} md={2} style={{ paddingTop: '11px' }}>
+                <Grid item xs={2} style={{ paddingTop: '11px' }}>
                     <FormControlLabel
                         control={<Checkbox checked={this.state.inv} onChange={this.onInvChange} name="inv" />}
                         label={I18n.t('inverted')}
@@ -62,8 +62,6 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
 class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
     constructor(props: DeviceProps<PCF8574Config>) {
         super(props);
-
-        // TODO: add support for interrupt (as was available in JS version of this adapter)
 
         let config: PCF8574Config;
         if (!props.config) {
