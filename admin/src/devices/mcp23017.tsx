@@ -44,7 +44,7 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
         return (
             <>
                 <Grid item xs={2} md={2} lg={1} style={{ paddingTop: '23px' }}>
-                    <strong>{`${I18n.t('Pin')} ${index < 8 ? 'A' : 'B'}${(index % 8) + 1}`}</strong>
+                    <strong>{`${I18n.t('Pin')} ${index < 8 ? 'A' : 'B'}${index % 8}`}</strong>
                 </Grid>
                 <Grid item xs={7} sm={6} md={4} lg={3} xl={2}>
                     <Dropdown
