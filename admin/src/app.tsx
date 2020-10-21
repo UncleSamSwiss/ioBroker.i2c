@@ -5,6 +5,7 @@ import GenericApp from '@iobroker/adapter-react/GenericApp';
 import Settings from './components/settings';
 import { GenericAppProps, GenericAppSettings } from '@iobroker/adapter-react/types';
 import { StyleRules } from '@material-ui/styles';
+import { AppContext } from './common';
 
 const styles = (_theme: Theme): StyleRules => ({
     root: {},
@@ -39,12 +40,16 @@ class App extends GenericApp {
             return super.render();
         }
 
+        const context: AppContext = {
+            socket: this.socket,
+            instanceId: this.instanceId,
+        };
+
         return (
             <div className="App">
                 <Settings
                     native={this.state.native}
-                    socket={this.socket}
-                    instanceId={this.instanceId}
+                    context={context}
                     onChange={(attr, value) => this.updateNativeValue(attr, value)}
                 />
                 {this.renderError()}

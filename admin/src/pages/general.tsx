@@ -3,13 +3,12 @@ import * as React from 'react';
 import { Button, Grid, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
 import { boundMethod } from 'autobind-decorator';
-import Connection from '@iobroker/adapter-react/Connection';
+import { AppContext } from '../common';
 
 interface GeneralProps {
     onChange: (attr: string, value: any) => void;
     settings: ioBroker.AdapterConfig;
-    socket: Connection;
-    instanceId: string;
+    context: AppContext;
 }
 
 interface GeneralState {
@@ -49,35 +48,11 @@ export class General extends React.Component<GeneralProps, GeneralState> {
     @boundMethod
     private searchDevices(_event: React.FormEvent<HTMLElement>): boolean {
         this.sendSearch(this.state.busNumber).catch((error) => console.log(error));
-        //socket.
-        /*if (!this.active) {
-            showMessage(_('Enable adapter first'), _('Warning'), 'warning');
-            return false;
-        }
-
-        sendTo(null, 'search', this.state.busNumber, (result) => {
-            if (typeof result === 'string') {
-                const addresses = JSON.parse(result) as number[];
-                const oldCount = this.props.settings.devices.length;
-                addresses.forEach((address) => {
-                    if (!this.props.settings.devices.find((d) => d.address === address)) {
-                        this.props.settings.devices.push({ address: address });
-                        this.props.settings.devices.sort((a, b) => a.address - b.address);
-                    }
-                });
-
-                if (oldCount != this.props.settings.devices.length) {
-                    this.props.onChange(this.props.settings);
-                    console.log(this.props.settings);
-                }
-            }
-        });*/
-
         return false;
     }
 
     private async sendSearch(busNumber: number): Promise<void> {
-        const { socket, instanceId } = this.props;
+        const { socket, instanceId } = this.props.context;
         this.setState({ busy: true });
         try {
             const result = await socket.sendTo(instanceId, 'search', busNumber.toString());
@@ -106,34 +81,42 @@ export class General extends React.Component<GeneralProps, GeneralState> {
     }
 
     public componentDidMount(): void {
-        const { socket, instanceId } = this.props;
+        const { socket, instanceId } = this.props.context;
         socket.subscribeState(instanceId + '.alive', false, this.handleAliveChange);
     }
 
     public componentWillUnmount(): void {
-        const { socket, instanceId } = this.props;
+        const { socket, instanceId } = this.props.context;
         socket.unsubscribeState(instanceId + '.alive', this.handleAliveChange);
     }
 
     public render(): React.ReactNode {
         return (
-            <Grid container direction="column" justify="flex-start" alignItems="flex-start">
-                <TextField
-                    name="busNumber"
-                    label={I18n.t('Bus number')}
-                    value={this.state.busNumber}
-                    type={'number'}
-                    onChange={this.handleChange}
-                    margin="normal"
-                />
-                <Button
-                    variant="contained"
-                    disabled={!this.state.alive || this.state.busy}
-                    onClick={this.searchDevices}
-                >
-                    {I18n.t('Search Devices')}
-                </Button>
-            </Grid>
+            <>
+                <Grid container spacing={3}>
+                    <Grid item xs>
+                        <TextField
+                            name="busNumber"
+                            label={I18n.t('Bus number')}
+                            value={this.state.busNumber}
+                            type={'number'}
+                            onChange={this.handleChange}
+                            margin="normal"
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container spacing={3}>
+                    <Grid item xs>
+                        <Button
+                            variant="contained"
+                            disabled={!this.state.alive || this.state.busy}
+                            onClick={this.searchDevices}
+                        >
+                            {I18n.t('Search Devices')}
+                        </Button>
+                    </Grid>
+                </Grid>
+            </>
         );
     }
 }

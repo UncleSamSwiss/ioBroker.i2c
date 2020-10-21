@@ -6,11 +6,13 @@ import { I2CDeviceConfig, ImplementationConfigBase } from '../../../src/lib/adap
 import { DeviceFactory, DeviceInfo } from '../devices/device-factory';
 import Dropdown, { DropdownOption } from '../components/dropdown';
 import { toHexString } from '../../../src/lib/shared';
+import { AppContext } from '../common';
 
 type OnConfigChangedCallback = (newConfig: I2CDeviceConfig) => void;
 
 interface DeviceTabProps {
     onChange: OnConfigChangedCallback;
+    context: AppContext;
     config: I2CDeviceConfig;
 }
 
@@ -69,6 +71,7 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
             this.oldComponent = (
                 <DeviceComponent
                     onChange={this.onDeviceConfigChanged}
+                    context={this.props.context}
                     config={implConfig}
                     baseConfig={this.state.config}
                 />
@@ -103,7 +106,7 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
         return (
             <>
                 <Grid container spacing={3}>
-                    <Grid item xs>
+                    <Grid item xs={3} md={1}>
                         <TextField
                             name="address"
                             label={I18n.t('Address')}
@@ -113,7 +116,7 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
                             disabled={true}
                         />
                     </Grid>
-                    <Grid item xs>
+                    <Grid item xs={9} md={11}>
                         <Dropdown
                             title="Device Type"
                             attr="type"

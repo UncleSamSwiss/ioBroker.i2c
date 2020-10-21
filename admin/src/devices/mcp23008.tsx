@@ -45,7 +45,7 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
                 </Grid>
                 <Grid item xs>
                     <Dropdown
-                        attr="dir"
+                        attr={`dir-${index}`}
                         options={this.dirOptions}
                         value={this.state.dir}
                         onChange={this.onDirChange}
@@ -85,7 +85,7 @@ class MCP23008 extends DeviceBase<MCP230xxConfig> {
             config = { ...props.config };
         }
         console.log('new MCP23008()', props, config);
-        this.state = config;
+        this.state = { config };
     }
 
     static getAllAddresses(): number[] {
@@ -100,7 +100,7 @@ class MCP23008 extends DeviceBase<MCP230xxConfig> {
 
     @boundMethod
     protected onPinChange(index: number, config: PinConfig): void {
-        const pins = [...this.state.pins];
+        const pins = [...this.state.config.pins];
         pins[index] = config;
         this.doHandleChange('pins', pins);
     }
@@ -113,14 +113,14 @@ class MCP23008 extends DeviceBase<MCP230xxConfig> {
                         <TextField
                             name="pollingInterval"
                             label={I18n.t('Polling Interval (ms)')}
-                            value={this.state.pollingInterval}
+                            value={this.state.config.pollingInterval}
                             type="number"
                             margin="normal"
                             onChange={this.handleChange}
                         />
                     </Grid>
                 </Grid>
-                {this.state.pins.map((pin, i) => (
+                {this.state.config.pins.map((pin, i) => (
                     <PinEditor key={`pin-${i}`} index={i} config={pin} onChange={this.onPinChange}></PinEditor>
                 ))}
             </>

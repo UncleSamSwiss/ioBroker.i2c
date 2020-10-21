@@ -1,16 +1,26 @@
 import { boundMethod } from 'autobind-decorator';
 import * as React from 'react';
-import { I2CDeviceConfig, ImplementationConfigBase } from '../../../src/lib/shared';
+import { I2CDeviceConfig, ImplementationConfigBase } from '../../../src/lib/adapter-config';
+import { AppContext } from '../common';
 
 export interface DeviceProps<T extends ImplementationConfigBase> {
     onChange: (newConfig: T) => void;
+    context: AppContext;
     config?: T;
     baseConfig: I2CDeviceConfig;
 }
 
-export abstract class DeviceBase<T extends ImplementationConfigBase> extends React.Component<DeviceProps<T>, T> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> extends React.Component<
+    DeviceProps<T>,
+    { config: T; extra?: S }
+> {
     public get address(): number {
         return this.props.baseConfig.address;
+    }
+
+    protected setExtraState(value: Partial<S>, callback?: () => void): void {
+        this.setState({ extra: { ...this.state.extra, ...value } as S }, callback);
     }
 
     private parseChangedSetting(target: HTMLInputElement | HTMLSelectElement): any {
@@ -29,15 +39,16 @@ export abstract class DeviceBase<T extends ImplementationConfigBase> extends Rea
     protected handleChange(event: React.FormEvent<HTMLElement>): boolean {
         const target = event.target as HTMLInputElement | HTMLSelectElement; // TODO: more types
         const value = this.parseChangedSetting(target);
-        const key = target.id.replace(/^\d+-/, '') as keyof T; // id is usually "<address>-<key>"
+        const id = target.id || target.name;
+        const key = id.replace(/^\d+-/, '') as keyof T; // id is usually "<address>-<key>"
         return this.doHandleChange(key, value);
     }
 
     protected doHandleChange(key: keyof T, value: any): boolean {
         // store the setting
-        this.setState({ [key]: value } as any, () => {
+        this.setState({ config: { ...this.state.config, [key]: value } } as any, () => {
             // and notify the admin UI about changes
-            this.props.onChange({ ...this.props.config, ...this.state });
+            this.props.onChange({ ...this.props.config, ...this.state.config });
         });
         return false;
     }

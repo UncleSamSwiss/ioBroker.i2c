@@ -9,6 +9,7 @@ import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import { toHexString } from '../../../src/lib/shared';
 import { General } from '../pages/general';
 import { DeviceTab } from '../pages/device-tab';
+import { AppContext } from '../common';
 
 const styles = (theme: Theme): Record<string, CreateCSSProperties> => ({
     root: {
@@ -20,13 +21,15 @@ const styles = (theme: Theme): Record<string, CreateCSSProperties> => ({
     tabs: {
         borderRight: `1px solid ${theme.palette.divider}`,
     },
+    tabpanel: {
+        width: '100%',
+    },
 });
 
 interface SettingsProps {
     classes: Record<string, string>;
     native: ioBroker.AdapterConfig;
-    socket: Connection;
-    instanceId: string;
+    context: AppContext;
 
     onChange: (attr: string, value: any) => void;
 }
@@ -99,7 +102,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
     }
 
     render(): React.ReactNode {
-        const { classes, native, socket, instanceId } = this.props;
+        const { classes, native, context } = this.props;
         return (
             <div className={classes.root}>
                 <Tabs
@@ -113,17 +116,22 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
                         <Tab key={`tab-${i}`} label={k} id={`tab-${i}`} />
                     ))}
                 </Tabs>
-                <TabPanel value={this.state.tabIndex} index={0}>
-                    <General
-                        settings={native}
-                        socket={socket}
-                        instanceId={instanceId}
-                        onChange={this.onGeneralChange}
-                    />
+                <TabPanel value={this.state.tabIndex} index={0} className={classes.tabpanel}>
+                    <General settings={native} context={context} onChange={this.onGeneralChange} />
                 </TabPanel>
                 {this.state.devices.map((device, i) => (
-                    <TabPanel key={`tabpanel-${i + 1}`} value={this.state.tabIndex} index={i + 1}>
-                        <DeviceTab key={device.address} config={device} onChange={this.onDeviceChange} />
+                    <TabPanel
+                        key={`tabpanel-${i + 1}`}
+                        value={this.state.tabIndex}
+                        index={i + 1}
+                        className={classes.tabpanel}
+                    >
+                        <DeviceTab
+                            key={device.address}
+                            context={context}
+                            config={device}
+                            onChange={this.onDeviceChange}
+                        />
                     </TabPanel>
                 ))}
             </div>
