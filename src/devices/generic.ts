@@ -4,6 +4,7 @@ import { toHexString } from '../lib/shared';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface GenericConfig extends ImplementationConfigBase {
+    name?: string;
     registers: RegisterConfig[];
 }
 
@@ -43,10 +44,11 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
+        const name = this.config.name || this.name;
         await this.adapter.extendObjectAsync(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: this.hexAddress + ' (' + name + ')',
                 role: 'sensor',
             },
             native: this.config as any,

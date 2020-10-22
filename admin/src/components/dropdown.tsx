@@ -31,7 +31,7 @@ export default class Dropdown extends React.Component<DropdownProps> {
                 >
                     {options.map((item) => (
                         <MenuItem key={'key-' + item.value} value={item.value || '_'}>
-                            {I18n.t(item.title)}
+                            {item.title}
                         </MenuItem>
                     ))}
                 </Select>

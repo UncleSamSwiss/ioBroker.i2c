@@ -32,12 +32,9 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
         this.setState({ extra: { ...this.state.extra, ...value } as S }, callback);
     }
 
-    private parseChangedSetting(target: HTMLInputElement | HTMLSelectElement): any {
-        // Checkboxes in MaterializeCSS are messed up, so we attach our own handler
-        // However that one gets called before the underlying checkbox is actually updated,
-        // so we need to invert the checked value here
+    protected parseChangedSetting(target: HTMLInputElement | HTMLSelectElement, checked?: boolean): any {
         return target.type === 'checkbox'
-            ? !(target as any).checked
+            ? !!checked
             : target.type === 'number'
             ? parseInt(target.value, 10)
             : target.value;
@@ -45,9 +42,9 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
 
     // gets called when the form elements are changed by the user
     @boundMethod
-    protected handleChange(event: React.FormEvent<HTMLElement>): boolean {
+    protected handleChange(event: React.FormEvent<HTMLElement>, checked?: boolean): boolean {
         const target = event.target as HTMLInputElement | HTMLSelectElement; // TODO: more types
-        const value = this.parseChangedSetting(target);
+        const value = this.parseChangedSetting(target, checked);
         const id = target.id || target.name;
         const key = id.replace(/^\d+-/, '') as keyof T; // id is usually "<address>-<key>"
         return this.doHandleChange(key, value);

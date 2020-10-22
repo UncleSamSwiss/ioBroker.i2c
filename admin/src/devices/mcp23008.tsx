@@ -17,9 +17,9 @@ interface PinEditorProps {
 
 class PinEditor extends React.Component<PinEditorProps, PinConfig> {
     private readonly dirOptions: DropdownOption[] = [
-        { value: 'in-no', title: 'Input without pull-up resistor' },
-        { value: 'in-pu', title: 'Input with pull-up resistor' },
-        { value: 'out', title: 'Output' },
+        { value: 'in-no', title: I18n.t('Input without pull-up resistor') },
+        { value: 'in-pu', title: I18n.t('Input with pull-up resistor') },
+        { value: 'out', title: I18n.t('Output') },
     ];
 
     constructor(props: PinEditorProps) {

@@ -20,10 +20,11 @@ class Generic extends device_handler_base_1.DeviceHandlerBase {
     startAsync() {
         return __awaiter(this, void 0, void 0, function* () {
             this.debug('Starting');
+            const name = this.config.name || this.name;
             yield this.adapter.extendObjectAsync(this.hexAddress, {
                 type: 'device',
                 common: {
-                    name: this.hexAddress + ' (' + this.name + ')',
+                    name: this.hexAddress + ' (' + name + ')',
                     role: 'sensor',
                 },
                 native: this.config,

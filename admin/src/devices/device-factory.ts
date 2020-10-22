@@ -2,6 +2,7 @@ import * as React from 'react';
 import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import * as BH1750 from './bh1750';
 import * as BME280 from './bme280';
+import * as Generic from './generic';
 import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
 import * as PCA9685 from './pca9685';
@@ -22,12 +23,13 @@ export class DeviceFactory {
         MCP23017.Info,
         PCA9685.Info,
         ...PCF8574.Infos,
+
+        // always leave "Generic" at the end
+        Generic.Info,
     ];
 
     static getSupportedDevices(address: number): DeviceInfo[] {
-        return this.supportedDevices
-            .filter((info) => !!info.addresses.find((a) => a === address))
-            .sort((a, b) => a.name.localeCompare(b.name));
+        return this.supportedDevices.filter((info) => !!info.addresses.find((a) => a === address));
     }
 
     static createComponent(config: I2CDeviceConfig): typeof React.Component | undefined {
