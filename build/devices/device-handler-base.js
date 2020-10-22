@@ -21,7 +21,7 @@ class DeviceHandlerBase {
         }
         this.type = deviceConfig.type;
         this.name = deviceConfig.name;
-        this.config = deviceConfig[deviceConfig.name];
+        this.config = deviceConfig[deviceConfig.type];
         this.hexAddress = shared_1.toHexString(deviceConfig.address);
     }
     // polling related methods

@@ -19,7 +19,7 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
         this.type = deviceConfig.type;
         this.name = deviceConfig.name;
 
-        this.config = deviceConfig[deviceConfig.name] as T;
+        this.config = deviceConfig[deviceConfig.type] as T;
 
         this.hexAddress = toHexString(deviceConfig.address);
     }
