@@ -2,6 +2,7 @@ import * as React from 'react';
 import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
+import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
 
 export interface DeviceInfo {
@@ -12,7 +13,12 @@ export interface DeviceInfo {
 }
 
 export class DeviceFactory {
-    public static readonly supportedDevices: DeviceInfo[] = [...PCF8574.Infos, MCP23008.Info, MCP23017.Info];
+    public static readonly supportedDevices: DeviceInfo[] = [
+        ...PCF8574.Infos,
+        MCP23008.Info,
+        MCP23017.Info,
+        PCA9685.Info,
+    ];
 
     static getSupportedDevices(address: number): DeviceInfo[] {
         return this.supportedDevices.filter((info) => !!info.addresses.find((a) => a === address));
