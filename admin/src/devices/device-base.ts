@@ -19,6 +19,15 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
         return this.props.baseConfig.address;
     }
 
+    public static getAllAddresses(baseAddress: number, range: number): number[] {
+        const addresses: number[] = [];
+        for (let i = 0; i < range; i++) {
+            addresses.push(baseAddress + i);
+        }
+
+        return addresses;
+    }
+
     protected setExtraState(value: Partial<S>, callback?: () => void): void {
         this.setState({ extra: { ...this.state.extra, ...value } as S }, callback);
     }

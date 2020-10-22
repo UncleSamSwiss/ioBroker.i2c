@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { boundMethod } from 'autobind-decorator';
-import { Button, Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
+import { Button, Checkbox, FormControlLabel, Grid, InputAdornment, TextField } from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
@@ -89,16 +89,6 @@ class MCP23008 extends DeviceBase<MCP230xxConfig, { showIdDialog: boolean }> {
         this.state = { config: config, extra: { showIdDialog: false } };
     }
 
-    static getAllAddresses(): number[] {
-        const addresses: number[] = [];
-        const baseAddress = 0x20;
-        for (let i = 0; i < 8; i++) {
-            addresses.push(baseAddress + i);
-        }
-
-        return addresses;
-    }
-
     @boundMethod
     protected selectInterruptId(): void {
         this.setExtraState({ showIdDialog: true });
@@ -131,13 +121,16 @@ class MCP23008 extends DeviceBase<MCP230xxConfig, { showIdDialog: boolean }> {
                     ></SelectID>
                 )}
                 <Grid container spacing={3}>
-                    <Grid item xs={12}>
+                    <Grid item xs={7} sm={5} md={3}>
                         <TextField
                             name="pollingInterval"
-                            label={I18n.t('Polling Interval (ms)')}
+                            label={I18n.t('Polling Interval')}
                             value={this.state.config.pollingInterval}
                             type="number"
-                            margin="normal"
+                            InputProps={{
+                                endAdornment: <InputAdornment position="end">ms</InputAdornment>,
+                            }}
+                            fullWidth
                             onChange={this.handleChange}
                         />
                     </Grid>
@@ -149,9 +142,8 @@ class MCP23008 extends DeviceBase<MCP230xxConfig, { showIdDialog: boolean }> {
                             label={I18n.t('Interrupt object')}
                             value={this.state.config.interrupt}
                             type="text"
-                            margin="normal"
+                            fullWidth
                             onChange={this.handleChange}
-                            style={{ width: '100%' }}
                         />
                     </Grid>
                     <Grid item xs={3} md={6}>
@@ -170,7 +162,7 @@ class MCP23008 extends DeviceBase<MCP230xxConfig, { showIdDialog: boolean }> {
 
 export const Info: DeviceInfo = {
     name: 'MCP23008',
-    addresses: MCP23008.getAllAddresses(),
+    addresses: DeviceBase.getAllAddresses(0x20, 8),
     type: 'MCP23008',
     react: MCP23008,
 };

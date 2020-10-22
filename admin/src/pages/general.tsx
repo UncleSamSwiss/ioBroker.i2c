@@ -94,14 +94,14 @@ export class General extends React.Component<GeneralProps, GeneralState> {
         return (
             <>
                 <Grid container spacing={3}>
-                    <Grid item xs>
+                    <Grid item xs={6} sm={4} md={2}>
                         <TextField
                             name="busNumber"
                             label={I18n.t('Bus number')}
                             value={this.state.busNumber}
                             type={'number'}
+                            fullWidth
                             onChange={this.handleChange}
-                            margin="normal"
                         />
                     </Grid>
                 </Grid>

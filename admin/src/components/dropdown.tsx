@@ -20,12 +20,14 @@ export default class Dropdown extends React.Component<DropdownProps> {
     render(): React.ReactNode {
         const { title, attr, options, value } = this.props;
         return (
-            <FormControl style={{ paddingTop: 10, ...this.props.style }}>
+            <FormControl style={{ marginTop: -5, ...this.props.style }} fullWidth>
                 {title && <FormHelperText>{I18n.t(title)}</FormHelperText>}
                 <Select
                     value={value || '_'}
                     onChange={(e) => this.props.onChange(e.target.value === '_' ? '' : (e.target.value as string))}
                     input={<Input name={attr} id={attr + '-helper'} />}
+                    fullWidth
+                    style={{ marginTop: -1 }}
                 >
                     {options.map((item) => (
                         <MenuItem key={'key-' + item.value} value={item.value || '_'}>

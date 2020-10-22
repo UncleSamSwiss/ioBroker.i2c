@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { boundMethod } from 'autobind-decorator';
-import { Button, Checkbox, FormControlLabel, Grid, TextField } from '@material-ui/core';
+import { Button, Checkbox, FormControlLabel, Grid, InputAdornment, TextField } from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
@@ -83,15 +83,6 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
         this.state = { config: config, extra: { showIdDialog: false } };
     }
 
-    static getAllAddresses(baseAddress: number): number[] {
-        const addresses: number[] = [];
-        for (let i = 0; i < 8; i++) {
-            addresses.push(baseAddress + i);
-        }
-
-        return addresses;
-    }
-
     @boundMethod
     protected selectInterruptId(): void {
         this.setExtraState({ showIdDialog: true });
@@ -124,13 +115,16 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
                     ></SelectID>
                 )}
                 <Grid container spacing={3}>
-                    <Grid item xs={12}>
+                    <Grid item xs={7} sm={5} md={3}>
                         <TextField
                             name="pollingInterval"
-                            label={I18n.t('Polling Interval (ms)')}
+                            label={I18n.t('Polling Interval')}
                             value={this.state.config.pollingInterval}
                             type="number"
-                            margin="normal"
+                            InputProps={{
+                                endAdornment: <InputAdornment position="end">ms</InputAdornment>,
+                            }}
+                            fullWidth
                             onChange={this.handleChange}
                         />
                     </Grid>
@@ -142,9 +136,8 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
                             label={I18n.t('Interrupt object')}
                             value={this.state.config.interrupt}
                             type="text"
-                            margin="normal"
+                            fullWidth
                             onChange={this.handleChange}
-                            style={{ width: '100%' }}
                         />
                     </Grid>
                     <Grid item xs={3} md={6}>
@@ -162,6 +155,6 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
 }
 
 export const Infos: DeviceInfo[] = [
-    { name: 'PCF8574', addresses: PCF8574.getAllAddresses(0x20), type: 'PCF8574', react: PCF8574 },
-    { name: 'PCF8574A', addresses: PCF8574.getAllAddresses(0x38), type: 'PCF8574', react: PCF8574 },
+    { name: 'PCF8574', addresses: DeviceBase.getAllAddresses(0x20, 8), type: 'PCF8574', react: PCF8574 },
+    { name: 'PCF8574A', addresses: DeviceBase.getAllAddresses(0x38, 8), type: 'PCF8574', react: PCF8574 },
 ];

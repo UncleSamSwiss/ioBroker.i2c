@@ -15,7 +15,7 @@ const styles = (theme: Theme): Record<string, CreateCSSProperties> => ({
         flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
         display: 'flex',
-        height: '100%',
+        height: 'calc(100% - 102px)',
     },
     tabs: {
         borderRight: `1px solid ${theme.palette.divider}`,
@@ -23,7 +23,6 @@ const styles = (theme: Theme): Record<string, CreateCSSProperties> => ({
     tabpanel: {
         width: '100%',
         overflowY: 'scroll',
-        height: 'calc(100% - 86px)',
     },
 });
 

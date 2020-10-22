@@ -112,11 +112,11 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
                             label={I18n.t('Address')}
                             value={toHexString(this.state.config.address)}
                             type="text"
-                            margin="normal"
+                            fullWidth
                             disabled={true}
                         />
                     </Grid>
-                    <Grid item xs={9} md={11}>
+                    <Grid item xs={4} md={2}>
                         <Dropdown
                             title="Device Type"
                             attr="type"
