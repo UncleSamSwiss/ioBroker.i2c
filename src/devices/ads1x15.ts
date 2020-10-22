@@ -8,18 +8,15 @@ import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
 
 export interface ADS1x15Config extends ImplementationConfigBase {
     pollingInterval: number;
-    kind: 1015 | 1115;
     channels: Channel[];
 }
 
 export interface DisabledChannel {
     channelType: 'off';
-    available: boolean;
 }
 
 export interface EnabledChannel {
     channelType: 'single' | 'diffTo1' | 'diffTo3';
-    available: boolean;
     gain: number;
     samples: number;
 }
@@ -173,7 +170,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             native: this.config as any,
         });
 
-        if (this.config.kind == 1015) {
+        if (this.name === 'ADS1015') {
             this.ic = IC.ADS1015;
         } else {
             this.ic = IC.ADS1115;
@@ -181,7 +178,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
 
         let hasEnabled = false;
         for (let i = 0; i < 4; i++) {
-            const channelConfig = this.config.channels[i] || { channelType: 'off', available: true };
+            const channelConfig = this.config.channels[i] || { channelType: 'off' };
             switch (channelConfig.channelType) {
                 case 'single':
                     this.muxes[i] = ADS1x15_REG_CONFIG_MUX.SINGLE_0 + 0x1000 * i;
@@ -243,6 +240,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
                 await this.readAdcAsync(i);
             }
         } while (this.readAgain);
+        this.busy = false;
     }
 
     private async readAdcAsync(index: number): Promise<void> {

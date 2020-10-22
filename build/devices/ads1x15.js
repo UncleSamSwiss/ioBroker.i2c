@@ -158,7 +158,7 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                 },
                 native: this.config,
             });
-            if (this.config.kind == 1015) {
+            if (this.name === 'ADS1015') {
                 this.ic = IC.ADS1015;
             }
             else {
@@ -166,7 +166,7 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
             }
             let hasEnabled = false;
             for (let i = 0; i < 4; i++) {
-                const channelConfig = this.config.channels[i] || { channelType: 'off', available: true };
+                const channelConfig = this.config.channels[i] || { channelType: 'off' };
                 switch (channelConfig.channelType) {
                     case 'single':
                         this.muxes[i] = ADS1x15_REG_CONFIG_MUX.SINGLE_0 + 0x1000 * i;
@@ -228,6 +228,7 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                     yield this.readAdcAsync(i);
                 }
             } while (this.readAgain);
+            this.busy = false;
         });
     }
     readAdcAsync(index) {
