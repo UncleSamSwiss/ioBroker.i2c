@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import * as BH1750 from './bh1750';
+import * as BME280 from './bme280';
 import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
 import * as PCA9685 from './pca9685';
@@ -15,11 +16,12 @@ export interface DeviceInfo {
 
 export class DeviceFactory {
     public static readonly supportedDevices: DeviceInfo[] = [
-        ...PCF8574.Infos,
+        BH1750.Info,
+        BME280.Info,
         MCP23008.Info,
         MCP23017.Info,
         PCA9685.Info,
-        BH1750.Info,
+        ...PCF8574.Infos,
     ];
 
     static getSupportedDevices(address: number): DeviceInfo[] {

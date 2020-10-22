@@ -3,13 +3,13 @@ import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { BH1750Config } from '../../../src/devices/bh1750';
+import { BME280Config } from '../../../src/devices/bme280';
 
-class BH1750 extends DeviceBase<BH1750Config> {
-    constructor(props: DeviceProps<BH1750Config>) {
+class BME280 extends DeviceBase<BME280Config> {
+    constructor(props: DeviceProps<BME280Config>) {
         super(props);
 
-        let config: BH1750Config;
+        let config: BME280Config;
         if (!props.config) {
             config = {
                 pollingInterval: 10,
@@ -19,7 +19,7 @@ class BH1750 extends DeviceBase<BH1750Config> {
         } else {
             config = { ...props.config };
         }
-        console.log('new BH1750()', props, config);
+        console.log('new BME280()', props, config);
         this.state = { config: config };
     }
 
@@ -45,8 +45,8 @@ class BH1750 extends DeviceBase<BH1750Config> {
 }
 
 export const Info: DeviceInfo = {
-    name: 'BH1750',
-    addresses: [0x23, 0x5c],
-    type: 'BH1750',
-    react: BH1750,
+    name: 'BME280',
+    addresses: [0x76, 0x77],
+    type: 'BME280',
+    react: BME280,
 };
