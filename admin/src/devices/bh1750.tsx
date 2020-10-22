@@ -3,24 +3,23 @@ import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { PCA9685Config } from '../../../src/devices/pca9685';
+import { BH1750Config } from '../../../src/devices/bh1750';
 
-class PCA9685 extends DeviceBase<PCA9685Config> {
-    constructor(props: DeviceProps<PCA9685Config>) {
+class BH1750 extends DeviceBase<BH1750Config> {
+    constructor(props: DeviceProps<BH1750Config>) {
         super(props);
 
-        let config: PCA9685Config;
+        let config: BH1750Config;
         if (!props.config) {
             config = {
-                frequency: 100,
+                pollingInterval: 10,
             };
 
             props.onChange(config);
         } else {
             config = { ...props.config };
         }
-        config.frequency = config.frequency || 100;
-        console.log('new PCA9685()', props, config);
+        console.log('new BH1750()', props, config);
         this.state = { config: config };
     }
 
@@ -30,15 +29,13 @@ class PCA9685 extends DeviceBase<PCA9685Config> {
                 <Grid item xs={7} sm={5} md={3}>
                     <TextField
                         name="frequency"
-                        label={I18n.t('PWM frequency')}
-                        value={this.state.config.frequency}
+                        label={I18n.t('Polling Interval')}
+                        value={this.state.config.pollingInterval}
                         type="number"
-                        inputProps={{ min: '24', max: '1526', step: '1' }}
                         InputProps={{
-                            endAdornment: <InputAdornment position="end">Hz</InputAdornment>,
+                            endAdornment: <InputAdornment position="end">sec</InputAdornment>,
                         }}
                         fullWidth
-                        helperText={`${I18n.t('Range:')} 24-1526Hz`}
                         onChange={this.handleChange}
                     />
                 </Grid>
@@ -48,8 +45,8 @@ class PCA9685 extends DeviceBase<PCA9685Config> {
 }
 
 export const Info: DeviceInfo = {
-    name: 'PCA9685',
-    addresses: DeviceBase.getAllAddresses(0x40, 64),
-    type: 'PCA9685',
-    react: PCA9685,
+    name: 'BH1750',
+    addresses: [0x23, 0x5c],
+    type: 'BH1750',
+    react: BH1750,
 };
