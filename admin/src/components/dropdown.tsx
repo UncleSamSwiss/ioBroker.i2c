@@ -5,6 +5,7 @@ import I18n from '@iobroker/adapter-react/i18n';
 export interface DropdownOption {
     value: string;
     title: string;
+    disabled?: boolean;
 }
 
 interface DropdownProps {
@@ -12,15 +13,16 @@ interface DropdownProps {
     attr: string;
     options: DropdownOption[];
     value?: string;
+    disabled?: boolean;
     onChange: (value: string) => void;
     style?: any;
 }
 
 export default class Dropdown extends React.Component<DropdownProps> {
     render(): React.ReactNode {
-        const { title, attr, options, value } = this.props;
+        const { title, attr, options, value, disabled } = this.props;
         return (
-            <FormControl style={{ marginTop: -5, ...this.props.style }} fullWidth>
+            <FormControl style={{ marginTop: -5, ...this.props.style }} disabled={disabled} fullWidth>
                 {title && <FormHelperText>{I18n.t(title)}</FormHelperText>}
                 <Select
                     value={value || '_'}
@@ -30,7 +32,7 @@ export default class Dropdown extends React.Component<DropdownProps> {
                     style={{ marginTop: -1 }}
                 >
                     {options.map((item) => (
-                        <MenuItem key={'key-' + item.value} value={item.value || '_'}>
+                        <MenuItem key={'key-' + item.value} value={item.value || '_'} disabled={item.disabled}>
                             {item.title}
                         </MenuItem>
                     ))}
