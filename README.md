@@ -14,7 +14,7 @@
 **Tests:** [![Travis-CI](http://img.shields.io/travis/UncleSamSwiss/ioBroker.i2c/master.svg)](https://travis-ci.org/UncleSamSwiss/ioBroker.i2c)
 ![Test and Release](https://github.com/UncleSamSwiss/ioBroker.i2c/workflows/Test%20and%20Release/badge.svg)
 
-## i2c adapter for ioBroker
+## I2C adapter for ioBroker
 
 Communicates with devices connected to the local system using the I2C bus.
 
@@ -151,6 +151,45 @@ Compatibility has been tested with Raspberry Pi 3 and 4B.
 Please use the GitHub repository to report any bugs or request new features.
 
 If you require a missing devcies, please provide the type of IC (brand, model, ...) and its address(es) as reported in the adapter configuration.
+
+## Development
+
+### VS Code & Devcontainer
+
+This repository is set up so development can be done using VS Code and Devcontainer. Simply open the root folder of this repository with VS Code and and acknowledge to switch to Devcontainer.
+
+### Remote I2C
+
+If you are developing on a desktop PC and want to test I2C on a SBC (e.g. a Raspberry Pi), you can do the following:
+
+-   Install ioBroker on the SBC with I2C
+-   Install this adapter on the SBC
+-   Configure the adapter instance on the SBC manually to contain the `"serverPort"` setting in `"native"`:
+
+```json
+  "native": {
+    "busNumber": 1,
+    "serverPort": 5555
+  }
+```
+
+-   You don't need to configure any I2C devices here
+-   Add an adapter instance to your desktop ioBroker (or use Devcontainer as described above)
+-   Configure the adapter instance on your desktop PC manually to contain the `"clientAddress"` setting in `"native"`:
+
+```json
+  "native": {
+    "busNumber": 1,
+    "clientAddress": "http://<your-ip-address>:5555/rpc"
+  }
+```
+
+-   Ensure you use the right IP address and port (the one configured on the device)
+-   Restart the adapter instance on your desktop PC
+-   The adapter will now execute all I2C commands on the configured SBC instead of locally
+-   You can open the adapter instance settings on your desktop PC and scan for I2C devices like you would on the real SBC
+
+Keep in mind that the RPC server is completely unsecured, so this should only be used for development inside a secure network!
 
 ## Changelog
 
