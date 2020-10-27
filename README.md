@@ -193,6 +193,10 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 
 ## Changelog
 
+### 1.0.1 (2020-10-27)
+
+-   (UncleSamSwiss) Removed unneeded files in NPM package
+
 ### 1.0.0 (2020-10-27)
 
 -   (UncleSamSwiss) Updated to the latest development tools and changed to the TypeScript language

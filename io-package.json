@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "news": {
+            "1.0.1": {
+                "en": "Removed unneeded files in NPM package",
+                "de": "Nicht benötigte Dateien im NPM-Paket wurden entfernt",
+                "ru": "Удалены ненужные файлы в пакете NPM",
+                "pt": "Arquivos desnecessários removidos do pacote NPM",
+                "nl": "Verwijderde onnodige bestanden in het NPM-pakket",
+                "fr": "Suppression des fichiers inutiles dans le package NPM",
+                "it": "File non necessari rimossi nel pacchetto NPM",
+                "es": "Archivos innecesarios eliminados en el paquete NPM",
+                "pl": "Usunięto niepotrzebne pliki z pakietu NPM",
+                "zh-cn": "删除了NPM软件包中不需要的文件"
+            },
             "1.0.0": {
                 "en": "Updated to the latest development tools and changed to the TypeScript language",
                 "de": "Auf die neusten Entwicklungstools aktualisiert und umgestellt auf TypeScript",
