@@ -5,39 +5,111 @@
         "news": {
             "1.0.0": {
                 "en": "Updated to the latest development tools and changed to the TypeScript language",
-                "de": "Auf die neusten Entwicklungstools aktualisiert und umgestellt auf TypeScript"
+                "de": "Auf die neusten Entwicklungstools aktualisiert und umgestellt auf TypeScript",
+                "ru": "Обновлено до последних средств разработки и переведено на язык TypeScript.",
+                "pt": "Atualizado com as ferramentas de desenvolvimento mais recentes e alterado para a linguagem TypeScript",
+                "nl": "Bijgewerkt naar de nieuwste ontwikkeltools en gewijzigd naar de TypeScript-taal",
+                "fr": "Mis à jour avec les derniers outils de développement et changé pour le langage TypeScript",
+                "it": "Aggiornato agli ultimi strumenti di sviluppo e modificato nel linguaggio TypeScript",
+                "es": "Actualizado a las últimas herramientas de desarrollo y cambiado al lenguaje TypeScript",
+                "pl": "Zaktualizowano do najnowszych narzędzi programistycznych i zmieniono na język TypeScript",
+                "zh-cn": "更新为最新的开发工具，并更改为TypeScript语言"
             },
             "0.0.8": {
                 "en": "Added support for interrupts on PCF8574, MCP23008, MCP23017 devices. Added support for Generic device. Added support for `read` and `write` commands in scripts using `sendTo`.",
-                "de": "Unterstüztung für Interrupts bei PCF8574, MCP23008, MCP23017 hinzugefügt. Unterstüztung für Allgemeine Geräte hinzugefügt. Unterstüztung für `read` und `write` Befehle in Skripten über `sendTo` hinzugefügt."
+                "de": "Unterstüztung für Interrupts bei PCF8574, MCP23008, MCP23017 hinzugefügt. Unterstüztung für Allgemeine Geräte hinzugefügt. Unterstüztung für `read` und `write` Befehle in Skripten über `sendTo` hinzugefügt.",
+                "ru": "Добавлена ​​поддержка прерываний на устройствах PCF8574, MCP23008, MCP23017. ",
+                "pt": "Adicionado suporte para interrupções em dispositivos PCF8574, MCP23008, MCP23017. ",
+                "nl": "Ondersteuning toegevoegd voor interrupts op PCF8574-, MCP23008-, MCP23017-apparaten. ",
+                "fr": "Ajout de la prise en charge des interruptions sur les périphériques PCF8574, MCP23008, MCP23017. ",
+                "it": "Aggiunto supporto per interrupt su dispositivi PCF8574, MCP23008, MCP23017. ",
+                "es": "Se agregó soporte para interrupciones en dispositivos PCF8574, MCP23008, MCP23017. ",
+                "pl": "Dodano obsługę przerwań na urządzeniach PCF8574, MCP23008, MCP23017. ",
+                "zh-cn": "增加了对PCF8574，MCP23008，MCP23017器件上的中断的支持。"
             },
             "0.0.7": {
                 "en": "Added support for PCA9865 and BH1750",
-                "de": "Unterstüztung für PCA9685 und BH1750 hinzugefügt."
+                "de": "Unterstüztung für PCA9685 und BH1750 hinzugefügt.",
+                "ru": "Добавлена ​​поддержка PCA9865 и BH1750.",
+                "pt": "Adicionado suporte para PCA9865 e BH1750",
+                "nl": "Ondersteuning toegevoegd voor PCA9865 en BH1750",
+                "fr": "Ajout du support pour PCA9865 et BH1750",
+                "it": "Aggiunto supporto per PCA9865 e BH1750",
+                "es": "Soporte agregado para PCA9865 y BH1750",
+                "pl": "Dodano obsługę PCA9865 i BH1750",
+                "zh-cn": "增加了对PCA9865和BH1750的支持"
             },
             "0.0.6": {
                 "en": "Added support for ADS1015, ADS1115 and BME280.",
-                "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt."
+                "de": "Unterstüztung für ADS1015, ADS1115 und BME280 hinzugefügt.",
+                "ru": "Добавлена ​​поддержка ADS1015, ADS1115 и BME280.",
+                "pt": "Adicionado suporte para ADS1015, ADS1115 e BME280.",
+                "nl": "Ondersteuning toegevoegd voor ADS1015, ADS1115 en BME280.",
+                "fr": "Ajout du support pour ADS1015, ADS1115 et BME280.",
+                "it": "Aggiunto supporto per ADS1015, ADS1115 e BME280.",
+                "es": "Se agregó soporte para ADS1015, ADS1115 y BME280.",
+                "pl": "Dodano obsługę ADS1015, ADS1115 i BME280.",
+                "zh-cn": "添加了对ADS1015，ADS1115和BME280的支持。"
             },
             "0.0.5": {
                 "en": "Added support for MCP23008 I/O expander.",
-                "de": "Unterstüztung für den MCP23008 I/O-Expander hinzugefügt."
+                "de": "Unterstüztung für den MCP23008 I/O-Expander hinzugefügt.",
+                "ru": "Добавлена ​​поддержка расширителя ввода / вывода MCP23008.",
+                "pt": "Adicionado suporte para expansor de E / S MCP23008.",
+                "nl": "Ondersteuning toegevoegd voor MCP23008 I / O-uitbreiding.",
+                "fr": "Ajout de la prise en charge de l'extension d'E / S MCP23008.",
+                "it": "Aggiunto supporto per espansore I / O MCP23008.",
+                "es": "Se agregó soporte para el expansor de E / S MCP23008.",
+                "pl": "Dodano obsługę ekspandera we / wy MCP23008.",
+                "zh-cn": "添加了对MCP23008 I / O扩展器的支持。"
             },
             "0.0.4": {
                 "en": "Improved stability of MCP23017 I/O expander.",
-                "de": "Stabilität von MCP23017 I/O-Expander verbessert."
+                "de": "Stabilität von MCP23017 I/O-Expander verbessert.",
+                "ru": "Повышена стабильность модуля расширения ввода / вывода MCP23017.",
+                "pt": "Estabilidade aprimorada do expansor de E / S MCP23017.",
+                "nl": "Verbeterde stabiliteit van MCP23017 I / O-expander.",
+                "fr": "Amélioration de la stabilité du module d'extension d'E / S MCP23017.",
+                "it": "Stabilità migliorata dell'espansore I / O MCP23017.",
+                "es": "Estabilidad mejorada del expansor de E / S MCP23017.",
+                "pl": "Poprawiona stabilność ekspandera we / wy MCP23017.",
+                "zh-cn": "MCP23017 I / O扩展器的稳定性得到改善。"
             },
             "0.0.3": {
                 "en": "Added support for MCP23017 I/O expander.",
-                "de": "Unterstüztung für den MCP23017 I/O-Expander hinzugefügt."
+                "de": "Unterstüztung für den MCP23017 I/O-Expander hinzugefügt.",
+                "ru": "Добавлена ​​поддержка расширителя ввода / вывода MCP23017.",
+                "pt": "Adicionado suporte para expansor de E / S MCP23017.",
+                "nl": "Ondersteuning toegevoegd voor MCP23017 I / O-expander.",
+                "fr": "Ajout de la prise en charge de l'extension d'E / S MCP23017.",
+                "it": "Aggiunto supporto per espansore I / O MCP23017.",
+                "es": "Se agregó soporte para el expansor de E / S MCP23017.",
+                "pl": "Dodano obsługę ekspandera we / wy MCP23017.",
+                "zh-cn": "添加了对MCP23017 I / O扩展器的支持。"
             },
             "0.0.2": {
                 "en": "Added support for inverting PCF8574 inputs and outputs.",
-                "de": "PCF8574-Eingänge und -Ausgänge können nun invertiert werden."
+                "de": "PCF8574-Eingänge und -Ausgänge können nun invertiert werden.",
+                "ru": "Добавлена ​​поддержка инвертирования входов и выходов PCF8574.",
+                "pt": "Adicionado suporte para inverter entradas e saídas PCF8574.",
+                "nl": "Ondersteuning toegevoegd voor het omkeren van PCF8574-ingangen en -uitgangen.",
+                "fr": "Ajout de la prise en charge de l'inversion des entrées et sorties du PCF8574.",
+                "it": "Aggiunto supporto per l'inversione di ingressi e uscite PCF8574.",
+                "es": "Soporte agregado para invertir entradas y salidas PCF8574.",
+                "pl": "Dodano obsługę odwracania wejść i wyjść PCF8574.",
+                "zh-cn": "增加了对PCF8574输入和输出反相的支持。"
             },
             "0.0.1": {
                 "en": "initial version",
-                "de": "initial version"
+                "de": "initial version",
+                "ru": "Первоначальная версия",
+                "pt": "versão inicial",
+                "nl": "eerste versie",
+                "fr": "version initiale",
+                "it": "versione iniziale",
+                "es": "versión inicial",
+                "pl": "początkowa wersja",
+                "zh-cn": "初始版本"
             }
         },
         "title": "I2C",
@@ -65,7 +137,9 @@
             "pl": "Komunikuje się z urządzeniami przez magistralę I2C.",
             "zh-cn": "通过I2C总线与设备通信。"
         },
-        "authors": ["UncleSamSwiss <samuel.weibel@gmail.com>"],
+        "authors": [
+            "UncleSamSwiss <samuel.weibel@gmail.com>"
+        ],
         "keywords": [
             "I2C",
             "ADS1015",
@@ -82,7 +156,9 @@
         ],
         "license": "Apache-2.0",
         "platform": "Javascript/Node.js",
-        "os": ["linux"],
+        "os": [
+            "linux"
+        ],
         "main": "build/main.js",
         "icon": "i2c.png",
         "enabled": true,
