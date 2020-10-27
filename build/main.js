@@ -19,6 +19,7 @@ const utils = require("@iobroker/adapter-core");
 const i2c = require("i2c-bus");
 const client_1 = require("./debug/client");
 const server_1 = require("./debug/server");
+const shared_1 = require("./lib/shared");
 class I2cAdapter extends utils.Adapter {
     constructor(options = {}) {
         super(Object.assign(Object.assign({ dirname: __dirname.indexOf('node_modules') !== -1 ? undefined : __dirname + '/../' }, options), { name: 'i2c' }));
@@ -98,10 +99,6 @@ class I2cAdapter extends utils.Adapter {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Here you must clear all timeouts or intervals that may still be active
-                // clearTimeout(timeout1);
-                // clearTimeout(timeout2);
-                // ...
-                // clearInterval(interval1);
                 if (this.server) {
                     this.server.stop();
                 }
@@ -160,55 +157,51 @@ class I2cAdapter extends utils.Adapter {
                         }
                         wait = true;
                         break;
-                    /*case 'read':
+                    case 'read':
                         if (typeof obj.message !== 'object' || typeof obj.message.address !== 'number') {
-                            that.adapter.log.error('Invalid read message');
-                            return false;
+                            this.log.error('Invalid read message');
+                            return;
                         }
-                        var buf = Buffer.alloc(obj.message.bytes || 1);
+                        const buf = Buffer.alloc(obj.message.bytes || 1);
                         try {
                             if (typeof obj.message.register === 'number') {
-                                that.bus.readI2cBlockSync(obj.message.address, obj.message.register, buf.length, buf);
-                            } else {
-                                that.bus.i2cReadSync(obj.message.address, buf.length, buf);
+                                yield this.bus.readI2cBlock(obj.message.address, obj.message.register, buf.length, buf);
+                            }
+                            else {
+                                yield this.bus.i2cRead(obj.message.address, buf.length, buf);
                             }
                             if (obj.callback) {
-                                that.adapter.sendTo(obj.from, obj.command, buf, obj.callback);
+                                this.sendTo(obj.from, obj.command, buf, obj.callback);
                             }
                             wait = true;
-                        } catch (e) {
-                            that.adapter.log.error('Error reading from ' + that.toHexString(obj.message.address));
+                        }
+                        catch (e) {
+                            this.log.error('Error reading from ' + shared_1.toHexString(obj.message.address));
                         }
                         break;
-    
                     case 'write':
-                        if (
-                            typeof obj.message !== 'object' ||
+                        if (typeof obj.message !== 'object' ||
                             typeof obj.message.address !== 'number' ||
-                            !Buffer.isBuffer(obj.message.data)
-                        ) {
-                            that.adapter.log.error('Invalid write message');
-                            return false;
+                            !Buffer.isBuffer(obj.message.data)) {
+                            this.log.error('Invalid write message');
+                            return;
                         }
                         try {
                             if (typeof obj.message.register === 'number') {
-                                that.bus.writeI2cBlockSync(
-                                    obj.message.address,
-                                    obj.message.register,
-                                    obj.message.data.length,
-                                    obj.message.data,
-                                );
-                            } else {
-                                that.bus.i2cWriteSync(obj.message.address, obj.message.data.length, obj.message.data);
+                                yield this.bus.writeI2cBlock(obj.message.address, obj.message.register, obj.message.data.length, obj.message.data);
+                            }
+                            else {
+                                yield this.bus.i2cWrite(obj.message.address, obj.message.data.length, obj.message.data);
                             }
                             if (obj.callback) {
-                                that.adapter.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
+                                this.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
                             }
                             wait = true;
-                        } catch (e) {
-                            that.adapter.log.error('Error writing to ' + that.toHexString(obj.message.address));
                         }
-                        break;*/
+                        catch (e) {
+                            this.log.error('Error writing to ' + shared_1.toHexString(obj.message.address));
+                        }
+                        break;
                     default:
                         this.log.warn('Unknown command: ' + obj.command);
                         break;
@@ -221,9 +214,8 @@ class I2cAdapter extends utils.Adapter {
     }
     searchDevicesAsync(busNumber) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (busNumber == this.config.busNumber) {
+            if (busNumber === this.config.busNumber) {
                 this.log.debug('Searching on current bus ' + busNumber);
-                //return [20, 35, 63, 77];
                 return yield this.bus.scan();
             }
             else {

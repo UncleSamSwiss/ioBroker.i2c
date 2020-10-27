@@ -9,6 +9,7 @@ import * as i2c from 'i2c-bus';
 import { I2CClient } from './debug/client';
 import { I2CServer } from './debug/server';
 import { DeviceHandlerBase } from './devices/device-handler-base';
+import { toHexString } from './lib/shared';
 
 export type StateValue = string | number | boolean | null;
 
@@ -117,10 +118,6 @@ export class I2cAdapter extends utils.Adapter {
     private async onUnload(callback: () => void): Promise<void> {
         try {
             // Here you must clear all timeouts or intervals that may still be active
-            // clearTimeout(timeout1);
-            // clearTimeout(timeout2);
-            // ...
-            // clearInterval(interval1);
             if (this.server) {
                 this.server.stop();
             }
@@ -185,24 +182,24 @@ export class I2cAdapter extends utils.Adapter {
                     wait = true;
                     break;
 
-                /*case 'read':
+                case 'read':
                     if (typeof obj.message !== 'object' || typeof obj.message.address !== 'number') {
-                        that.adapter.log.error('Invalid read message');
-                        return false;
+                        this.log.error('Invalid read message');
+                        return;
                     }
-                    var buf = Buffer.alloc(obj.message.bytes || 1);
+                    const buf = Buffer.alloc(obj.message.bytes || 1);
                     try {
                         if (typeof obj.message.register === 'number') {
-                            that.bus.readI2cBlockSync(obj.message.address, obj.message.register, buf.length, buf);
+                            await this.bus.readI2cBlock(obj.message.address, obj.message.register, buf.length, buf);
                         } else {
-                            that.bus.i2cReadSync(obj.message.address, buf.length, buf);
+                            await this.bus.i2cRead(obj.message.address, buf.length, buf);
                         }
                         if (obj.callback) {
-                            that.adapter.sendTo(obj.from, obj.command, buf, obj.callback);
+                            this.sendTo(obj.from, obj.command, buf, obj.callback);
                         }
                         wait = true;
                     } catch (e) {
-                        that.adapter.log.error('Error reading from ' + that.toHexString(obj.message.address));
+                        this.log.error('Error reading from ' + toHexString(obj.message.address));
                     }
                     break;
 
@@ -212,28 +209,28 @@ export class I2cAdapter extends utils.Adapter {
                         typeof obj.message.address !== 'number' ||
                         !Buffer.isBuffer(obj.message.data)
                     ) {
-                        that.adapter.log.error('Invalid write message');
-                        return false;
+                        this.log.error('Invalid write message');
+                        return;
                     }
                     try {
                         if (typeof obj.message.register === 'number') {
-                            that.bus.writeI2cBlockSync(
+                            await this.bus.writeI2cBlock(
                                 obj.message.address,
                                 obj.message.register,
                                 obj.message.data.length,
                                 obj.message.data,
                             );
                         } else {
-                            that.bus.i2cWriteSync(obj.message.address, obj.message.data.length, obj.message.data);
+                            await this.bus.i2cWrite(obj.message.address, obj.message.data.length, obj.message.data);
                         }
                         if (obj.callback) {
-                            that.adapter.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
+                            this.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
                         }
                         wait = true;
                     } catch (e) {
-                        that.adapter.log.error('Error writing to ' + that.toHexString(obj.message.address));
+                        this.log.error('Error writing to ' + toHexString(obj.message.address));
                     }
-                    break;*/
+                    break;
                 default:
                     this.log.warn('Unknown command: ' + obj.command);
                     break;
@@ -246,10 +243,8 @@ export class I2cAdapter extends utils.Adapter {
     }
 
     private async searchDevicesAsync(busNumber: number): Promise<number[]> {
-        if (busNumber == this.config.busNumber) {
+        if (busNumber === this.config.busNumber) {
             this.log.debug('Searching on current bus ' + busNumber);
-
-            //return [20, 35, 63, 77];
             return await this.bus.scan();
         } else {
             this.log.debug('Searching on new bus ' + busNumber);
