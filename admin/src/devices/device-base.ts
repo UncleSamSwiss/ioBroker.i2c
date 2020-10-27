@@ -50,7 +50,7 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
         return this.doHandleChange(key, value);
     }
 
-    protected doHandleChange(key: keyof T, value: any): boolean {
+    protected doHandleChange<K extends keyof T>(key: K, value: T[K]): boolean {
         // store the setting
         this.setState({ config: { ...this.state.config, [key]: value } } as any, () => {
             // and notify the admin UI about changes

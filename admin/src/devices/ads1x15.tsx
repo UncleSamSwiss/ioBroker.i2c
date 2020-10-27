@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Grid, InputAdornment, MenuItem, TextField } from '@material-ui/core';
+import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
@@ -76,7 +76,11 @@ class ADS1x15 extends DeviceBase<ADS1x15Config> {
     }
 
     @boundMethod
-    protected onChannelChange<K extends keyof EnabledChannel>(index: number, key: K, value: any): boolean {
+    protected onChannelChange<K extends keyof EnabledChannel>(
+        index: number,
+        key: K,
+        value: EnabledChannel[K],
+    ): boolean {
         const channel = { ...this.state.config.channels[index] };
         channel[key as string] = value;
         if (channel.channelType !== 'off') {
@@ -112,7 +116,7 @@ class ADS1x15 extends DeviceBase<ADS1x15Config> {
                         options={this.getChannelTypeOptions(i)}
                         disabled={!!this.getChannelTypeOptions(i).find((o) => o.disabled)}
                         value={channel.channelType}
-                        onChange={(value: string) => this.onChannelChange(i, 'channelType', value)}
+                        onChange={(value: string) => this.onChannelChange(i, 'channelType', value as any)}
                         style={{ paddingTop: '6px' }}
                     />
                 </Grid>

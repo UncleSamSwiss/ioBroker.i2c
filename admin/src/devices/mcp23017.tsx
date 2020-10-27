@@ -1,15 +1,6 @@
 import * as React from 'react';
 import { boundMethod } from 'autobind-decorator';
-import {
-    Button,
-    Checkbox,
-    FormControlLabel,
-    Grid,
-    InputAdornment,
-    TextField,
-    useMediaQuery,
-    withWidth,
-} from '@material-ui/core';
+import { Button, Checkbox, FormControlLabel, Grid, InputAdornment, TextField, withWidth } from '@material-ui/core';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';

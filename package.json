@@ -114,7 +114,7 @@
     "test:unit": "mocha test/unit --exit",
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:ts && npm run test:package",
-    "lint": "eslint --ext .tsx,.ts \"{src,admin}\""
+    "lint": "eslint --ext .ts,.tsx src/ admin/src/"
   },
   "bugs": {
     "url": "https://github.com/UncleSamSwiss/ioBroker.i2c/issues"
