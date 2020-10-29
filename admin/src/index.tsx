@@ -5,13 +5,13 @@ import theme from '@iobroker/adapter-react/Theme';
 import Utils from '@iobroker/adapter-react/Components/Utils';
 import App from './app';
 
-window['adapterName'] = 'i2c';
 let themeName = Utils.getThemeName();
 
 function build(): void {
     ReactDOM.render(
         <MuiThemeProvider theme={theme(themeName)}>
             <App
+                adapterName="i2c"
                 onThemeChange={(_theme) => {
                     themeName = _theme;
                     build();
