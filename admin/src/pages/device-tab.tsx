@@ -68,6 +68,7 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
             this.oldComponent = undefined;
         } else {
             const implConfig: ImplementationConfigBase = this.state.config[this.state.config.type ?? ''];
+            const hadOldComponent = !!this.oldComponent;
             this.oldComponent = (
                 <DeviceComponent
                     onChange={this.onDeviceConfigChanged}
@@ -76,6 +77,12 @@ export class DeviceTab extends React.Component<DeviceTabProps, DeviceTabState> {
                     baseConfig={this.state.config}
                 />
             );
+
+            if (hadOldComponent) {
+                // return undefined so a new device component is created on the next rendering run,
+                // otherwise the existing component will be reused if the type didn't change
+                return undefined;
+            }
         }
         return this.oldComponent;
     }
