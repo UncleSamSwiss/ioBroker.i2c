@@ -84,11 +84,23 @@ class I2cAdapter extends utils.Adapter {
                 if (!deviceConfig.name || !deviceConfig.type) {
                     continue;
                 }
-                const module = yield Promise.resolve().then(() => require(__dirname + '/devices/' + deviceConfig.type.toLowerCase()));
-                const handler = new module.default(deviceConfig, this);
-                this.deviceHandlers.push(handler);
+                try {
+                    const module = yield Promise.resolve().then(() => require(__dirname + '/devices/' + deviceConfig.type.toLowerCase()));
+                    const handler = new module.default(deviceConfig, this);
+                    this.deviceHandlers.push(handler);
+                }
+                catch (error) {
+                    this.log.error(`Couldn't create ${deviceConfig.type} ${shared_1.toHexString(deviceConfig.address)}: ${error}`);
+                }
             }
-            yield Promise.all(this.deviceHandlers.map((h) => h.startAsync()));
+            yield Promise.all(this.deviceHandlers.map((h) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    yield h.startAsync();
+                }
+                catch (error) {
+                    this.log.error(`Couldn't start ${h.type} ${h.hexAddress}: ${error}`);
+                }
+            })));
             this.subscribeStates('*');
         });
     }

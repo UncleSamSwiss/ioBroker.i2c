@@ -102,12 +102,24 @@ export class I2cAdapter extends utils.Adapter {
                 continue;
             }
 
-            const module = await import(__dirname + '/devices/' + deviceConfig.type.toLowerCase());
-            const handler: DeviceHandlerBase<any> = new module.default(deviceConfig, this);
-            this.deviceHandlers.push(handler);
+            try {
+                const module = await import(__dirname + '/devices/' + deviceConfig.type.toLowerCase());
+                const handler: DeviceHandlerBase<any> = new module.default(deviceConfig, this);
+                this.deviceHandlers.push(handler);
+            } catch (error) {
+                this.log.error(`Couldn't create ${deviceConfig.type} ${toHexString(deviceConfig.address)}: ${error}`);
+            }
         }
 
-        await Promise.all(this.deviceHandlers.map((h) => h.startAsync()));
+        await Promise.all(
+            this.deviceHandlers.map(async (h) => {
+                try {
+                    await h.startAsync();
+                } catch (error) {
+                    this.log.error(`Couldn't start ${h.type} ${h.hexAddress}: ${error}`);
+                }
+            }),
+        );
 
         this.subscribeStates('*');
     }

@@ -5,10 +5,11 @@ import { toHexString } from '../lib/shared';
 import { I2cAdapter, StateValue } from '../main';
 
 export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
-    protected readonly type: string;
-    protected readonly name: string;
+    public readonly type: string;
+    public readonly name: string;
+    public readonly hexAddress: string;
+
     protected readonly config: T;
-    protected readonly hexAddress: string;
 
     private polling?: Polling;
 
