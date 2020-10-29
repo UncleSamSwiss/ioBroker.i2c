@@ -6,6 +6,7 @@ import Settings from './components/settings';
 import { GenericAppProps, GenericAppSettings } from '@iobroker/adapter-react/types';
 import { StyleRules } from '@material-ui/styles';
 import { AppContext } from './common';
+import { I2CDeviceConfig } from '../../src/lib/adapter-config';
 
 const styles = (_theme: Theme): StyleRules => ({
     root: {},
@@ -33,6 +34,12 @@ class App extends GenericApp {
 
     onConnectionReady(): void {
         // executed when connection is ready
+    }
+
+    onPrepareSave(settings: Record<string, any>) {
+        super.onPrepareSave(settings);
+        const devices: I2CDeviceConfig[] = settings.devices;
+        settings.devices = devices.filter((d) => d.type && d.name);
     }
 
     render() {
