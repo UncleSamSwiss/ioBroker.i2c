@@ -16,62 +16,8 @@ import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
 import ToggleSwitch from '../components/toggle-switch';
+import { KeypadConfig, LedConfig, PinConfig, PinMode, SX150xConfig } from '../../../src/devices/sx150x';
 import Dropdown, { DropdownOption } from '../components/dropdown';
-
-type PinMode =
-    | 'none'
-    | 'input'
-    | 'output'
-    | 'led-channel'
-    | 'led-static'
-    | 'led-single'
-    | 'led-blink'
-    | 'keypad'
-    | 'level-shifter';
-
-interface LedConfig {
-    timeOn: number;
-    intensityOn: number;
-    timeOff: number;
-    intensityOff: number;
-    timeRaise: number;
-    timeFall: number;
-}
-
-interface PinConfig {
-    mode: PinMode;
-    resistor: 'none' | 'up' | 'down';
-    openDrain: boolean;
-    invert: boolean;
-    debounce: boolean;
-    interrupt: 'none' | 'raising' | 'falling' | 'both';
-    highInput: boolean;
-    levelShifterMode: 'AtoB' | 'BtoA';
-
-    led: LedConfig;
-}
-
-interface KeypadConfig {
-    rowCount: number; // 0 -> off, then off by one (1 -> 2)
-    columnCount: number; // off by one (0 -> 1)
-    autoSleep: number;
-    scanTime: number;
-    keyValues: string[][];
-}
-
-interface SX150xConfig {
-    pollingInterval: number;
-    interrupt?: string;
-
-    oscExternal: boolean;
-    oscFrequency: number;
-    ledLog: boolean[]; // 1 or 2 elements in array
-    ledFrequency: number;
-    debounceTime: number;
-    keypad: KeypadConfig;
-
-    pins: PinConfig[];
-}
 
 interface PinCapabilities {
     levelShift: boolean;
@@ -81,6 +27,8 @@ interface PinCapabilities {
 
 interface SX150xExtra {
     hasKeypad: boolean; // difference between SX1507 and SX1508/9
+    hasHighInput: boolean;
+    hasAutoSleep: boolean;
     showLed: boolean;
     showKeypad: boolean;
     showDebounce: boolean;
@@ -152,6 +100,13 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
         { value: 'down', title: I18n.t('Pull-down') },
     ];
 
+    private readonly interruptOptions: DropdownOption[] = [
+        { value: 'none', title: I18n.t('None') },
+        { value: 'raising', title: I18n.t('Raising') },
+        { value: 'falling', title: I18n.t('Falling') },
+        { value: 'both', title: I18n.t('Both') },
+    ];
+
     private readonly ledIntensityOffOptions: DropdownOption[] = [];
 
     constructor(props: DeviceProps<SX150xConfig>) {
@@ -200,12 +155,11 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
                 pins: [],
             };
 
-            // only SX1509 has 2 led mode (linear/log) choices
-            for (let i = 0; i <= this.pinCount / 16; i++) {
-                config.ledLog[i] = false;
-            }
+            config.ledLog[0] = false;
 
             if (this.pinCount > 4) {
+                config.ledLog[1] = false;
+
                 for (let r = 0; r < this.pinCount / 2; r++) {
                     config.keypad.keyValues[r] = [];
                     for (let c = 0; c < this.pinCount / 2; c++) {
@@ -244,6 +198,8 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
 
         const extra: SX150xExtra = {
             hasKeypad: this.pinCount > 4,
+            hasHighInput: this.pinCount > 4,
+            hasAutoSleep: this.pinCount == 16,
             showLed: this.hasLedPins(config),
             showKeypad: this.hasKeypadPins(config),
             showDebounce: this.hasDebouncedPins(config),
@@ -606,15 +562,17 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
                                             onChange={(value) => this.onKeypadChange('columnCount', parseInt(value))}
                                         />
                                     </Grid>
-                                    <Grid item xs={6} md={3}>
-                                        <Dropdown
-                                            attr="keyAutoSleep"
-                                            title="keyAutoSleep"
-                                            options={this.keyAutoSleepOptions}
-                                            value={config.keypad.autoSleep.toString()}
-                                            onChange={(value) => this.onKeypadChange('autoSleep', parseInt(value))}
-                                        />
-                                    </Grid>
+                                    {extra.hasAutoSleep && (
+                                        <Grid item xs={6} md={3}>
+                                            <Dropdown
+                                                attr="keyAutoSleep"
+                                                title="keyAutoSleep"
+                                                options={this.keyAutoSleepOptions}
+                                                value={config.keypad.autoSleep.toString()}
+                                                onChange={(value) => this.onKeypadChange('autoSleep', parseInt(value))}
+                                            />
+                                        </Grid>
+                                    )}
                                     <Grid item xs={6} md={3}>
                                         <Dropdown
                                             attr="keyScanTime"
@@ -852,6 +810,18 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
                         </Grid>
                     )}
                     {pin.mode === 'input' && (
+                        <Grid item xs={3} md={2} xl={1}>
+                            <Dropdown
+                                attr={`${index}-interrupt`}
+                                title="interruptTrigger"
+                                options={this.interruptOptions}
+                                value={pin.interrupt}
+                                onChange={(value) => this.onPinChange(index, 'interrupt', value as any)}
+                                disabled={index >= this.pinCount / 2}
+                            />
+                        </Grid>
+                    )}
+                    {pin.mode === 'input' && extra.hasHighInput && (
                         <Grid item xs={2}>
                             <FormControlLabel
                                 control={
