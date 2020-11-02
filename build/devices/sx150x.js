@@ -274,10 +274,13 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
             yield this.writeByte(this.registers.Reset, 0x34);
             // configure registers
             yield this.writePinBitmapAsync(this.registers.InputDisable, (p) => p.mode != 'input' && p.mode != 'keypad');
-            yield this.writePinBitmapAsync(this.registers.PullUp, (p) => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'up');
+            yield this.writePinBitmapAsync(this.registers.PullUp, (p, i) => ((p.mode == 'input' || p.mode == 'output') && p.resistor == 'up') ||
+                (p.mode == 'keypad' && i >= bankSize));
             yield this.writePinBitmapAsync(this.registers.PullDown, (p) => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'down');
-            yield this.writePinBitmapAsync(this.registers.OpenDrain, (p) => p.mode.startsWith('led-') || (p.mode == 'output' && p.openDrain));
-            yield this.writePinBitmapAsync(this.registers.Polarity, (p) => p.invert);
+            yield this.writePinBitmapAsync(this.registers.OpenDrain, (p, i) => p.mode.startsWith('led-') ||
+                (p.mode == 'output' && p.openDrain) ||
+                (p.mode == 'keypad' && i < bankSize));
+            yield this.writePinBitmapAsync(this.registers.Polarity, (p) => p.mode != 'keypad' && p.invert);
             yield this.writePinBitmapAsync(this.registers.Dir, (p, i) => p.mode == 'input' || (p.mode == 'keypad' && i >= bankSize));
             yield this.writePinBitmapAsync(this.registers.InterruptMask, // this is inverted: 0 : An event on this IO will trigger an interrupt
             (p) => p.mode != 'input' || p.interrupt == 'none');
@@ -492,7 +495,8 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 this.error("Couldn't read key data: " + e);
                 return;
             }
-            this.debug('Read key data ' + shared_1.toHexString(keyData, this.config.pins.length / 4));
+            const keyDataStr = shared_1.toHexString(keyData, this.config.pins.length / 4);
+            this.debug('Read key data ' + keyDataStr);
             const bankSize = this.config.pins.length / 2;
             let row = -1;
             let col = -1;
@@ -500,10 +504,18 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 const mask = 1 << i;
                 if (this.config.pins[i].mode == 'keypad' && (keyData & mask) === 0) {
                     if (i < bankSize) {
+                        if (row >= 0) {
+                            this.error(`Duplicate rows: ${row} and ${i} from ${keyDataStr}`);
+                            return;
+                        }
                         row = i;
                     }
                     else {
-                        col = i;
+                        if (col >= 0) {
+                            this.error(`Duplicate cols: ${col} and ${i - bankSize} from ${keyDataStr}`);
+                            return;
+                        }
+                        col = i - bankSize;
                     }
                 }
             }
@@ -512,7 +524,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
             }
             const keyValue = this.config.keypad.keyValues[row][col];
             this.debug(`Decoded key [${row},${col}] = "${keyValue}"`);
-            yield this.setStateAckAsync(`${this.hexAddress}.key`, keyValue);
+            yield this.setStateAckAsync('key', keyValue);
         });
     }
     addOutputListener(pin, id) {

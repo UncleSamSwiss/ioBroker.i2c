@@ -374,7 +374,9 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         await this.writePinBitmapAsync(this.registers.InputDisable, (p) => p.mode != 'input' && p.mode != 'keypad');
         await this.writePinBitmapAsync(
             this.registers.PullUp,
-            (p) => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'up',
+            (p, i) =>
+                ((p.mode == 'input' || p.mode == 'output') && p.resistor == 'up') ||
+                (p.mode == 'keypad' && i >= bankSize),
         );
         await this.writePinBitmapAsync(
             this.registers.PullDown,
@@ -382,9 +384,12 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         );
         await this.writePinBitmapAsync(
             this.registers.OpenDrain,
-            (p) => p.mode.startsWith('led-') || (p.mode == 'output' && p.openDrain),
+            (p, i) =>
+                p.mode.startsWith('led-') ||
+                (p.mode == 'output' && p.openDrain) ||
+                (p.mode == 'keypad' && i < bankSize),
         );
-        await this.writePinBitmapAsync(this.registers.Polarity, (p) => p.invert);
+        await this.writePinBitmapAsync(this.registers.Polarity, (p) => p.mode != 'keypad' && p.invert);
         await this.writePinBitmapAsync(
             this.registers.Dir,
             (p, i) => p.mode == 'input' || (p.mode == 'keypad' && i >= bankSize),
@@ -606,7 +611,8 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
             return;
         }
 
-        this.debug('Read key data ' + toHexString(keyData, this.config.pins.length / 4));
+        const keyDataStr = toHexString(keyData, this.config.pins.length / 4);
+        this.debug('Read key data ' + keyDataStr);
         const bankSize = this.config.pins.length / 2;
         let row = -1;
         let col = -1;
@@ -614,9 +620,17 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
             const mask = 1 << i;
             if (this.config.pins[i].mode == 'keypad' && (keyData & mask) === 0) {
                 if (i < bankSize) {
+                    if (row >= 0) {
+                        this.error(`Duplicate rows: ${row} and ${i} from ${keyDataStr}`);
+                        return;
+                    }
                     row = i;
                 } else {
-                    col = i;
+                    if (col >= 0) {
+                        this.error(`Duplicate cols: ${col} and ${i - bankSize} from ${keyDataStr}`);
+                        return;
+                    }
+                    col = i - bankSize;
                 }
             }
         }
@@ -627,7 +641,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
         const keyValue = this.config.keypad.keyValues[row][col];
         this.debug(`Decoded key [${row},${col}] = "${keyValue}"`);
-        await this.setStateAckAsync(`${this.hexAddress}.key`, keyValue);
+        await this.setStateAckAsync('key', keyValue);
     }
 
     private addOutputListener(pin: number, id?: string): void {

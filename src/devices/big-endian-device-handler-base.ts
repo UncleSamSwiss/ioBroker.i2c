@@ -1,4 +1,5 @@
 import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import { toHexString } from '../lib/shared';
 import { I2cAdapter } from '../main';
 import { DeviceHandlerBase } from './device-handler-base';
 
@@ -16,11 +17,14 @@ export abstract class BigEndianDeviceHandlerBase<T extends ImplementationConfigB
     }
 
     protected async readWord(command: number): Promise<number> {
-        const word = await this.adapter.i2cBus.readWord(this.address, command);
-        return swapWord(word);
+        let word = await this.adapter.i2cBus.readWord(this.address, command);
+        word = swapWord(word);
+        this.silly(`readWord(${toHexString(command)}): ${toHexString(word, 4)}`);
+        return word;
     }
 
     protected async writeWord(command: number, word: number): Promise<void> {
+        this.silly(`writeWord(${toHexString(command)}, ${toHexString(word, 4)})`);
         word = swapWord(word);
         return await this.adapter.i2cBus.writeWord(this.address, command, word);
     }
