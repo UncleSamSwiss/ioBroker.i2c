@@ -156,14 +156,14 @@ class I2cAdapter extends utils.Adapter {
      */
     onMessage(obj) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.log.info('onMessage: ' + JSON.stringify(obj));
+            this.log.silly('onMessage: ' + JSON.stringify(obj));
             let wait = false;
             if (typeof obj === 'object' && obj.message) {
                 switch (obj.command) {
                     case 'search':
                         const res = yield this.searchDevicesAsync(parseInt(obj.message));
                         const result = JSON.stringify(res || []);
-                        this.log.info('Search found: ' + result);
+                        this.log.debug('Search found: ' + result);
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, result, obj.callback);
                         }

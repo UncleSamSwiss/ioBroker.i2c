@@ -180,14 +180,14 @@ export class I2cAdapter extends utils.Adapter {
      * Using this method requires "common.message" property to be set to true in io-package.json
      */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
-        this.log.info('onMessage: ' + JSON.stringify(obj));
+        this.log.silly('onMessage: ' + JSON.stringify(obj));
         let wait = false;
         if (typeof obj === 'object' && obj.message) {
             switch (obj.command) {
                 case 'search':
                     const res = await this.searchDevicesAsync(parseInt(obj.message as string));
                     const result = JSON.stringify(res || []);
-                    this.log.info('Search found: ' + result);
+                    this.log.debug('Search found: ' + result);
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
