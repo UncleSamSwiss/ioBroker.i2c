@@ -46,11 +46,25 @@ class I2CClient {
             return yield this.sendRequest('deviceId', { address });
         });
     }
-    i2cRead(_address, _length, _buffer) {
-        throw new Error('Method not implemented.');
+    i2cRead(address, length, buffer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.sendRequest('i2cRead', { address, length });
+            const responseBuffer = Buffer.from(response.buffer, 'hex');
+            responseBuffer.copy(buffer);
+            return {
+                bytesRead: response.bytesRead,
+                buffer: responseBuffer,
+            };
+        });
     }
-    i2cWrite(_address, _length, _buffer) {
-        throw new Error('Method not implemented.');
+    i2cWrite(address, length, buffer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.sendRequest('i2cWrite', { address, length, buffer: buffer.toString('hex') });
+            return {
+                bytesWritten: response.bytesWritten,
+                buffer: buffer,
+            };
+        });
     }
     readByte(address, command) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -62,8 +76,16 @@ class I2CClient {
             return yield this.sendRequest('readWord', { address, command });
         });
     }
-    readI2cBlock(_address, _command, _length, _buffer) {
-        throw new Error('Method not implemented.');
+    readI2cBlock(address, command, length, buffer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.sendRequest('readI2cBlock', { address, command, length });
+            const responseBuffer = Buffer.from(response.buffer, 'hex');
+            responseBuffer.copy(buffer);
+            return {
+                bytesRead: response.bytesRead,
+                buffer: responseBuffer,
+            };
+        });
     }
     receiveByte(address) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -90,8 +112,19 @@ class I2CClient {
             return yield this.sendRequest('writeQuick', { address, command, bit });
         });
     }
-    writeI2cBlock(_address, _command, _length, _buffer) {
-        throw new Error('Method not implemented.');
+    writeI2cBlock(address, command, length, buffer) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield this.sendRequest('i2cWrite', {
+                address,
+                command,
+                length,
+                buffer: buffer.toString('hex'),
+            });
+            return {
+                bytesWritten: response.bytesWritten,
+                buffer: buffer,
+            };
+        });
     }
     bus() {
         throw new Error('Bus is not available.');

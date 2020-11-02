@@ -74,6 +74,7 @@ class I2CServer {
             if (!json.method) {
                 throw new Error(`Property 'method' is not defined`);
             }
+            let buffer;
             switch (json.method) {
                 case 'scan':
                     if (json.args && json.args.address) {
@@ -87,10 +88,22 @@ class I2CServer {
                     }
                 case 'deviceId':
                     return yield this.bus.deviceId(json.args.address);
+                case 'i2cRead':
+                    buffer = Buffer.alloc(json.args.length);
+                    const i2cRead = yield this.bus.i2cRead(json.args.address, json.args.length, buffer);
+                    return { bytesRead: i2cRead.bytesRead, buffer: i2cRead.buffer.toString('hex') };
+                case 'i2cWrite':
+                    buffer = Buffer.from(json.args.buffer, 'hex');
+                    const i2cWrite = yield this.bus.i2cWrite(json.args.address, json.args.length, buffer);
+                    return { bytesRead: i2cWrite.bytesWritten, buffer: i2cWrite.buffer.toString('hex') };
                 case 'readByte':
                     return yield this.bus.readByte(json.args.address, json.args.command);
                 case 'readWord':
                     return yield this.bus.readWord(json.args.address, json.args.command);
+                case 'readI2cBlock':
+                    buffer = Buffer.alloc(json.args.length);
+                    const readI2cBlock = yield this.bus.readI2cBlock(json.args.address, json.args.command, json.args.length, buffer);
+                    return { bytesRead: readI2cBlock.bytesRead, buffer: readI2cBlock.buffer.toString('hex') };
                 case 'receiveByte':
                     return yield this.bus.receiveByte(json.args.address);
                 case 'sendByte':
@@ -105,6 +118,10 @@ class I2CServer {
                 case 'writeQuick':
                     yield this.bus.writeQuick(json.args.address, json.args.command, json.args.bit);
                     return {}; // prefer an empty object to void
+                case 'writeI2cBlock':
+                    buffer = Buffer.from(json.args.buffer, 'hex');
+                    const writeI2cBlock = yield this.bus.writeI2cBlock(json.args.address, json.args.command, json.args.length, buffer);
+                    return { bytesRead: writeI2cBlock.bytesWritten, buffer: writeI2cBlock.buffer.toString('hex') };
                 default:
                     throw new Error(`Property 'method' is unknown: ${json.method}`);
             }

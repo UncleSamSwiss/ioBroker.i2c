@@ -8,11 +8,11 @@
 ![Number of Installations (stable)](http://iobroker.live/badges/i2c-stable.svg)
 [![Dependency Status](https://img.shields.io/david/UncleSamSwiss/iobroker.i2c.svg)](https://david-dm.org/UncleSamSwiss/iobroker.i2c)
 [![Known Vulnerabilities](https://snyk.io/test/github/UncleSamSwiss/ioBroker.i2c/badge.svg)](https://snyk.io/test/github/UncleSamSwiss/ioBroker.i2c)
+[![Translation status](https://weblate.iobroker.net/widgets/adapters/-/i2c/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
 
 [![NPM](https://nodei.co/npm/iobroker.i2c.png?downloads=true)](https://nodei.co/npm/iobroker.i2c/)
 
-**Tests:** [![Travis-CI](http://img.shields.io/travis/UncleSamSwiss/ioBroker.i2c/master.svg)](https://travis-ci.org/UncleSamSwiss/ioBroker.i2c)
-![Test and Release](https://github.com/UncleSamSwiss/ioBroker.i2c/workflows/Test%20and%20Release/badge.svg)
+**Tests:** ![Test and Release](https://github.com/UncleSamSwiss/ioBroker.i2c/workflows/Test%20and%20Release/badge.svg)
 
 ## I2C adapter for ioBroker
 
