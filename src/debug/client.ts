@@ -32,12 +32,22 @@ export class I2CClient implements i2c.PromisifiedBus {
         return await this.sendRequest('deviceId', { address });
     }
 
-    i2cRead(_address: number, _length: number, _buffer: Buffer): Promise<i2c.BytesRead> {
-        throw new Error('Method not implemented.');
+    public async i2cRead(address: number, length: number, buffer: Buffer): Promise<i2c.BytesRead> {
+        const response = await this.sendRequest('i2cRead', { address, length });
+        const responseBuffer = Buffer.from(response.buffer, 'hex');
+        responseBuffer.copy(buffer);
+        return {
+            bytesRead: response.bytesRead,
+            buffer: responseBuffer,
+        };
     }
 
-    i2cWrite(_address: number, _length: number, _buffer: Buffer): Promise<i2c.BytesWritten> {
-        throw new Error('Method not implemented.');
+    public async i2cWrite(address: number, length: number, buffer: Buffer): Promise<i2c.BytesWritten> {
+        const response = await this.sendRequest('i2cWrite', { address, length, buffer: buffer.toString('hex') });
+        return {
+            bytesWritten: response.bytesWritten,
+            buffer: buffer,
+        };
     }
 
     public async readByte(address: number, command: number): Promise<number> {
@@ -48,8 +58,19 @@ export class I2CClient implements i2c.PromisifiedBus {
         return await this.sendRequest('readWord', { address, command });
     }
 
-    readI2cBlock(_address: number, _command: number, _length: number, _buffer: Buffer): Promise<i2c.BytesRead> {
-        throw new Error('Method not implemented.');
+    public async readI2cBlock(
+        address: number,
+        command: number,
+        length: number,
+        buffer: Buffer,
+    ): Promise<i2c.BytesRead> {
+        const response = await this.sendRequest('readI2cBlock', { address, command, length });
+        const responseBuffer = Buffer.from(response.buffer, 'hex');
+        responseBuffer.copy(buffer);
+        return {
+            bytesRead: response.bytesRead,
+            buffer: responseBuffer,
+        };
     }
 
     public async receiveByte(address: number): Promise<number> {
@@ -72,8 +93,22 @@ export class I2CClient implements i2c.PromisifiedBus {
         return await this.sendRequest('writeQuick', { address, command, bit });
     }
 
-    writeI2cBlock(_address: number, _command: number, _length: number, _buffer: Buffer): Promise<i2c.BytesWritten> {
-        throw new Error('Method not implemented.');
+    public async writeI2cBlock(
+        address: number,
+        command: number,
+        length: number,
+        buffer: Buffer,
+    ): Promise<i2c.BytesWritten> {
+        const response = await this.sendRequest('i2cWrite', {
+            address,
+            command,
+            length,
+            buffer: buffer.toString('hex'),
+        });
+        return {
+            bytesWritten: response.bytesWritten,
+            buffer: buffer,
+        };
     }
 
     bus(): i2c.I2CBus {
