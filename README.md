@@ -102,7 +102,7 @@ Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver for 4 chann
 
 Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver and Keypad Engine for 8 channels.
 
-### SX1507 16 Channel Level Shifting GPIO with LED Driver and Keypad Engine (3E, 3F, 70, 71)
+### SX1509 16 Channel Level Shifting GPIO with LED Driver and Keypad Engine (3E, 3F, 70, 71)
 
 Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver and Keypad Engine for 16 channels.
 
@@ -204,6 +204,10 @@ If you are developing on a desktop PC and want to test I2C on a SBC (e.g. a Rasp
 Keep in mind that the RPC server is completely unsecured, so this should only be used for development inside a secure network!
 
 ## Changelog
+
+### 1.1.0 (2020-11-02)
+
+-   (UncleSamSwiss) Added support for SX1507, SX1508 and SX1509.
 
 ### 1.0.1 (2020-10-27)
 

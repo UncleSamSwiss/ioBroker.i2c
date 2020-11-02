@@ -1,6 +1,6 @@
 {
   "name": "iobroker.i2c",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Communicates with devices over I2C bus.",
   "author": {
     "name": "UncleSamSwiss",
@@ -29,6 +29,9 @@
     "PCF8574",
     "PCA9685",
     "BH1750",
+    "SX1507",
+    "SX1508",
+    "SX1509",
     "Raspberry Pi",
     "BeagleBone",
     "Intel Edison"
