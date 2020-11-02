@@ -817,7 +817,6 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
                                 options={this.interruptOptions}
                                 value={pin.interrupt}
                                 onChange={(value) => this.onPinChange(index, 'interrupt', value as any)}
-                                disabled={index >= this.pinCount / 2}
                             />
                         </Grid>
                     )}

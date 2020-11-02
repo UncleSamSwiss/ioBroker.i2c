@@ -9,10 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const shared_1 = require("../lib/shared");
 const big_endian_device_handler_base_1 = require("./big-endian-device-handler-base");
 class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase {
     constructor(deviceConfig, adapter) {
         super(deviceConfig, adapter);
+        this.writeValue = 0;
+        this.readValue = 0;
         this.registers = this.loadRegisters();
         if (this.name == 'SX1509') {
             this.writeRegister = this.writeWord;
@@ -35,7 +38,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 native: this.config,
             });
             const keypadId = `${this.hexAddress}.key`;
-            if (this.config.keypad.rowCount > 0) {
+            if (this.config.keypad.rowCount > 0 && this.registers.KeyData) {
                 this.adapter.extendObject(keypadId, {
                     type: 'state',
                     common: {
@@ -51,9 +54,11 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 this.adapter.delObject(keypadId);
             }
             let hasInput = false;
+            let hasOuput = false;
             for (let i = 0; i < this.config.pins.length; i++) {
                 const pinConfig = this.config.pins[i];
                 const id = `${this.hexAddress}.${i}`;
+                let outputState = undefined;
                 switch (pinConfig.mode) {
                     case 'input':
                         hasInput = true;
@@ -70,6 +75,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                         });
                         break;
                     case 'output':
+                        outputState = i;
                         this.addOutputListener(i);
                         this.adapter.extendObject(id, {
                             type: 'state',
@@ -86,6 +92,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                     case 'led-static':
                     case 'led-single':
                     case 'led-blink':
+                        outputState = i;
                         this.addOutputListener(i);
                         this.adapter.extendObject(id, {
                             type: 'state',
@@ -107,6 +114,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                             },
                             native: pinConfig,
                         });
+                        outputState = `${id}.on`;
                         this.addOutputListener(i, `${id}.on`);
                         this.adapter.extendObject(`${id}.on`, {
                             type: 'state',
@@ -205,62 +213,44 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                             });
                         }
                         break;
+                    case 'keypad':
+                        hasInput = true;
+                    // fall through!
                     default:
                         this.adapter.delObject(id);
                         break;
                 }
-            }
-            yield this.configureDeviceAsync();
-            /*
-            let hasInput = false;
-            for (let i = 0; i < 8; i++) {
-                const pinConfig = this.config.pins[i] || { dir: 'out' };
-                const isInput = pinConfig.dir == 'in';
-                if (isInput) {
-                    hasInput = true;
-                    this.writeValue |= 1 << i; // input pins must be set to high level
-                } else {
-                    this.addOutputListener(i);
-                    let value = this.getStateValue(i);
+                if (outputState !== undefined) {
+                    hasOuput = true;
+                    let value = this.getStateValue(outputState);
                     if (value === undefined) {
-                        value = pinConfig.inv === true;
-                        await this.setStateAckAsync(i, value);
+                        value = false;
+                        yield this.setStateAckAsync(outputState, value);
                     }
-                    if (pinConfig.inv) {
-                        value = !value;
-                    }
-                    if (!value) {
+                    if (value) {
                         this.writeValue |= 1 << i;
                     }
                 }
-                this.adapter.extendObject(`${this.hexAddress}.${i}`, {
-                    type: 'state',
-                    common: {
-                        name: `${this.hexAddress} ${isInput ? 'In' : 'Out'}put ${i}`,
-                        read: isInput,
-                        write: !isInput,
-                        type: 'boolean',
-                        role: isInput ? 'indicator' : 'switch',
-                    },
-                    native: pinConfig as any,
-                });
             }
-    
-            this.debug('Setting initial value to ' + toHexString(this.writeValue));
-            await this.sendCurrentValueAsync();
-    
-            await this.readCurrentValueAsync(true);*/
-            if (hasInput && this.config.pollingInterval > 0) {
-                this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(false); }), this.config.pollingInterval, 50);
+            yield this.configureDeviceAsync();
+            if (hasOuput) {
+                yield this.sendCurrentValuesAsync();
             }
-            if (hasInput && this.config.interrupt) {
+            if (!hasInput) {
+                return;
+            }
+            yield this.readCurrentValuesAsync(true);
+            if (this.config.pollingInterval > 0) {
+                this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValuesAsync(false); }), this.config.pollingInterval, 50);
+            }
+            if (this.config.interrupt) {
                 try {
                     // check if interrupt object exists
                     yield this.adapter.getObjectAsync(this.config.interrupt);
                     // subscribe to the object and add change listener
                     this.adapter.addForeignStateChangeListener(this.config.interrupt, (_value) => __awaiter(this, void 0, void 0, function* () {
                         this.debug('Interrupt detected');
-                        yield this.readCurrentValueAsync(false);
+                        yield this.readCurrentValuesAsync(false);
                     }));
                     this.debug('Interrupt enabled');
                 }
@@ -300,22 +290,21 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
             yield this.writePinBitmapAsync(this.registers.DebounceEnable, (p, i) => (p.mode == 'input' && p.debounce) || (p.mode == 'keypad' && i >= bankSize));
             yield this.writeKeyConfigAsync();
             for (let i = 0; i < this.config.pins.length; i++) {
-                const led = this.config.pins[i].led;
-                const pinRegisters = this.registers.Pins[i];
-                if (pinRegisters.TOn) {
-                    yield this.writeByte(pinRegisters.TOn, led.timeOn);
+                const pin = this.config.pins[i];
+                let led;
+                if (pin.mode == 'led-channel') {
+                    led = this.getLedChannelValues(i);
                 }
-                yield this.writeByte(pinRegisters.IOn, led.intensityOn);
-                if (pinRegisters.Off) {
-                    let value = 0;
-                    value |= led.timeOff << 3;
-                    value |= led.intensityOff;
-                    yield this.writeByte(pinRegisters.Off, value);
+                else {
+                    led = Object.assign({}, pin.led);
+                    if (pin.mode == 'led-static') {
+                        led.timeOn = 0;
+                    }
+                    if (pin.mode != 'led-blink') {
+                        led.timeOff = 0;
+                    }
                 }
-                if (pinRegisters.TRise && pinRegisters.TFall) {
-                    yield this.writeByte(pinRegisters.TRise, led.timeRaise);
-                    yield this.writeByte(pinRegisters.TFall, led.timeFall);
-                }
+                yield this.writeLedConfigAsync(i, led);
             }
             if (this.registers.HighInput) {
                 yield this.writePinBitmapAsync(this.registers.HighInput, (p) => p.mode == 'input' && p.highInput);
@@ -442,50 +431,88 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
             yield this.writeRegister(this.registers.KeyConfig, value);
         });
     }
-    sendCurrentValueAsync() {
+    writeLedConfigAsync(index, led) {
         return __awaiter(this, void 0, void 0, function* () {
-            /*
-            this.debug('Sending ' + toHexString(this.writeValue));
-            try {
-                await this.sendByte(this.writeValue);
-            } catch (e) {
-                this.error("Couldn't send current value: " + e);
-            }*/
+            const pinRegisters = this.registers.Pins[index];
+            if (pinRegisters.TOn) {
+                yield this.writeByte(pinRegisters.TOn, led.timeOn);
+            }
+            yield this.writeByte(pinRegisters.IOn, led.intensityOn);
+            if (pinRegisters.Off) {
+                let value = 0;
+                value |= led.timeOff << 3;
+                value |= led.intensityOff;
+                yield this.writeByte(pinRegisters.Off, value);
+            }
+            if (pinRegisters.TRise && pinRegisters.TFall) {
+                yield this.writeByte(pinRegisters.TRise, led.timeRaise);
+                yield this.writeByte(pinRegisters.TFall, led.timeFall);
+            }
         });
     }
-    readCurrentValueAsync(force) {
+    sendCurrentValuesAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            /*
+            this.debug('Sending ' + shared_1.toHexString(this.writeValue, this.config.pins.length / 4));
+            try {
+                yield this.writeRegister(this.registers.Data, this.writeValue);
+            }
+            catch (e) {
+                this.error("Couldn't send current value: " + e);
+            }
+        });
+    }
+    readCurrentValuesAsync(force) {
+        return __awaiter(this, void 0, void 0, function* () {
             const oldValue = this.readValue;
             try {
-                let retries = 3;
-                do {
-                    // writing the current value before reading to make sure the "direction" of all pins is set correctly
-                    await this.sendByte(this.writeValue);
-                    this.readValue = await this.receiveByte();
-    
-                    // reading all 1's (0xFF) could be because of a reset, let's try 3x
-                } while (!force && this.readValue == 0xff && --retries > 0);
-            } catch (e) {
-                this.error("Couldn't read current value: " + e);
+                this.readValue = yield this.readRegister(this.registers.Data);
+            }
+            catch (e) {
+                this.error("Couldn't read current data: " + e);
                 return;
             }
-    
-            if (oldValue == this.readValue && !force) {
-                return;
-            }
-    
-            this.debug('Read ' + toHexString(this.readValue));
-            for (let i = 0; i < 8; i++) {
-                const mask = 1 << i;
-                if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir == 'in') {
-                    let value = (this.readValue & mask) > 0;
-                    if (this.config.pins[i].inv) {
-                        value = !value;
+            if (oldValue != this.readValue || force) {
+                this.debug('Read data ' + shared_1.toHexString(this.readValue, this.config.pins.length / 4));
+                for (let i = 0; i < this.config.pins.length; i++) {
+                    const mask = 1 << i;
+                    if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].mode == 'input') {
+                        const value = (this.readValue & mask) > 0;
+                        yield this.setStateAckAsync(i, value);
                     }
-                    await this.setStateAckAsync(i, value);
                 }
-            }*/
+            }
+            if (!this.registers.KeyData || this.config.keypad.rowCount === 0) {
+                return;
+            }
+            let keyData = 0;
+            try {
+                keyData = yield this.readRegister(this.registers.KeyData);
+            }
+            catch (e) {
+                this.error("Couldn't read key data: " + e);
+                return;
+            }
+            this.debug('Read key data ' + shared_1.toHexString(keyData, this.config.pins.length / 4));
+            const bankSize = this.config.pins.length / 2;
+            let row = -1;
+            let col = -1;
+            for (let i = 0; i < this.config.pins.length; i++) {
+                const mask = 1 << i;
+                if (this.config.pins[i].mode == 'keypad' && (keyData & mask) === 0) {
+                    if (i < bankSize) {
+                        row = i;
+                    }
+                    else {
+                        col = i;
+                    }
+                }
+            }
+            if (row < 0 || col < 0) {
+                return;
+            }
+            const keyValue = this.config.keypad.keyValues[row][col];
+            this.debug(`Decoded key [${row},${col}] = "${keyValue}"`);
+            yield this.setStateAckAsync(`${this.hexAddress}.key`, keyValue);
         });
     }
     addOutputListener(pin, id) {
@@ -493,21 +520,19 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
     }
     changeOutputAsync(pin, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            /*
             const mask = 1 << pin;
             const oldValue = this.writeValue;
-            const realValue = this.config.pins[pin].inv ? !value : value;
-            if (realValue) {
+            if (value) {
                 this.writeValue &= ~mask;
-            } else {
+            }
+            else {
                 this.writeValue |= mask;
             }
             if (this.writeValue == oldValue) {
                 return;
             }
-    
-            await this.sendCurrentValueAsync();
-            await this.setStateAckAsync(pin, value);*/
+            yield this.sendCurrentValuesAsync();
+            yield this.setStateAckAsync(pin, value);
         });
     }
     addLedLevelListener(pin, type) {
@@ -515,8 +540,26 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
     }
     changeLedLevelAsync(pin, type, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            /* TODO */
+            const led = this.getLedChannelValues(pin);
+            led[type] = value;
+            try {
+                yield this.writeLedConfigAsync(pin, led);
+                yield this.setStateAckAsync(`${pin}.${type}`, value);
+            }
+            catch (e) {
+                this.error("Couldn't write LED config: " + e);
+            }
         });
+    }
+    getLedChannelValues(index) {
+        return {
+            timeOn: this.getStateValue(`${index}.timeOn`) || 0,
+            intensityOn: this.getStateValue(`${index}.intensityOn`) || 0,
+            timeOff: this.getStateValue(`${index}.timeOff`) || 0,
+            intensityOff: this.getStateValue(`${index}.intensityOff`) || 0,
+            timeRaise: this.getStateValue(`${index}.timeRaise`) || 0,
+            timeFall: this.getStateValue(`${index}.timeFall`) || 0,
+        };
     }
     loadRegisters() {
         let registers;
