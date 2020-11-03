@@ -10,6 +10,7 @@ import * as MCP4725 from './mcp4725';
 import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
 import * as SX150x from './sx150x';
+import * as xMC5883 from './xmc5883';
 
 export interface DeviceInfo {
     readonly name: string;
@@ -24,11 +25,13 @@ export class DeviceFactory {
         ...ADS1x15.Infos,
         BH1750.Info,
         BME280.Info,
+        xMC5883.HMC5883L,
         MCP23008.Info,
         MCP23017.Info,
         MCP4725.Info,
         PCA9685.Info,
         ...PCF8574.Infos,
+        xMC5883.QMC5883L,
         ...SX150x.Infos,
 
         // always leave "Generic" at the end

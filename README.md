@@ -73,6 +73,10 @@ Texas Instruments 4x 860-SPS, 16-Bit ADCs with Internal Reference.
 
 Bosch Digital Humidity, Pressure and Temperature Sensor.
 
+### HMC5883L 3-Axis Digital Compass (1E)
+
+Honeywell 3-Axis Digital Compass IC.
+
 ### MCP23008 8-Bit I/O Expander (20-27)
 
 Microchip 8-Bit I/O Expander with Serial Interface.
@@ -97,6 +101,10 @@ Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 
 Adafruit PCA9685 breakout board for 16-channel 12 bit PWM. Adapter focused on using the 16 channels from 0..4095 as LED dimmer.
 Can drive many LEDs when PWM (and GND) is attached to a N-channel Mosfet module e.g. based on D4184. Connect LED GND to the MOSFET and +12/24/n V to PSU.
+
+### QMC5883L 3-Axis Magnetic Sensor (0D)
+
+QST 3-Axis Magnetic Sensor.
 
 ### SX1507 4 Channel Level Shifting GPIO with LED Driver (3E, 3F, 70, 71)
 
@@ -213,6 +221,7 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 
 -   (UncleSamSwiss) Added support for SX1507, SX1508 and SX1509.
 -   (UncleSamSwiss) Added support for MCP4725.
+-   (UncleSamSwiss) Added support for HMC5883L and QMC5883L.
 
 ### 1.0.1 (2020-10-27)
 
