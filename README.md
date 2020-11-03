@@ -81,6 +81,10 @@ Microchip 8-Bit I/O Expander with Serial Interface.
 
 Microchip 16-Bit I/O Expander with Serial Interface.
 
+### MCP4725 12-Bit Digital-to-Analog Converter (60-67)
+
+Microchip 12-Bit Digital-to-Analog Converter with EEPROM Memory.
+
 ### PCF8574 8-Bit I/O Expander (20-27)
 
 Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
@@ -208,6 +212,7 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 ### 1.1.0 (2020-11-02)
 
 -   (UncleSamSwiss) Added support for SX1507, SX1508 and SX1509.
+-   (UncleSamSwiss) Added support for MCP4725.
 
 ### 1.0.1 (2020-10-27)
 
