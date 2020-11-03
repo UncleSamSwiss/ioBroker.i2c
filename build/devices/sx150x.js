@@ -39,7 +39,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
             });
             const keypadId = `${this.hexAddress}.key`;
             if (this.config.keypad.rowCount > 0 && this.registers.KeyData) {
-                this.adapter.extendObject(keypadId, {
+                yield this.adapter.extendObjectAsync(keypadId, {
                     type: 'state',
                     common: {
                         name: `${this.hexAddress} Pressed Key`,
@@ -62,7 +62,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 switch (pinConfig.mode) {
                     case 'input':
                         hasInput = true;
-                        this.adapter.extendObject(id, {
+                        yield this.adapter.extendObjectAsync(id, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} Input ${i}`,
@@ -77,7 +77,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                     case 'output':
                         outputState = i;
                         this.addOutputListener(i);
-                        this.adapter.extendObject(id, {
+                        yield this.adapter.extendObjectAsync(id, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} Output ${i}`,
@@ -94,7 +94,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                     case 'led-blink':
                         outputState = i;
                         this.addOutputListener(i);
-                        this.adapter.extendObject(id, {
+                        yield this.adapter.extendObjectAsync(id, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i}`,
@@ -107,7 +107,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                         });
                         break;
                     case 'led-channel':
-                        this.adapter.extendObject(id, {
+                        yield this.adapter.extendObjectAsync(id, {
                             type: 'channel',
                             common: {
                                 name: `${this.hexAddress} LED ${i}`,
@@ -116,7 +116,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                         });
                         outputState = `${id}.on`;
                         this.addOutputListener(i, `${id}.on`);
-                        this.adapter.extendObject(`${id}.on`, {
+                        yield this.adapter.extendObjectAsync(`${id}.on`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} ON`,
@@ -130,7 +130,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                         const pinRegister = this.registers.Pins[i];
                         if (pinRegister.TOn) {
                             this.addLedLevelListener(i, 'timeOn');
-                            this.adapter.extendObject(`${id}.timeOn`, {
+                            yield this.adapter.extendObjectAsync(`${id}.timeOn`, {
                                 type: 'state',
                                 common: {
                                     name: `${this.hexAddress} LED ${i} ON Time`,
@@ -144,7 +144,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                             });
                         }
                         this.addLedLevelListener(i, 'intensityOn');
-                        this.adapter.extendObject(`${id}.intensityOn`, {
+                        yield this.adapter.extendObjectAsync(`${id}.intensityOn`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} ON Intensity`,
@@ -158,7 +158,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                         });
                         if (pinRegister.Off) {
                             this.addLedLevelListener(i, 'timeOff');
-                            this.adapter.extendObject(`${id}.timeOff`, {
+                            yield this.adapter.extendObjectAsync(`${id}.timeOff`, {
                                 type: 'state',
                                 common: {
                                     name: `${this.hexAddress} LED ${i} OFF Time`,
@@ -171,7 +171,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                                 },
                             });
                             this.addLedLevelListener(i, 'intensityOff');
-                            this.adapter.extendObject(`${id}.intensityOff`, {
+                            yield this.adapter.extendObjectAsync(`${id}.intensityOff`, {
                                 type: 'state',
                                 common: {
                                     name: `${this.hexAddress} LED ${i} OFF Intensity`,
@@ -186,7 +186,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                         }
                         if (pinRegister.TRise) {
                             this.addLedLevelListener(i, 'timeRaise');
-                            this.adapter.extendObject(`${id}.timeRaise`, {
+                            yield this.adapter.extendObjectAsync(`${id}.timeRaise`, {
                                 type: 'state',
                                 common: {
                                     name: `${this.hexAddress} LED ${i} Fade-in Time`,
@@ -199,7 +199,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                                 },
                             });
                             this.addLedLevelListener(i, 'timeFall');
-                            this.adapter.extendObject(`${id}.timeFall`, {
+                            yield this.adapter.extendObjectAsync(`${id}.timeFall`, {
                                 type: 'state',
                                 common: {
                                     name: `${this.hexAddress} LED ${i} Fade-out Time`,

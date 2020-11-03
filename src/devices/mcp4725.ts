@@ -17,7 +17,7 @@ export default class MCP4725 extends DeviceHandlerBase<MCP4725Config> {
         });
 
         const id = `${this.hexAddress}.voltage`;
-        this.adapter.extendObject(id, {
+        await this.adapter.extendObjectAsync(id, {
             type: 'state',
             common: {
                 name: `${this.hexAddress} Voltage`,

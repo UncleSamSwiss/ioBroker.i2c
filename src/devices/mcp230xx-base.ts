@@ -87,7 +87,7 @@ export abstract class MCP230xxBase extends LittleEndianDeviceHandlerBase<MCP230x
                     this.writeValue |= 1 << i;
                 }
             }
-            this.adapter.extendObject(`${this.hexAddress}.${this.indexToName(i)}`, {
+            await this.adapter.extendObjectAsync(`${this.hexAddress}.${this.indexToName(i)}`, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} ${isInput ? 'In' : 'Out'}put ${this.indexToName(i)}`,

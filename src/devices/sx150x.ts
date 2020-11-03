@@ -129,7 +129,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
         const keypadId = `${this.hexAddress}.key`;
         if (this.config.keypad.rowCount > 0 && this.registers.KeyData) {
-            this.adapter.extendObject(keypadId, {
+            await this.adapter.extendObjectAsync(keypadId, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Pressed Key`,
@@ -152,7 +152,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
             switch (pinConfig.mode) {
                 case 'input':
                     hasInput = true;
-                    this.adapter.extendObject(id, {
+                    await this.adapter.extendObjectAsync(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} Input ${i}`,
@@ -167,7 +167,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 case 'output':
                     outputState = i;
                     this.addOutputListener(i);
-                    this.adapter.extendObject(id, {
+                    await this.adapter.extendObjectAsync(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} Output ${i}`,
@@ -184,7 +184,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 case 'led-blink':
                     outputState = i;
                     this.addOutputListener(i);
-                    this.adapter.extendObject(id, {
+                    await this.adapter.extendObjectAsync(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i}`,
@@ -197,7 +197,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     break;
                 case 'led-channel':
-                    this.adapter.extendObject(id, {
+                    await this.adapter.extendObjectAsync(id, {
                         type: 'channel',
                         common: {
                             name: `${this.hexAddress} LED ${i}`,
@@ -206,7 +206,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     outputState = `${id}.on`;
                     this.addOutputListener(i, `${id}.on`);
-                    this.adapter.extendObject(`${id}.on`, {
+                    await this.adapter.extendObjectAsync(`${id}.on`, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i} ON`,
@@ -220,7 +220,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     const pinRegister = this.registers.Pins[i];
                     if (pinRegister.TOn) {
                         this.addLedLevelListener(i, 'timeOn');
-                        this.adapter.extendObject(`${id}.timeOn`, {
+                        await this.adapter.extendObjectAsync(`${id}.timeOn`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} ON Time`,
@@ -234,7 +234,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         });
                     }
                     this.addLedLevelListener(i, 'intensityOn');
-                    this.adapter.extendObject(`${id}.intensityOn`, {
+                    await this.adapter.extendObjectAsync(`${id}.intensityOn`, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i} ON Intensity`,
@@ -248,7 +248,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     if (pinRegister.Off) {
                         this.addLedLevelListener(i, 'timeOff');
-                        this.adapter.extendObject(`${id}.timeOff`, {
+                        await this.adapter.extendObjectAsync(`${id}.timeOff`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} OFF Time`,
@@ -261,7 +261,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                             },
                         });
                         this.addLedLevelListener(i, 'intensityOff');
-                        this.adapter.extendObject(`${id}.intensityOff`, {
+                        await this.adapter.extendObjectAsync(`${id}.intensityOff`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} OFF Intensity`,
@@ -276,7 +276,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     }
                     if (pinRegister.TRise) {
                         this.addLedLevelListener(i, 'timeRaise');
-                        this.adapter.extendObject(`${id}.timeRaise`, {
+                        await this.adapter.extendObjectAsync(`${id}.timeRaise`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} Fade-in Time`,
@@ -289,7 +289,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                             },
                         });
                         this.addLedLevelListener(i, 'timeFall');
-                        this.adapter.extendObject(`${id}.timeFall`, {
+                        await this.adapter.extendObjectAsync(`${id}.timeFall`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} Fade-out Time`,

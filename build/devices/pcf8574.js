@@ -50,7 +50,7 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
                         this.writeValue |= 1 << i;
                     }
                 }
-                this.adapter.extendObject(`${this.hexAddress}.${i}`, {
+                yield this.adapter.extendObjectAsync(`${this.hexAddress}.${i}`, {
                     type: 'state',
                     common: {
                         name: `${this.hexAddress} ${isInput ? 'In' : 'Out'}put ${i}`,

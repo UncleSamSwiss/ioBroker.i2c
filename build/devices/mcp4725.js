@@ -22,7 +22,7 @@ class MCP4725 extends device_handler_base_1.DeviceHandlerBase {
                 native: this.config,
             });
             const id = `${this.hexAddress}.voltage`;
-            this.adapter.extendObject(id, {
+            yield this.adapter.extendObjectAsync(id, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Voltage`,

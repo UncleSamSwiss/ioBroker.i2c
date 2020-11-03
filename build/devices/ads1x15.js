@@ -184,7 +184,7 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                 if (this.muxes[i] !== 0) {
                     hasEnabled = true;
                 }
-                this.adapter.extendObject(`${this.hexAddress}.${i}`, {
+                yield this.adapter.extendObjectAsync(`${this.hexAddress}.${i}`, {
                     type: 'state',
                     common: {
                         name: `${this.hexAddress} Channel ${i}`,

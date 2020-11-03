@@ -196,7 +196,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             if (this.muxes[i] !== 0) {
                 hasEnabled = true;
             }
-            this.adapter.extendObject(`${this.hexAddress}.${i}`, {
+            await this.adapter.extendObjectAsync(`${this.hexAddress}.${i}`, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Channel ${i}`,

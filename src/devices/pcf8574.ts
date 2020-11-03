@@ -49,7 +49,7 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
                     this.writeValue |= 1 << i;
                 }
             }
-            this.adapter.extendObject(`${this.hexAddress}.${i}`, {
+            await this.adapter.extendObjectAsync(`${this.hexAddress}.${i}`, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} ${isInput ? 'In' : 'Out'}put ${i}`,
