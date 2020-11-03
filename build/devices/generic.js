@@ -37,6 +37,7 @@ class Generic extends device_handler_base_1.DeviceHandlerBase {
                 this.handlers[registerConfig.register] = handler;
                 this.debug('Register ' + handler.hex + ': ' + JSON.stringify(handler.config));
                 yield this.adapter.extendObjectAsync(this.hexAddress + '.' + handler.hex, {
+                    type: 'state',
                     common: {
                         name: this.hexAddress + ' ' + (handler.config.name || 'Register'),
                         read: handler.config.read,
@@ -146,7 +147,7 @@ class Generic extends device_handler_base_1.DeviceHandlerBase {
     }
     readValueAsync(handler) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.debug(`${handler.hex}: Reding from register`);
+            this.debug(`${handler.hex}: Reading from register`);
             const buf = this.createBuffer(handler);
             // read raw data from bus
             try {
