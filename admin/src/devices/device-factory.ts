@@ -6,6 +6,7 @@ import * as BME280 from './bme280';
 import * as Generic from './generic';
 import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
+import * as MCP4725 from './mcp4725';
 import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
 import * as SX150x from './sx150x';
@@ -25,6 +26,7 @@ export class DeviceFactory {
         BME280.Info,
         MCP23008.Info,
         MCP23017.Info,
+        MCP4725.Info,
         PCA9685.Info,
         ...PCF8574.Infos,
         ...SX150x.Infos,

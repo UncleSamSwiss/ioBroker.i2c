@@ -76,5 +76,7 @@
     "ledIntensityOff": "OFF intensity",
     "ledTimeOff": "OFF time",
     "ledTimeRaise": "Fade in time",
-    "ledTimeFall": "Fade out time"
+    "ledTimeFall": "Fade out time",
+    "referenceVoltage": "Reference voltage",
+    "writeToEeprom": "Save value in EEPROM"
 }
