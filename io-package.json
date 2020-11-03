@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "news": {
+            "1.1.0": {
+                "en": "Added support for SX1507, SX1508 and SX1509",
+                "de": "Unterstützung für SX1507, SX1508 und SX1509 hinzugefügt",
+                "ru": "Добавлена ​​поддержка SX1507, SX1508 и SX1509.",
+                "pt": "Adicionado suporte para SX1507, SX1508 e SX1509",
+                "nl": "Ondersteuning toegevoegd voor SX1507, SX1508 en SX1509",
+                "fr": "Ajout du support pour SX1507, SX1508 et SX1509",
+                "it": "Aggiunto supporto per SX1507, SX1508 e SX1509",
+                "es": "Soporte agregado para SX1507, SX1508 y SX1509",
+                "pl": "Dodano obsługę SX1507, SX1508 i SX1509",
+                "zh-cn": "添加了对SX1507，SX1508和SX1509的支持"
+            },
             "1.0.1": {
                 "en": "Removed unneeded files in NPM package",
                 "de": "Nicht benötigte Dateien im NPM-Paket wurden entfernt",

@@ -9,6 +9,7 @@ interface ToggleSwitchProps {
     onLabel: string;
     value?: boolean;
     onChange: (value: boolean) => void;
+    style?: React.CSSProperties;
 }
 
 interface ToggleSwitchState {
@@ -27,9 +28,9 @@ export default class ToggleSwitch extends React.Component<ToggleSwitchProps, Tog
     }
 
     render(): React.ReactNode {
-        const { offLabel, onLabel, attr } = this.props;
+        const { offLabel, onLabel, attr, style } = this.props;
         return (
-            <Typography component="div">
+            <Typography component="div" style={style}>
                 <Grid component="label" container alignItems="center" spacing={1} style={{ flexWrap: 'nowrap' }}>
                     <Grid component="span" item>
                         {I18n.t(offLabel)}

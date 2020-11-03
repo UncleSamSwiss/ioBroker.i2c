@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LittleEndianDeviceHandlerBase = void 0;
+const shared_1 = require("../lib/shared");
 const device_handler_base_1 = require("./device-handler-base");
 class LittleEndianDeviceHandlerBase extends device_handler_base_1.DeviceHandlerBase {
     constructor(deviceConfig, adapter) {
@@ -18,11 +19,14 @@ class LittleEndianDeviceHandlerBase extends device_handler_base_1.DeviceHandlerB
     }
     readWord(command) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.readWord(this.address, command);
+            const word = yield this.adapter.i2cBus.readWord(this.address, command);
+            this.silly(`readWord(${shared_1.toHexString(command)}): ${shared_1.toHexString(word, 4)}`);
+            return word;
         });
     }
     writeWord(command, word) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`writeWord(${shared_1.toHexString(command)}, ${shared_1.toHexString(word, 4)})`);
             return yield this.adapter.i2cBus.writeWord(this.address, command, word);
         });
     }

@@ -94,6 +94,18 @@ Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 Adafruit PCA9685 breakout board for 16-channel 12 bit PWM. Adapter focused on using the 16 channels from 0..4095 as LED dimmer.
 Can drive many LEDs when PWM (and GND) is attached to a N-channel Mosfet module e.g. based on D4184. Connect LED GND to the MOSFET and +12/24/n V to PSU.
 
+### SX1507 4 Channel Level Shifting GPIO with LED Driver (3E, 3F, 70, 71)
+
+Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver for 4 channels.
+
+### SX1508 8 Channel Level Shifting GPIO with LED Driver and Keypad Engine (20-23)
+
+Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver and Keypad Engine for 8 channels.
+
+### SX1509 16 Channel Level Shifting GPIO with LED Driver and Keypad Engine (3E, 3F, 70, 71)
+
+Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver and Keypad Engine for 16 channels.
+
 ### Generic device (03-77)
 
 Generic I2C device. Registers can be configured depending on the hardware.
@@ -192,6 +204,10 @@ If you are developing on a desktop PC and want to test I2C on a SBC (e.g. a Rasp
 Keep in mind that the RPC server is completely unsecured, so this should only be used for development inside a secure network!
 
 ## Changelog
+
+### 1.1.0 (2020-11-02)
+
+-   (UncleSamSwiss) Added support for SX1507, SX1508 and SX1509.
 
 ### 1.0.1 (2020-10-27)
 

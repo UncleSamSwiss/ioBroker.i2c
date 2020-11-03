@@ -42,46 +42,59 @@ class DeviceHandlerBase {
     }
     i2cRead(length, buffer) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.i2cRead(this.deviceConfig.address, length, buffer);
+            const result = yield this.adapter.i2cBus.i2cRead(this.deviceConfig.address, length, buffer);
+            this.silly(`i2cRead(${length}): 0x${result.buffer.toString('hex')}`);
+            return result;
         });
     }
     i2cWrite(length, buffer) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`i2cWrite(${length}, 0x${buffer.toString('hex')})`);
             return yield this.adapter.i2cBus.i2cWrite(this.deviceConfig.address, length, buffer);
         });
     }
     readByte(command) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.readByte(this.deviceConfig.address, command);
+            const byte = yield this.adapter.i2cBus.readByte(this.deviceConfig.address, command);
+            this.silly(`readByte(${shared_1.toHexString(command)}): ${shared_1.toHexString(byte)}`);
+            return byte;
         });
     }
     readI2cBlock(command, length, buffer) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.readI2cBlock(this.deviceConfig.address, command, length, buffer);
+            const result = yield this.adapter.i2cBus.readI2cBlock(this.deviceConfig.address, command, length, buffer);
+            this.silly(`readI2cBlock(${shared_1.toHexString(command)}, ${length}): 0x${result.buffer.toString('hex')}`);
+            return result;
         });
     }
     receiveByte() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.adapter.i2cBus.receiveByte(this.deviceConfig.address);
+            const byte = yield this.adapter.i2cBus.receiveByte(this.deviceConfig.address);
+            this.silly(`receiveByte(): ${shared_1.toHexString(byte)}`);
+            return byte;
         });
     }
     sendByte(byte) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`sendByte(${shared_1.toHexString(byte)})`);
             return yield this.adapter.i2cBus.sendByte(this.deviceConfig.address, byte);
         });
     }
     writeByte(command, byte) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`writeByte(${shared_1.toHexString(command)}, ${shared_1.toHexString(byte)})`);
             return yield this.adapter.i2cBus.writeByte(this.deviceConfig.address, command, byte);
         });
     }
     writeQuick(command, bit) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`writeQuick(${shared_1.toHexString(command)}, ${bit})`);
             return yield this.adapter.i2cBus.writeQuick(this.deviceConfig.address, command, bit);
         });
     }
     writeI2cBlock(command, length, buffer) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`writeI2cBlock(${shared_1.toHexString(command)}, ${length}, 0x${buffer.toString('hex')})`);
             return yield this.adapter.i2cBus.writeI2cBlock(this.deviceConfig.address, command, length, buffer);
         });
     }
@@ -95,6 +108,9 @@ class DeviceHandlerBase {
         return this.adapter.getStateValue(this.hexAddress + '.' + state);
     }
     // logging methods
+    silly(message) {
+        this.adapter.log.silly(`${this.type} ${this.hexAddress}: ${message}`);
+    }
     debug(message) {
         this.adapter.log.debug(`${this.type} ${this.hexAddress}: ${message}`);
     }

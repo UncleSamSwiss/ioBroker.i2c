@@ -8,6 +8,7 @@ import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
 import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
+import * as SX150x from './sx150x';
 
 export interface DeviceInfo {
     readonly name: string;
@@ -18,6 +19,7 @@ export interface DeviceInfo {
 
 export class DeviceFactory {
     public static readonly supportedDevices: DeviceInfo[] = [
+        // keep these in alphabetical order!
         ...ADS1x15.Infos,
         BH1750.Info,
         BME280.Info,
@@ -25,6 +27,7 @@ export class DeviceFactory {
         MCP23017.Info,
         PCA9685.Info,
         ...PCF8574.Infos,
+        ...SX150x.Infos,
 
         // always leave "Generic" at the end
         Generic.Info,
