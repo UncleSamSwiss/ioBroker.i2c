@@ -9,6 +9,7 @@ import * as MCP23017 from './mcp23017';
 import * as MCP4725 from './mcp4725';
 import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
+import * as SeesawSoil from './seesawsoil';
 import * as SX150x from './sx150x';
 import * as xMC5883 from './xmc5883';
 
@@ -22,6 +23,7 @@ export interface DeviceInfo {
 export class DeviceFactory {
     public static readonly supportedDevices: DeviceInfo[] = [
         // keep these in alphabetical order!
+        SeesawSoil.Info,
         ...ADS1x15.Infos,
         BH1750.Info,
         BME280.Info,
