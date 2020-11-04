@@ -61,6 +61,10 @@ On Raspberry Pi 3 and 4B, this is "1".
 
 The following devices are currently supported. The numbers in parenthesis are the known addresses of the device in hexadecimal format (without the read bit).
 
+### Adafruit STEMMA Soil Sensor (36)
+
+Adafruit STEMMA Soil Sensor - I2C Capacitive Moisture Sensor using the ATSAMD10 chip.
+
 ### ADS1015 (48-4B)
 
 Texas Instruments 4x 3.3-kSPS, 12-Bit ADCs with Internal Reference.
@@ -222,6 +226,7 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 -   (UncleSamSwiss) Added support for SX1507, SX1508 and SX1509.
 -   (UncleSamSwiss) Added support for MCP4725.
 -   (UncleSamSwiss) Added support for HMC5883L and QMC5883L.
+-   (UncleSamSwiss) Added support for Adafruit STEMMA Soil Sensor.
 
 ### 1.0.1 (2020-10-27)
 

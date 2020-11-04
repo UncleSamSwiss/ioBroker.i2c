@@ -21,6 +21,7 @@
   "license": "Apache-2.0",
   "keywords": [
     "I2C",
+    "Adafruit STEMMA Soil Sensor",
     "ADS1015",
     "ADS1115",
     "BH1750",
