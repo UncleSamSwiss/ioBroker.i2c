@@ -81,5 +81,11 @@
     "ledTimeFall": "Fade out time",
     "referenceVoltage": "Reference voltage",
     "writeToEeprom": "Save value in EEPROM",
-    "Oversampling": "Oversampling"
+    "Oversampling": "Oversampling",
+    "singleShot": "single shot",
+    "voltageRange": "Voltage range",
+    "adcResolution": "ADC resolution",
+    "shuntValue": "Shunt resistor value",
+    "expectedCurrent": "Expected current",
+    "currentLsb": "Current per bit (LSB)"
 }
