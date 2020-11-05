@@ -61,6 +61,10 @@ On Raspberry Pi 3 and 4B, this is "1".
 
 The following devices are currently supported. The numbers in parenthesis are the known addresses of the device in hexadecimal format (without the read bit).
 
+### Adafruit STEMMA Soil Sensor (36)
+
+Adafruit STEMMA Soil Sensor - I2C Capacitive Moisture Sensor using the ATSAMD10 chip.
+
 ### ADS1015 (48-4B)
 
 Texas Instruments 4x 3.3-kSPS, 12-Bit ADCs with Internal Reference.
@@ -73,6 +77,18 @@ Texas Instruments 4x 860-SPS, 16-Bit ADCs with Internal Reference.
 
 Bosch Digital Humidity, Pressure and Temperature Sensor.
 
+### GY-US42 Sonar Rangefinder (70)
+
+MaxSonar GY-US42 Sonar Rangefinder 20 - 720cm.
+
+### HMC5883L 3-Axis Digital Compass (1E)
+
+Honeywell 3-Axis Digital Compass IC.
+
+### INA219 Current/Power Monitor (40-4F)
+
+Texas Instruments Zero-Drift, Bidirectional Current/Power Monitor.
+
 ### MCP23008 8-Bit I/O Expander (20-27)
 
 Microchip 8-Bit I/O Expander with Serial Interface.
@@ -80,6 +96,10 @@ Microchip 8-Bit I/O Expander with Serial Interface.
 ### MCP23017 16-Bit I/O Expander (20-27)
 
 Microchip 16-Bit I/O Expander with Serial Interface.
+
+### MCP4725 12-Bit Digital-to-Analog Converter (60-67)
+
+Microchip 12-Bit Digital-to-Analog Converter with EEPROM Memory.
 
 ### PCF8574 8-Bit I/O Expander (20-27)
 
@@ -93,6 +113,30 @@ Texas Instruments Remote 8-Bit I/O Expander for I2C Bus.
 
 Adafruit PCA9685 breakout board for 16-channel 12 bit PWM. Adapter focused on using the 16 channels from 0..4095 as LED dimmer.
 Can drive many LEDs when PWM (and GND) is attached to a N-channel Mosfet module e.g. based on D4184. Connect LED GND to the MOSFET and +12/24/n V to PSU.
+
+### QMC5883L 3-Axis Magnetic Sensor (0D)
+
+QST 3-Axis Magnetic Sensor.
+
+### SHT3x Humidity and Temperature Sensor (44-45)
+
+Sensirion SHT3x Humidity and Temperature Sensor.
+
+### SRF02 Ultrasonic Ranger Finder (70)
+
+Devantech Ultrasonic Ranger Finder 16 - 600cm.
+
+### SX1507 4 Channel Level Shifting GPIO with LED Driver (3E, 3F, 70, 71)
+
+Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver for 4 channels.
+
+### SX1508 8 Channel Level Shifting GPIO with LED Driver and Keypad Engine (20-23)
+
+Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver and Keypad Engine for 8 channels.
+
+### SX1509 16 Channel Level Shifting GPIO with LED Driver and Keypad Engine (3E, 3F, 70, 71)
+
+Semtech World’s Lowest Voltage Level Shifting GPIO with LED Driver and Keypad Engine for 16 channels.
 
 ### Generic device (03-77)
 
@@ -192,6 +236,16 @@ If you are developing on a desktop PC and want to test I2C on a SBC (e.g. a Rasp
 Keep in mind that the RPC server is completely unsecured, so this should only be used for development inside a secure network!
 
 ## Changelog
+
+### 1.1.0 (2020-11-02)
+
+-   (UncleSamSwiss) Added support for SX1507, SX1508 and SX1509.
+-   (UncleSamSwiss) Added support for MCP4725.
+-   (UncleSamSwiss) Added support for HMC5883L and QMC5883L.
+-   (UncleSamSwiss) Added support for Adafruit STEMMA Soil Sensor.
+-   (UncleSamSwiss) Added support for INA219.
+-   (UncleSamSwiss) Changed polling interval of ADS1x15 to milliseconds.
+-   (UncleSamSwiss) Fixed several bugs.
 
 ### 1.0.1 (2020-10-27)
 

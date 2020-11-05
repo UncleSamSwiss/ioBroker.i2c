@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BigEndianDeviceHandlerBase = void 0;
+const shared_1 = require("../lib/shared");
 const device_handler_base_1 = require("./device-handler-base");
 function swapWord(value) {
     return ((value >> 8) & 0xff) | ((value << 8) & 0xff00);
@@ -21,12 +22,15 @@ class BigEndianDeviceHandlerBase extends device_handler_base_1.DeviceHandlerBase
     }
     readWord(command) {
         return __awaiter(this, void 0, void 0, function* () {
-            const word = yield this.adapter.i2cBus.readWord(this.address, command);
-            return swapWord(word);
+            let word = yield this.adapter.i2cBus.readWord(this.address, command);
+            word = swapWord(word);
+            this.silly(`readWord(${shared_1.toHexString(command)}): ${shared_1.toHexString(word, 4)}`);
+            return word;
         });
     }
     writeWord(command, word) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.silly(`writeWord(${shared_1.toHexString(command)}, ${shared_1.toHexString(word, 4)})`);
             word = swapWord(word);
             return yield this.adapter.i2cBus.writeWord(this.address, command, word);
         });

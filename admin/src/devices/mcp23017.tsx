@@ -141,7 +141,7 @@ class MCP23017 extends DeviceBase<MCP230xxConfig, { showIdDialog: boolean }> {
                         notEditable={false}
                         selected={this.state.config.interrupt}
                         onClose={() => this.onInterruptSelected()}
-                        onOk={(selected) => this.onInterruptSelected(selected)}
+                        onOk={(selected) => this.onInterruptSelected(selected as string)}
                     ></SelectID>
                 )}
                 <Grid container spacing={3}>

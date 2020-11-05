@@ -60,8 +60,12 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
 }
 
 class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
+    private readonly isHorter: boolean;
+
     constructor(props: DeviceProps<PCF8574Config>) {
         super(props);
+
+        this.isHorter = !!props.baseConfig.name && props.baseConfig.name.startsWith('Horter');
 
         let config: PCF8574Config;
         if (!props.config) {
@@ -71,7 +75,7 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
             };
 
             for (let i = 0; i < 8; i++) {
-                config.pins[i] = { dir: 'out' };
+                config.pins[i] = { dir: this.isHorter ? 'in' : 'out' };
             }
 
             props.onChange(config);
@@ -111,7 +115,7 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
                         notEditable={false}
                         selected={this.state.config.interrupt}
                         onClose={() => this.onInterruptSelected()}
-                        onOk={(selected) => this.onInterruptSelected(selected)}
+                        onOk={(selected) => this.onInterruptSelected(selected as string)}
                     ></SelectID>
                 )}
                 <Grid container spacing={3}>
@@ -146,9 +150,10 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
                         </Button>
                     </Grid>
                 </Grid>
-                {this.state.config.pins.map((pin, i) => (
-                    <PinEditor key={`pin-${i}`} index={i} config={pin} onChange={this.onPinChange}></PinEditor>
-                ))}
+                {!this.isHorter &&
+                    this.state.config.pins.map((pin, i) => (
+                        <PinEditor key={`pin-${i}`} index={i} config={pin} onChange={this.onPinChange}></PinEditor>
+                    ))}
             </>
         );
     }
@@ -157,4 +162,10 @@ class PCF8574 extends DeviceBase<PCF8574Config, { showIdDialog: boolean }> {
 export const Infos: DeviceInfo[] = [
     { name: 'PCF8574', addresses: DeviceBase.getAllAddresses(0x20, 8), type: 'PCF8574', react: PCF8574 },
     { name: 'PCF8574A', addresses: DeviceBase.getAllAddresses(0x38, 8), type: 'PCF8574', react: PCF8574 },
+    {
+        name: 'Horter Digital Input Module',
+        addresses: [...DeviceBase.getAllAddresses(0x20, 8), ...DeviceBase.getAllAddresses(0x38, 8)],
+        type: 'PCF8574',
+        react: PCF8574,
+    },
 ];

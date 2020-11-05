@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "news": {
+            "1.1.0": {
+                "en": "Added support for SX1507, SX1508 and SX1509",
+                "de": "Unterstützung für SX1507, SX1508 und SX1509 hinzugefügt",
+                "ru": "Добавлена ​​поддержка SX1507, SX1508 и SX1509.",
+                "pt": "Adicionado suporte para SX1507, SX1508 e SX1509",
+                "nl": "Ondersteuning toegevoegd voor SX1507, SX1508 en SX1509",
+                "fr": "Ajout du support pour SX1507, SX1508 et SX1509",
+                "it": "Aggiunto supporto per SX1507, SX1508 e SX1509",
+                "es": "Soporte agregado para SX1507, SX1508 y SX1509",
+                "pl": "Dodano obsługę SX1507, SX1508 i SX1509",
+                "zh-cn": "添加了对SX1507，SX1508和SX1509的支持"
+            },
             "1.0.1": {
                 "en": "Removed unneeded files in NPM package",
                 "de": "Nicht benötigte Dateien im NPM-Paket wurden entfernt",
@@ -149,28 +161,35 @@
             "pl": "Komunikuje się z urządzeniami przez magistralę I2C.",
             "zh-cn": "通过I2C总线与设备通信。"
         },
-        "authors": [
-            "UncleSamSwiss <samuel.weibel@gmail.com>"
-        ],
+        "authors": ["UncleSamSwiss <samuel.weibel@gmail.com>"],
         "keywords": [
             "I2C",
+            "Adafruit STEMMA Soil Sensor",
             "ADS1015",
             "ADS1115",
+            "BH1750",
             "BME280",
+            "GY-US42",
+            "HMC5883L",
+            "INA219",
             "MCP23008",
             "MCP23017",
+            "MCP4725",
             "PCF8574",
             "PCA9685",
-            "BH1750",
+            "QMC5883L",
+            "SHT3x",
+            "SRF02",
+            "SX1507",
+            "SX1508",
+            "SX1509",
             "Raspberry Pi",
             "BeagleBone",
             "Intel Edison"
         ],
         "license": "Apache-2.0",
         "platform": "Javascript/Node.js",
-        "os": [
-            "linux"
-        ],
+        "os": ["linux"],
         "main": "build/main.js",
         "icon": "i2c.png",
         "enabled": true,

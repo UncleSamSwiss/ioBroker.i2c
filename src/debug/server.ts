@@ -92,7 +92,7 @@ export class I2CServer {
             case 'i2cWrite':
                 buffer = Buffer.from(json.args.buffer, 'hex');
                 const i2cWrite = await this.bus.i2cWrite(json.args.address, json.args.length, buffer);
-                return { bytesRead: i2cWrite.bytesWritten, buffer: i2cWrite.buffer.toString('hex') };
+                return { bytesWritten: i2cWrite.bytesWritten, buffer: i2cWrite.buffer.toString('hex') };
             case 'readByte':
                 return await this.bus.readByte(json.args.address, json.args.command);
             case 'readWord':

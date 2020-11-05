@@ -36,7 +36,7 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
         return target.type === 'checkbox'
             ? !!checked
             : target.type === 'number'
-            ? parseInt(target.value, 10)
+            ? parseFloat(target.value)
             : target.value;
     }
 
@@ -50,11 +50,14 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
         return this.doHandleChange(key, value);
     }
 
-    protected doHandleChange<K extends keyof T>(key: K, value: T[K]): boolean {
+    protected doHandleChange<K extends keyof T>(key: K, value: T[K], callback?: () => void): boolean {
         // store the setting
         this.setState({ config: { ...this.state.config, [key]: value } } as any, () => {
             // and notify the admin UI about changes
             this.props.onChange({ ...this.props.config, ...this.state.config });
+            if (callback) {
+                callback();
+            }
         });
         return false;
     }

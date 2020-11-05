@@ -64,6 +64,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
             this.debug('Register ' + handler.hex + ': ' + JSON.stringify(handler.config));
 
             await this.adapter.extendObjectAsync(this.hexAddress + '.' + handler.hex, {
+                type: 'state',
                 common: {
                     name: this.hexAddress + ' ' + (handler.config.name || 'Register'),
                     read: handler.config.read,
@@ -175,7 +176,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
         }
     }
     private async readValueAsync(handler: RegisterHandler): Promise<void> {
-        this.debug(`${handler.hex}: Reding from register`);
+        this.debug(`${handler.hex}: Reading from register`);
 
         const buf = this.createBuffer(handler);
 

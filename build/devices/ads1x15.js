@@ -184,7 +184,7 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                 if (this.muxes[i] !== 0) {
                     hasEnabled = true;
                 }
-                this.adapter.extendObject(`${this.hexAddress}.${i}`, {
+                yield this.adapter.extendObjectAsync(`${this.hexAddress}.${i}`, {
                     type: 'state',
                     common: {
                         name: `${this.hexAddress} Channel ${i}`,
@@ -201,8 +201,18 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                 return;
             }
             yield this.readCurrentValueAsync();
-            if (this.config.pollingInterval > 0) {
-                this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(); }), 1000 * this.config.pollingInterval, 1000);
+            // backwards compatibility:
+            // - old pollingInterval was in seconds
+            // - new pollingIntervalMs is in milliseconds
+            let pollingIntervalMs = 0;
+            if (this.config.pollingInterval) {
+                pollingIntervalMs = this.config.pollingInterval * 1000;
+            }
+            else {
+                pollingIntervalMs = this.config.pollingIntervalMs || 0;
+            }
+            if (pollingIntervalMs > 0) {
+                this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(); }), pollingIntervalMs, 100);
             }
         });
     }
