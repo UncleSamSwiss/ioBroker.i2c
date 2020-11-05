@@ -245,6 +245,7 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 -   (UncleSamSwiss) Added support for Adafruit STEMMA Soil Sensor.
 -   (UncleSamSwiss) Added support for INA219.
 -   (UncleSamSwiss) Changed polling interval of ADS1x15 to milliseconds.
+-   (UncleSamSwiss) Fixed several bugs.
 
 ### 1.0.1 (2020-10-27)
 
