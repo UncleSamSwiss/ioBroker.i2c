@@ -81,6 +81,10 @@ Bosch Digital Humidity, Pressure and Temperature Sensor.
 
 Honeywell 3-Axis Digital Compass IC.
 
+### INA219 Current/Power Monitor (40-4F)
+
+Texas Instruments Zero-Drift, Bidirectional Current/Power Monitor.
+
 ### MCP23008 8-Bit I/O Expander (20-27)
 
 Microchip 8-Bit I/O Expander with Serial Interface.
@@ -227,6 +231,7 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 -   (UncleSamSwiss) Added support for MCP4725.
 -   (UncleSamSwiss) Added support for HMC5883L and QMC5883L.
 -   (UncleSamSwiss) Added support for Adafruit STEMMA Soil Sensor.
+-   (UncleSamSwiss) Added support for INA219.
 
 ### 1.0.1 (2020-10-27)
 

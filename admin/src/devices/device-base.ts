@@ -36,7 +36,7 @@ export abstract class DeviceBase<T extends ImplementationConfigBase, S = {}> ext
         return target.type === 'checkbox'
             ? !!checked
             : target.type === 'number'
-            ? parseInt(target.value, 10)
+            ? parseFloat(target.value)
             : target.value;
     }
 

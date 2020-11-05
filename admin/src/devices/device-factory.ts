@@ -4,6 +4,7 @@ import * as ADS1x15 from './ads1x15';
 import * as BH1750 from './bh1750';
 import * as BME280 from './bme280';
 import * as Generic from './generic';
+import * as INA219 from './ina219';
 import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
 import * as MCP4725 from './mcp4725';
@@ -28,6 +29,7 @@ export class DeviceFactory {
         BH1750.Info,
         BME280.Info,
         xMC5883.HMC5883L,
+        INA219.Info,
         MCP23008.Info,
         MCP23017.Info,
         MCP4725.Info,
