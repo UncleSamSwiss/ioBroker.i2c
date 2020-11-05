@@ -144,16 +144,12 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
     changeOutputAsync(pin, value) {
         return __awaiter(this, void 0, void 0, function* () {
             const mask = 1 << pin;
-            const oldValue = this.writeValue;
             const realValue = this.config.pins[pin].inv ? !value : value;
             if (realValue) {
                 this.writeValue &= ~mask;
             }
             else {
                 this.writeValue |= mask;
-            }
-            if (this.writeValue == oldValue) {
-                return;
             }
             yield this.sendCurrentValueAsync();
             yield this.setStateAckAsync(pin, value);

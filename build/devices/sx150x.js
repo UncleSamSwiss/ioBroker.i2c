@@ -533,15 +533,11 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
     changeOutputAsync(pin, value) {
         return __awaiter(this, void 0, void 0, function* () {
             const mask = 1 << pin;
-            const oldValue = this.writeValue;
             if (value) {
                 this.writeValue &= ~mask;
             }
             else {
                 this.writeValue |= mask;
-            }
-            if (this.writeValue == oldValue) {
-                return;
             }
             yield this.sendCurrentValuesAsync();
             yield this.setStateAckAsync(pin, value);

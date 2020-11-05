@@ -653,14 +653,10 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
     private async changeOutputAsync(pin: number, value: boolean): Promise<void> {
         const mask = 1 << pin;
-        const oldValue = this.writeValue;
         if (value) {
             this.writeValue &= ~mask;
         } else {
             this.writeValue |= mask;
-        }
-        if (this.writeValue == oldValue) {
-            return;
         }
 
         await this.sendCurrentValuesAsync();

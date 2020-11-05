@@ -155,15 +155,11 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
 
     private async changeOutputAsync(pin: number, value: boolean): Promise<void> {
         const mask = 1 << pin;
-        const oldValue = this.writeValue;
         const realValue = this.config.pins[pin].inv ? !value : value;
         if (realValue) {
             this.writeValue &= ~mask;
         } else {
             this.writeValue |= mask;
-        }
-        if (this.writeValue == oldValue) {
-            return;
         }
 
         await this.sendCurrentValueAsync();
