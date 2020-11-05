@@ -22,12 +22,14 @@
     "Input with pull-up resistor": "Input with pull-up resistor",
     "inverted": "inverted",
     "Polling Interval": "Polling interval",
+    "Refresh Interval": "Refresh interval",
     "Interrupt object": "Interrupt object",
     "Used by channel": "Used by channel",
     "Used by channels": "Used by channels",
     "Single-ended": "Single-ended",
     "Differential N=AIN1": "Differential N=AIN1",
     "Differential N=AIN3": "Differential N=AIN3",
+    "Range": "Range",
     "Range:": "Range:",
     "Off": "Off",
     "Column": "Column",
@@ -78,5 +80,6 @@
     "ledTimeRaise": "Fade in time",
     "ledTimeFall": "Fade out time",
     "referenceVoltage": "Reference voltage",
-    "writeToEeprom": "Save value in EEPROM"
+    "writeToEeprom": "Save value in EEPROM",
+    "Oversampling": "Oversampling"
 }
