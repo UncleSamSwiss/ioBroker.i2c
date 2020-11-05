@@ -232,6 +232,7 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 -   (UncleSamSwiss) Added support for HMC5883L and QMC5883L.
 -   (UncleSamSwiss) Added support for Adafruit STEMMA Soil Sensor.
 -   (UncleSamSwiss) Added support for INA219.
+-   (UncleSamSwiss) Changed polling interval of ADS1x15 to milliseconds.
 
 ### 1.0.1 (2020-10-27)
 

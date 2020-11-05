@@ -7,7 +7,8 @@ import { toHexString } from '../lib/shared';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
 
 export interface ADS1x15Config extends ImplementationConfigBase {
-    pollingInterval: number;
+    pollingInterval?: number; // legacy value in seconds
+    pollingIntervalMs: number; // value since v1.1.0
     channels: Channel[];
 }
 
@@ -215,8 +216,18 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
         }
 
         await this.readCurrentValueAsync();
-        if (this.config.pollingInterval > 0) {
-            this.startPolling(async () => await this.readCurrentValueAsync(), 1000 * this.config.pollingInterval, 1000);
+
+        // backwards compatibility:
+        // - old pollingInterval was in seconds
+        // - new pollingIntervalMs is in milliseconds
+        let pollingIntervalMs = 0;
+        if (this.config.pollingInterval) {
+            pollingIntervalMs = this.config.pollingInterval * 1000;
+        } else {
+            pollingIntervalMs = this.config.pollingIntervalMs || 0;
+        }
+        if (pollingIntervalMs > 0) {
+            this.startPolling(async () => await this.readCurrentValueAsync(), pollingIntervalMs, 100);
         }
     }
 

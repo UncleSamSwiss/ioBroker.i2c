@@ -28,13 +28,21 @@ class ADS1x15 extends DeviceBase<ADS1x15Config> {
         let config: ADS1x15Config;
         if (!props.config) {
             config = {
-                pollingInterval: 60,
+                pollingIntervalMs: 60000,
                 channels: [],
             };
 
             props.onChange(config);
         } else {
             config = { ...props.config };
+        }
+
+        // backwards compatibility:
+        // - old pollingInterval was in seconds
+        // - new pollingIntervalMs is in milliseconds
+        if (config.pollingInterval !== undefined) {
+            config.pollingIntervalMs = config.pollingInterval * 1000;
+            config.pollingInterval = undefined;
         }
 
         for (let i = 0; i < 4; i++) {
@@ -154,12 +162,12 @@ class ADS1x15 extends DeviceBase<ADS1x15Config> {
                 <Grid container spacing={3}>
                     <Grid item xs={7} sm={5} md={3}>
                         <TextField
-                            name="pollingInterval"
+                            name="pollingIntervalMs"
                             label={I18n.t('Polling Interval')}
-                            value={this.state.config.pollingInterval}
+                            value={this.state.config.pollingIntervalMs}
                             type="number"
                             InputProps={{
-                                endAdornment: <InputAdornment position="end">sec</InputAdornment>,
+                                endAdornment: <InputAdornment position="end">ms</InputAdornment>,
                             }}
                             fullWidth
                             onChange={this.handleChange}
