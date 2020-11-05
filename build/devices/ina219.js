@@ -65,8 +65,21 @@ class INA219 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                     unit: 'mA',
                 },
             });
+            yield this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+                type: 'state',
+                common: {
+                    name: this.hexAddress + ' Measure',
+                    read: false,
+                    write: true,
+                    type: 'boolean',
+                    role: 'button',
+                },
+            });
+            this.adapter.addStateChangeListener(this.hexAddress + '.measure', () => __awaiter(this, void 0, void 0, function* () { return yield this.updateValuesAsync(); }));
             yield this.configureDeviceAsync();
-            this.startPolling(() => this.updateValuesAsync(), this.config.pollingInterval, 10);
+            if (this.config.pollingInterval > 0) {
+                this.startPolling(() => this.updateValuesAsync(), this.config.pollingInterval, 10);
+            }
         });
     }
     stopAsync() {

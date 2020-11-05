@@ -38,7 +38,20 @@ class SRF02 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase 
                     unit: 'cm',
                 },
             });
-            this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(); }), this.config.pollingInterval * 1000, 1000);
+            yield this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+                type: 'state',
+                common: {
+                    name: this.hexAddress + ' Measure',
+                    read: false,
+                    write: true,
+                    type: 'boolean',
+                    role: 'button',
+                },
+            });
+            this.adapter.addStateChangeListener(this.hexAddress + '.measure', () => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(); }));
+            if (this.config.pollingInterval > 0) {
+                this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValueAsync(); }), this.config.pollingInterval * 1000, 1000);
+            }
         });
     }
     stopAsync() {

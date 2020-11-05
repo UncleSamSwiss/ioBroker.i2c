@@ -43,11 +43,33 @@ export default class SeesawSoil extends SeesawHandlerBase<SeesawSoilConfig> {
             },
         });
 
+        await this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+            type: 'state',
+            common: {
+                name: this.hexAddress + ' Measure',
+                read: false,
+                write: true,
+                type: 'boolean',
+                role: 'button',
+            },
+        });
+
+        this.adapter.addStateChangeListener(
+            this.hexAddress + '.measure',
+            async () => await this.readCurrentValuesAsync(),
+        );
+
         if (!(await this.begin())) {
             throw new Error('Seesaw not found');
         }
 
-        this.startPolling(async () => await this.readCurrentValuesAsync(), this.config.pollingInterval * 1000, 1000);
+        if (this.config.pollingInterval > 0) {
+            this.startPolling(
+                async () => await this.readCurrentValuesAsync(),
+                this.config.pollingInterval * 1000,
+                1000,
+            );
+        }
     }
 
     async stopAsync(): Promise<void> {

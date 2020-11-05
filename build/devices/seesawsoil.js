@@ -46,10 +46,23 @@ class SeesawSoil extends seesaw_handler_base_1.SeesawHandlerBase {
                     role: 'value',
                 },
             });
+            yield this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+                type: 'state',
+                common: {
+                    name: this.hexAddress + ' Measure',
+                    read: false,
+                    write: true,
+                    type: 'boolean',
+                    role: 'button',
+                },
+            });
+            this.adapter.addStateChangeListener(this.hexAddress + '.measure', () => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValuesAsync(); }));
             if (!(yield this.begin())) {
                 throw new Error('Seesaw not found');
             }
-            this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValuesAsync(); }), this.config.pollingInterval * 1000, 1000);
+            if (this.config.pollingInterval > 0) {
+                this.startPolling(() => __awaiter(this, void 0, void 0, function* () { return yield this.readCurrentValuesAsync(); }), this.config.pollingInterval * 1000, 1000);
+            }
         });
     }
     stopAsync() {

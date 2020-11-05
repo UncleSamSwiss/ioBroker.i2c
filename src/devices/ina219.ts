@@ -90,9 +90,24 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             },
         });
 
+        await this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+            type: 'state',
+            common: {
+                name: this.hexAddress + ' Measure',
+                read: false,
+                write: true,
+                type: 'boolean',
+                role: 'button',
+            },
+        });
+
+        this.adapter.addStateChangeListener(this.hexAddress + '.measure', async () => await this.updateValuesAsync());
+
         await this.configureDeviceAsync();
 
-        this.startPolling(() => this.updateValuesAsync(), this.config.pollingInterval, 10);
+        if (this.config.pollingInterval > 0) {
+            this.startPolling(() => this.updateValuesAsync(), this.config.pollingInterval, 10);
+        }
     }
 
     async stopAsync(): Promise<void> {
