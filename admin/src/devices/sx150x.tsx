@@ -373,7 +373,7 @@ class SX150x extends DeviceBase<SX150xConfig, SX150xExtra> {
                         notEditable={false}
                         selected={config.interrupt}
                         onClose={() => this.onInterruptSelected()}
-                        onOk={(selected) => this.onInterruptSelected(selected)}
+                        onOk={(selected) => this.onInterruptSelected(selected as string)}
                     ></SelectID>
                 )}
                 <Grid container spacing={3}>
