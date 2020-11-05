@@ -25,30 +25,27 @@ export interface DeviceInfo {
 
 export class DeviceFactory {
     public static readonly supportedDevices: DeviceInfo[] = [
-        // keep these in alphabetical order!
-        SeesawSoil.Info,
         ...ADS1x15.Infos,
         BH1750.Info,
         BME280.Info,
-        SRF02.Infos.GYUS42,
-        xMC5883.HMC5883L,
+        Generic.Info,
         INA219.Info,
         MCP23008.Info,
         MCP23017.Info,
         MCP4725.Info,
         PCA9685.Info,
         ...PCF8574.Infos,
-        xMC5883.QMC5883L,
+        SeesawSoil.Info,
         SHT3x.Info,
-        SRF02.Infos.SRF02,
+        ...SRF02.Infos,
         ...SX150x.Infos,
-
-        // always leave "Generic" at the end
-        Generic.Info,
+        ...xMC5883.Infos,
     ];
 
     static getSupportedDevices(address: number): DeviceInfo[] {
-        return this.supportedDevices.filter((info) => !!info.addresses.find((a) => a === address));
+        return this.supportedDevices
+            .filter((info) => !!info.addresses.find((a) => a === address))
+            .sort(DeviceFactory.compareDevice);
     }
 
     static createComponent(config: I2CDeviceConfig): typeof React.Component | undefined {
@@ -62,5 +59,12 @@ export class DeviceFactory {
         }
 
         return device.react;
+    }
+
+    private static compareDevice(a: DeviceInfo, b: DeviceInfo): number {
+        const nameA = a.name == 'Generic' ? 'zzzz' : a.name;
+        const nameB = b.name == 'Generic' ? 'zzzz' : b.name;
+
+        return nameA.localeCompare(nameB);
     }
 }

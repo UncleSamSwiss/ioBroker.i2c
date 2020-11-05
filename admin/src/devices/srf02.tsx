@@ -44,17 +44,7 @@ class SRF02 extends DeviceBase<SRF02Config> {
     }
 }
 
-export const Infos: Record<'SRF02' | 'GYUS42', DeviceInfo> = {
-    SRF02: {
-        name: 'SRF02',
-        addresses: [0x70],
-        type: 'SRF02',
-        react: SRF02,
-    },
-    GYUS42: {
-        name: 'GY-US42',
-        addresses: [0x70],
-        type: 'SRF02',
-        react: SRF02,
-    },
-};
+export const Infos: DeviceInfo[] = [
+    { name: 'SRF02', addresses: [0x70], type: 'SRF02', react: SRF02 },
+    { name: 'GY-US42', addresses: [0x70], type: 'SRF02', react: SRF02 },
+];

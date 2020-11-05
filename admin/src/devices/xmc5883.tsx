@@ -151,5 +151,7 @@ class xMC5883 extends DeviceBase<xMC5883Config, { showIdDialog: boolean }> {
     }
 }
 
-export const HMC5883L: DeviceInfo = { name: 'HMC5883L', addresses: [0x1e], type: 'xMC5883', react: xMC5883 };
-export const QMC5883L: DeviceInfo = { name: 'QMC5883L', addresses: [0x0d], type: 'xMC5883', react: xMC5883 };
+export const Infos: DeviceInfo[] = [
+    { name: 'HMC5883L', addresses: [0x1e], type: 'xMC5883', react: xMC5883 },
+    { name: 'QMC5883L', addresses: [0x0d], type: 'xMC5883', react: xMC5883 },
+];
