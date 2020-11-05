@@ -87,5 +87,9 @@
     "adcResolution": "ADC resolution",
     "shuntValue": "Shunt resistor value",
     "expectedCurrent": "Expected current",
-    "currentLsb": "Current per bit (LSB)"
+    "currentLsb": "Current per bit (LSB)",
+    "Repeatability": "Repeatability",
+    "repeatabilityLow": "Low",
+    "repeatabilityMedium": "Medium",
+    "repeatabilityHigh": "High"
 }

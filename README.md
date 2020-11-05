@@ -118,6 +118,10 @@ Can drive many LEDs when PWM (and GND) is attached to a N-channel Mosfet module 
 
 QST 3-Axis Magnetic Sensor.
 
+### SHT3x Humidity and Temperature Sensor (44-45)
+
+Sensirion SHT3x Humidity and Temperature Sensor.
+
 ### SRF02 Ultrasonic Ranger Finder (70)
 
 Devantech Ultrasonic Ranger Finder 16 - 600cm.
