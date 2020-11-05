@@ -77,6 +77,10 @@ Texas Instruments 4x 860-SPS, 16-Bit ADCs with Internal Reference.
 
 Bosch Digital Humidity, Pressure and Temperature Sensor.
 
+### GY-US42 Sonar Rangefinder (70)
+
+MaxSonar GY-US42 Sonar Rangefinder 20 - 720cm.
+
 ### HMC5883L 3-Axis Digital Compass (1E)
 
 Honeywell 3-Axis Digital Compass IC.
@@ -113,6 +117,10 @@ Can drive many LEDs when PWM (and GND) is attached to a N-channel Mosfet module 
 ### QMC5883L 3-Axis Magnetic Sensor (0D)
 
 QST 3-Axis Magnetic Sensor.
+
+### SRF02 Ultrasonic Ranger Finder (70)
+
+Devantech Ultrasonic Ranger Finder 16 - 600cm.
 
 ### SX1507 4 Channel Level Shifting GPIO with LED Driver (3E, 3F, 70, 71)
 

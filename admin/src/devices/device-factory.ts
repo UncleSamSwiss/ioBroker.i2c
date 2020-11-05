@@ -11,6 +11,7 @@ import * as MCP4725 from './mcp4725';
 import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
 import * as SeesawSoil from './seesawsoil';
+import * as SRF02 from './srf02';
 import * as SX150x from './sx150x';
 import * as xMC5883 from './xmc5883';
 
@@ -28,6 +29,7 @@ export class DeviceFactory {
         ...ADS1x15.Infos,
         BH1750.Info,
         BME280.Info,
+        SRF02.Infos.GYUS42,
         xMC5883.HMC5883L,
         INA219.Info,
         MCP23008.Info,
@@ -36,6 +38,7 @@ export class DeviceFactory {
         PCA9685.Info,
         ...PCF8574.Infos,
         xMC5883.QMC5883L,
+        SRF02.Infos.SRF02,
         ...SX150x.Infos,
 
         // always leave "Generic" at the end
