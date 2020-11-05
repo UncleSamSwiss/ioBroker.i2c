@@ -1,5 +1,6 @@
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { toHexString } from '../lib/shared';
+import { I2cAdapter } from '../main';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface PCF8574Config extends ImplementationConfigBase {
@@ -14,8 +15,15 @@ export interface PinConfig {
 }
 
 export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
+    private readonly isHorter: boolean;
     private readValue = 0;
     private writeValue = 0;
+
+    constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
+        super(deviceConfig, adapter);
+
+        this.isHorter = this.name.startsWith('Horter');
+    }
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
@@ -30,11 +38,14 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
 
         let hasInput = false;
         for (let i = 0; i < 8; i++) {
-            const pinConfig = this.config.pins[i] || { dir: 'out' };
+            const pinConfig = this.config.pins[i] || { dir: this.isHorter ? 'in' : 'out' };
             const isInput = pinConfig.dir == 'in';
             if (isInput) {
                 hasInput = true;
-                this.writeValue |= 1 << i; // input pins must be set to high level
+                if (!this.isHorter) {
+                    this.writeValue |= 1 << i; // PCF input pins must be set to high level
+                }
+                // else do not set the write value (that's the difference between Horter and regular PCF)
             } else {
                 this.addOutputListener(i);
                 let value = this.getStateValue(i);

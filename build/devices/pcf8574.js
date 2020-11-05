@@ -12,10 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const shared_1 = require("../lib/shared");
 const device_handler_base_1 = require("./device-handler-base");
 class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
-    constructor() {
-        super(...arguments);
+    constructor(deviceConfig, adapter) {
+        super(deviceConfig, adapter);
         this.readValue = 0;
         this.writeValue = 0;
+        this.isHorter = this.name.startsWith('Horter');
     }
     startAsync() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -30,11 +31,14 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             });
             let hasInput = false;
             for (let i = 0; i < 8; i++) {
-                const pinConfig = this.config.pins[i] || { dir: 'out' };
+                const pinConfig = this.config.pins[i] || { dir: this.isHorter ? 'in' : 'out' };
                 const isInput = pinConfig.dir == 'in';
                 if (isInput) {
                     hasInput = true;
-                    this.writeValue |= 1 << i; // input pins must be set to high level
+                    if (!this.isHorter) {
+                        this.writeValue |= 1 << i; // PCF input pins must be set to high level
+                    }
+                    // else do not set the write value (that's the difference between Horter and regular PCF)
                 }
                 else {
                     this.addOutputListener(i);
