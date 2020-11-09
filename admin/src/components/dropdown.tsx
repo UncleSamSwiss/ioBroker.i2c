@@ -1,6 +1,10 @@
-import * as React from 'react';
-import { FormControl, FormHelperText, Input, MenuItem, Select } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import FormControl from '@material-ui/core/FormControl';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Input from '@material-ui/core/Input';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import React from 'react';
 
 export interface DropdownOption {
     value: string;

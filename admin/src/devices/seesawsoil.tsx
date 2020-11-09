@@ -1,9 +1,11 @@
-import * as React from 'react';
-import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import { SeesawSoilConfig } from '../../../src/devices/seesawsoil';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { SeesawSoilConfig } from '../../../src/devices/seesawsoil';
 
 class SeesawSoil extends DeviceBase<SeesawSoilConfig> {
     constructor(props: DeviceProps<SeesawSoilConfig>) {

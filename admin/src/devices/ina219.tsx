@@ -1,19 +1,17 @@
-import * as React from 'react';
-import {
-    Checkbox,
-    FormControl,
-    FormControlLabel,
-    FormHelperText,
-    Grid,
-    InputAdornment,
-    TextField,
-} from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import { INA219Config } from '../../../src/devices/ina219';
+import Dropdown, { DropdownOption } from '../components/dropdown';
+import ToggleSwitch from '../components/toggle-switch';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { INA219Config } from '../../../src/devices/ina219';
-import ToggleSwitch from '../components/toggle-switch';
-import Dropdown, { DropdownOption } from '../components/dropdown';
 
 interface INA219Extra {
     maxCurrent: number;

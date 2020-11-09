@@ -1,7 +1,9 @@
-import * as React from 'react';
-import { boundMethod } from 'autobind-decorator';
-import { Grid, Switch, Typography } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Grid from '@material-ui/core/Grid';
+import Switch from '@material-ui/core/Switch';
+import Typography from '@material-ui/core/Typography';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
 
 interface ToggleSwitchProps {
     attr: string;

@@ -8,6 +8,8 @@
         "sourceMap": true,
         "sourceRoot": "./src",
         "noImplicitAny": false,
+        "esModuleInterop": true,
+        "jsx": "react",
         "lib": ["es2018", "DOM"]
     },
     "include": ["./**/*.ts", "./**/*.tsx", "../src/lib/adapter-config.d.ts"],

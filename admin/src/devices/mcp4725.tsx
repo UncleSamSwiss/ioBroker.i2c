@@ -1,9 +1,13 @@
-import * as React from 'react';
-import { Checkbox, FormControlLabel, Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import { MCP4725Config } from '../../../src/devices/mcp4725';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { MCP4725Config } from '../../../src/devices/mcp4725';
 
 class MCP4725 extends DeviceBase<MCP4725Config> {
     constructor(props: DeviceProps<MCP4725Config>) {

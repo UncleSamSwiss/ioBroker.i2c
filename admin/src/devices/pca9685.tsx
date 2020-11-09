@@ -1,9 +1,11 @@
-import * as React from 'react';
-import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import { PCA9685Config } from '../../../src/devices/pca9685';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { PCA9685Config } from '../../../src/devices/pca9685';
 
 class PCA9685 extends DeviceBase<PCA9685Config> {
     constructor(props: DeviceProps<PCA9685Config>) {

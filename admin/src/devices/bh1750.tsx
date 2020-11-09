@@ -1,9 +1,11 @@
-import * as React from 'react';
-import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import { BH1750Config } from '../../../src/devices/bh1750';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { BH1750Config } from '../../../src/devices/bh1750';
 
 class BH1750 extends DeviceBase<BH1750Config> {
     constructor(props: DeviceProps<BH1750Config>) {

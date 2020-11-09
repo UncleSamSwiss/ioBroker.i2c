@@ -1,5 +1,5 @@
 import { boundMethod } from 'autobind-decorator';
-import * as React from 'react';
+import React from 'react';
 import { I2CDeviceConfig, ImplementationConfigBase } from '../../../src/lib/adapter-config';
 import { AppContext } from '../common';
 

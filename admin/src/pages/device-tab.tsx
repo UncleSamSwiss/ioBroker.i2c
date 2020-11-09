@@ -1,12 +1,13 @@
-import * as React from 'react';
-import { boundMethod } from 'autobind-decorator';
-import { Grid, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
 import { I2CDeviceConfig, ImplementationConfigBase } from '../../../src/lib/adapter-config';
-import { DeviceFactory, DeviceInfo } from '../devices/device-factory';
-import Dropdown, { DropdownOption } from '../components/dropdown';
 import { toHexString } from '../../../src/lib/shared';
 import { AppContext } from '../common';
+import Dropdown, { DropdownOption } from '../components/dropdown';
+import { DeviceFactory, DeviceInfo } from '../devices/device-factory';
 
 type OnConfigChangedCallback = (newConfig: I2CDeviceConfig) => void;
 

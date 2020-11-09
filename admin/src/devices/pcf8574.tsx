@@ -1,13 +1,18 @@
-import * as React from 'react';
-import { boundMethod } from 'autobind-decorator';
-import { Button, Checkbox, FormControlLabel, Grid, InputAdornment, TextField } from '@material-ui/core';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
+import I18n from '@iobroker/adapter-react/i18n';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
+import { PCF8574Config, PinConfig } from '../../../src/devices/pcf8574';
+import ToggleSwitch from '../components/toggle-switch';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import ToggleSwitch from '../components/toggle-switch';
-import { PCF8574Config, PinConfig } from '../../../src/devices/pcf8574';
 
 interface PinEditorProps {
     index: number;

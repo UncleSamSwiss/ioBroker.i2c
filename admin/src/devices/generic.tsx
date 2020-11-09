@@ -1,14 +1,17 @@
-import * as React from 'react';
-import { Button, Checkbox, Grid, TextField } from '@material-ui/core';
+import I18n from '@iobroker/adapter-react/i18n';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
-import I18n from '@iobroker/adapter-react/i18n';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
+import { GenericConfig, RegisterConfig } from '../../../src/devices/generic';
+import { toHexString } from '../../../src/lib/shared';
+import Dropdown, { DropdownOption } from '../components/dropdown';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { GenericConfig, RegisterConfig } from '../../../src/devices/generic';
-import { boundMethod } from 'autobind-decorator';
-import Dropdown, { DropdownOption } from '../components/dropdown';
-import { toHexString } from '../../../src/lib/shared';
 
 class Generic extends DeviceBase<GenericConfig> {
     private readonly registerOptions: DropdownOption[] = [];
@@ -53,7 +56,7 @@ class Generic extends DeviceBase<GenericConfig> {
 
     @boundMethod
     protected addRegister(): void {
-        const newRegister = {
+        const newRegister: RegisterConfig = {
             register: -1,
             name: '',
             type: 'uint8',

@@ -1,13 +1,16 @@
-import * as React from 'react';
-import { Button, Grid, InputAdornment, TextField } from '@material-ui/core';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
+import I18n from '@iobroker/adapter-react/i18n';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
+import { xMC5883Config } from '../../../src/devices/xmc5883';
+import Dropdown, { DropdownOption } from '../components/dropdown';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { xMC5883Config } from '../../../src/devices/xmc5883';
-import { boundMethod } from 'autobind-decorator';
-import Dropdown, { DropdownOption } from '../components/dropdown';
 
 class xMC5883 extends DeviceBase<xMC5883Config, { showIdDialog: boolean }> {
     private readonly rangeOptions: DropdownOption[];

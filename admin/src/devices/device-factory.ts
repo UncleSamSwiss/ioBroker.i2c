@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import * as ADS1x15 from './ads1x15';
 import * as BH1750 from './bh1750';

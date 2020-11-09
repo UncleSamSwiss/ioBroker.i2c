@@ -1,14 +1,16 @@
-import * as React from 'react';
-import { boundMethod } from 'autobind-decorator';
-import { Box, Tab, Tabs, Theme } from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
-import { CreateCSSProperties } from '@material-ui/core/styles/withStyles';
 import I18n from '@iobroker/adapter-react/i18n';
+import Box from '@material-ui/core/Box';
+import { Theme, withStyles } from '@material-ui/core/styles';
+import { CreateCSSProperties } from '@material-ui/core/styles/withStyles';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
 import { I2CDeviceConfig } from '../../../src/lib/adapter-config';
 import { toHexString } from '../../../src/lib/shared';
-import { General } from '../pages/general';
-import { DeviceTab } from '../pages/device-tab';
 import { AppContext } from '../common';
+import { DeviceTab } from '../pages/device-tab';
+import { General } from '../pages/general';
 
 const styles = (theme: Theme): Record<string, CreateCSSProperties> => ({
     root: {

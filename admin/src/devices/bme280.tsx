@@ -1,9 +1,11 @@
-import * as React from 'react';
-import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import React from 'react';
+import { BME280Config } from '../../../src/devices/bme280';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
-import { BME280Config } from '../../../src/devices/bme280';
 
 class BME280 extends DeviceBase<BME280Config> {
     constructor(props: DeviceProps<BME280Config>) {

@@ -1,12 +1,10 @@
-import * as React from 'react';
-import { Theme, withStyles } from '@material-ui/core/styles';
-
 import GenericApp from '@iobroker/adapter-react/GenericApp';
-import Settings from './components/settings';
 import { GenericAppProps, GenericAppSettings } from '@iobroker/adapter-react/types';
-import { StyleRules } from '@material-ui/styles';
-import { AppContext } from './common';
+import { StyleRules, Theme, withStyles } from '@material-ui/core/styles';
+import React from 'react';
 import { I2CDeviceConfig } from '../../src/lib/adapter-config';
+import { AppContext } from './common';
+import Settings from './components/settings';
 
 const styles = (_theme: Theme): StyleRules => ({
     root: {},

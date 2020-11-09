@@ -1,11 +1,13 @@
-import * as React from 'react';
-import { Grid, InputAdornment, TextField } from '@material-ui/core';
 import I18n from '@iobroker/adapter-react/i18n';
-import { DeviceBase, DeviceProps } from './device-base';
-import { DeviceInfo } from './device-factory';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
 import { ADS1x15Config, EnabledChannel } from '../../../src/devices/ads1x15';
 import Dropdown, { DropdownOption } from '../components/dropdown';
-import { boundMethod } from 'autobind-decorator';
+import { DeviceBase, DeviceProps } from './device-base';
+import { DeviceInfo } from './device-factory';
 
 class ADS1x15 extends DeviceBase<ADS1x15Config> {
     private readonly samplesOptions: DropdownOption[];

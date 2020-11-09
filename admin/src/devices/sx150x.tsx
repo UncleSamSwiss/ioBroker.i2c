@@ -1,23 +1,21 @@
-import * as React from 'react';
-import { boundMethod } from 'autobind-decorator';
-import {
-    Button,
-    Checkbox,
-    FormControl,
-    FormControlLabel,
-    FormHelperText,
-    Grid,
-    InputAdornment,
-    TextField,
-} from '@material-ui/core';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
-import { DeviceBase, DeviceProps } from './device-base';
-import { DeviceInfo } from './device-factory';
-import ToggleSwitch from '../components/toggle-switch';
+import I18n from '@iobroker/adapter-react/i18n';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
 import { KeypadConfig, LedConfig, PinConfig, PinMode, SX150xConfig } from '../../../src/devices/sx150x';
 import Dropdown, { DropdownOption } from '../components/dropdown';
+import ToggleSwitch from '../components/toggle-switch';
+import { DeviceBase, DeviceProps } from './device-base';
+import { DeviceInfo } from './device-factory';
 
 interface PinCapabilities {
     levelShift: boolean;

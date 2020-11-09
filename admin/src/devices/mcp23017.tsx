@@ -1,13 +1,19 @@
-import * as React from 'react';
-import { boundMethod } from 'autobind-decorator';
-import { Button, Checkbox, FormControlLabel, Grid, InputAdornment, TextField, withWidth } from '@material-ui/core';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import I18n from '@iobroker/adapter-react/i18n';
 import SelectID from '@iobroker/adapter-react/Dialogs/SelectID';
-import { DeviceBase, DeviceProps } from './device-base';
-import { DeviceInfo } from './device-factory';
+import I18n from '@iobroker/adapter-react/i18n';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Grid from '@material-ui/core/Grid';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from '@material-ui/core/TextField';
+import withWidth from '@material-ui/core/withWidth';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import { boundMethod } from 'autobind-decorator';
+import React from 'react';
 import { MCP230xxConfig, PinConfig, PinDirection } from '../../../src/devices/mcp230xx-base';
 import Dropdown, { DropdownOption } from '../components/dropdown';
+import { DeviceBase, DeviceProps } from './device-base';
+import { DeviceInfo } from './device-factory';
 
 interface PinEditorProps {
     index: number;
