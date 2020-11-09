@@ -7,5 +7,10 @@
         "editor.codeActionsOnSave": {
             "source.organizeImports": true
         }
+    },
+    "[typescriptreact]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
     }
 }
