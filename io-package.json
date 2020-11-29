@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "news": {
+            "1.1.1": {
+                "en": "Fixed issue with device search not working.",
+                "de": "Problem behoben, bei dem die Gerätesuche nicht funktionierte.",
+                "ru": "Исправлена ​​проблема с неработающим поиском устройств.",
+                "pt": "Corrigido o problema com a pesquisa de dispositivo não funcionando.",
+                "nl": "Probleem opgelost waarbij het zoeken naar apparaten niet werkte.",
+                "fr": "Correction d'un problème avec la recherche de périphérique ne fonctionnant pas.",
+                "it": "Risolto il problema con la ricerca del dispositivo non funzionante.",
+                "es": "Se solucionó el problema con la búsqueda de dispositivos que no funcionaba.",
+                "pl": "Naprawiono problem z niedziałającym wyszukiwaniem urządzeń.",
+                "zh-cn": "解决了设备搜索不起作用的问题。"
+            },
             "1.1.0": {
                 "en": "Added support for HMC5883L, INA219, MCP4725, QMC5883L, SX1507, SX1508, SX1509 and Adafruit STEMMA Soil Sensor",
                 "de": "Unterstützung für HMC5883L, INA219, MCP4725, QMC5883L, SX1507, SX1508, SX1509 und Adafruit STEMMA Bodensensor hinzugefügt",
@@ -200,9 +212,7 @@
         "extIcon": "https://raw.githubusercontent.com/UncleSamSwiss/ioBroker.i2c/master/admin/i2c.png",
         "readme": "https://github.com/UncleSamSwiss/ioBroker.i2c/blob/master/README.md",
         "loglevel": "info",
-        "message": true,
         "messagebox": true,
-        "subscribe": "messagebox",
         "mode": "daemon",
         "type": "hardware",
         "compact": true,
