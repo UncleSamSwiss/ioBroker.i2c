@@ -20,7 +20,7 @@
     "settings": {},
 
     // Add the IDs of extensions you want installed when the container is created.
-    "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
 
     // Uncomment the next line if you want start specific services in your Docker Compose config.
     // "runServices": [],
@@ -29,7 +29,7 @@
     // "shutdownAction": "none",
 
     // When creating the container, delete unnecessary adapters, disable error reporting, set the license as confirmed, and install/update this adapter
-    //"postCreateCommand": "iob del discovery && iob plugin disable sentry && iob object set system.config common.licenseConfirmed=true && NPM_PACK=$(npm pack) && iob url \"$(pwd)/$NPM_PACK\" --debug && rm \"$NPM_PACK\""
+    "postCreateCommand": "iob del discovery && iob plugin disable sentry && iob object set system.config common.licenseConfirmed=true && NPM_PACK=$(npm pack) && iob url \"$(pwd)/$NPM_PACK\" --debug && rm \"$NPM_PACK\""
 
     // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
     //"remoteUser": "iobroker"
