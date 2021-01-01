@@ -9,8 +9,8 @@ import TextField from '@material-ui/core/TextField';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import { boundMethod } from 'autobind-decorator';
 import React from 'react';
-import { PCF8574Config, PinConfig } from '../../../src/devices/pcf8574';
-import ToggleSwitch from '../components/toggle-switch';
+import { PCF8574Config, PinConfig, PinDirection } from '../../../src/devices/pcf8574';
+import Dropdown, { DropdownOption } from '../components/dropdown';
 import { DeviceBase, DeviceProps } from './device-base';
 import { DeviceInfo } from './device-factory';
 
@@ -21,6 +21,12 @@ interface PinEditorProps {
 }
 
 class PinEditor extends React.Component<PinEditorProps, PinConfig> {
+    private readonly dirOptions: DropdownOption[] = [
+        { value: 'in', title: I18n.t('Input with external pull-up resistor') },
+        { value: 'in-to-vcc', title: I18n.t('Input with external pull-down resistor') },
+        { value: 'out', title: I18n.t('Output') },
+    ];
+
     constructor(props: PinEditorProps) {
         super(props);
 
@@ -28,8 +34,8 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
     }
 
     @boundMethod
-    private onDirChange(value: boolean) {
-        this.setState({ dir: value ? 'in' : 'out' }, () => this.props.onChange(this.props.index, this.state));
+    private onDirChange(value: string) {
+        this.setState({ dir: value as PinDirection }, () => this.props.onChange(this.props.index, this.state));
     }
 
     @boundMethod
@@ -44,14 +50,14 @@ class PinEditor extends React.Component<PinEditorProps, PinConfig> {
                 <Grid item xs={2} md={1} style={{ paddingTop: '23px' }}>
                     <strong>{`${I18n.t('Pin')} ${index}`}</strong>
                 </Grid>
-                <Grid item xs={4} md={3} lg={2}>
-                    <ToggleSwitch
-                        attr="dir"
-                        offLabel="Output"
-                        onLabel="Input"
-                        value={this.state.dir === 'in'}
+                <Grid item xs={7} sm={6} md={4} lg={3}>
+                    <Dropdown
+                        attr={`dir-${index}`}
+                        options={this.dirOptions}
+                        value={this.state.dir}
                         onChange={this.onDirChange}
-                    ></ToggleSwitch>
+                        style={{ paddingTop: '3px' }}
+                    />
                 </Grid>
                 <Grid item xs={2} style={{ paddingTop: '11px' }}>
                     <FormControlLabel

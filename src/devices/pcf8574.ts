@@ -9,8 +9,10 @@ export interface PCF8574Config extends ImplementationConfigBase {
     pins: PinConfig[];
 }
 
+export type PinDirection = 'in' | 'in-to-vcc' | 'out';
+
 export interface PinConfig {
-    dir: 'in' | 'out';
+    dir: PinDirection;
     inv?: boolean;
 }
 
@@ -39,13 +41,13 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
         let hasInput = false;
         for (let i = 0; i < 8; i++) {
             const pinConfig = this.config.pins[i] || { dir: this.isHorter ? 'in' : 'out' };
-            const isInput = pinConfig.dir == 'in';
+            const isInput = pinConfig.dir !== 'out';
             if (isInput) {
                 hasInput = true;
-                if (!this.isHorter) {
+                if (pinConfig.dir === 'in') {
                     this.writeValue |= 1 << i; // PCF input pins must be set to high level
                 }
-                // else do not set the write value (that's the difference between Horter and regular PCF)
+                // else do not set the write value
             } else {
                 this.addOutputListener(i);
                 let value = this.getStateValue(i);
@@ -136,7 +138,7 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
         this.debug('Read ' + toHexString(this.readValue));
         for (let i = 0; i < 8; i++) {
             const mask = 1 << i;
-            if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir == 'in') {
+            if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir !== 'out') {
                 let value = (this.readValue & mask) > 0;
                 if (this.config.pins[i].inv) {
                     value = !value;

@@ -32,13 +32,13 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             let hasInput = false;
             for (let i = 0; i < 8; i++) {
                 const pinConfig = this.config.pins[i] || { dir: this.isHorter ? 'in' : 'out' };
-                const isInput = pinConfig.dir == 'in';
+                const isInput = pinConfig.dir !== 'out';
                 if (isInput) {
                     hasInput = true;
-                    if (!this.isHorter) {
+                    if (pinConfig.dir === 'in') {
                         this.writeValue |= 1 << i; // PCF input pins must be set to high level
                     }
-                    // else do not set the write value (that's the difference between Horter and regular PCF)
+                    // else do not set the write value
                 }
                 else {
                     this.addOutputListener(i);
@@ -128,7 +128,7 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             this.debug('Read ' + shared_1.toHexString(this.readValue));
             for (let i = 0; i < 8; i++) {
                 const mask = 1 << i;
-                if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir == 'in') {
+                if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir !== 'out') {
                     let value = (this.readValue & mask) > 0;
                     if (this.config.pins[i].inv) {
                         value = !value;
