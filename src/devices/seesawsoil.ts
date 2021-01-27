@@ -78,10 +78,14 @@ export default class SeesawSoil extends SeesawHandlerBase<SeesawSoilConfig> {
     }
 
     async readCurrentValuesAsync(): Promise<void> {
-        const tempC = await this.getTemp();
-        const capread = await this.touchRead(0);
+        try {
+            const tempC = await this.getTemp();
+            const capread = await this.touchRead(0);
 
-        await this.setStateAckAsync('temperature', tempC);
-        await this.setStateAckAsync('capacitive', capread);
+            await this.setStateAckAsync('temperature', tempC);
+            await this.setStateAckAsync('capacitive', capread);
+        } catch (e) {
+            this.error("Couldn't read current values: " + e);
+        }
     }
 }

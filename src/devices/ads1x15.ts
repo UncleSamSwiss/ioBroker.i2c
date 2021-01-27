@@ -248,7 +248,11 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             this.busy = true;
             this.readAgain = false;
             for (let i = 0; i < 4; i++) {
-                await this.readAdcAsync(i);
+                try {
+                    await this.readAdcAsync(i);
+                } catch (e) {
+                    this.error(`Couldn't read ADC ${i}: ${e}`);
+                }
             }
         } while (this.readAgain);
         this.busy = false;
