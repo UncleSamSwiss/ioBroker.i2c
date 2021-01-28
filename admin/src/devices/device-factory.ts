@@ -7,6 +7,7 @@ import * as Generic from './generic';
 import * as INA219 from './ina219';
 import * as MCP23008 from './mcp23008';
 import * as MCP23017 from './mcp23017';
+import * as MCP342x from './mcp342x';
 import * as MCP4725 from './mcp4725';
 import * as PCA9685 from './pca9685';
 import * as PCF8574 from './pcf8574';
@@ -32,6 +33,7 @@ export class DeviceFactory {
         INA219.Info,
         MCP23008.Info,
         MCP23017.Info,
+        ...MCP342x.Infos,
         MCP4725.Info,
         PCA9685.Info,
         ...PCF8574.Infos,

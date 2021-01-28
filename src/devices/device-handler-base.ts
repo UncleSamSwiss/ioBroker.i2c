@@ -116,6 +116,10 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
         this.adapter.log.info(`${this.type} ${this.hexAddress}: ${message}`);
     }
 
+    protected warn(message: string): void {
+        this.adapter.log.warn(`${this.type} ${this.hexAddress}: ${message}`);
+    }
+
     protected error(message: string): void {
         this.adapter.log.error(`${this.type} ${this.hexAddress}: ${message}`);
     }
