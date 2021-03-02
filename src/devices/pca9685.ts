@@ -125,7 +125,6 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
     }
 
     private async restartDeviceAsync(): Promise<void> {
-        this.debug('Initializing PCA9865');
         await this.writeByte(Register.MODE2, Mode.OUTDRV);
         await this.writeByte(Register.MODE1, Mode.ALLCALL);
         await this.delay(2);
@@ -194,14 +193,18 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
             pwmValue = 0;
         }
 
-        if (await this.deviceNotInitializedAsync()) {
-            await this.initializeDeviceAsync();
-        }
+        try {
+            if (await this.deviceNotInitializedAsync()) {
+                await this.initializeDeviceAsync();
+            }
 
-        await this.writeByte(Register.LED0_ON_L + 4 * channel, ledOn & 0xff);
-        await this.writeByte(Register.LED0_ON_H + 4 * channel, ledOn >> 8);
-        await this.writeByte(Register.LED0_OFF_L + 4 * channel, ledOff & 0xff);
-        await this.writeByte(Register.LED0_OFF_H + 4 * channel, ledOff >> 8);
+            await this.writeByte(Register.LED0_ON_L + 4 * channel, ledOn & 0xff);
+            await this.writeByte(Register.LED0_ON_H + 4 * channel, ledOn >> 8);
+            await this.writeByte(Register.LED0_OFF_L + 4 * channel, ledOff & 0xff);
+            await this.writeByte(Register.LED0_OFF_H + 4 * channel, ledOff >> 8);
+        } catch (e) {
+            this.error("Couldn't send current PWM value: " + e);
+        }
 
         this.debug(`Writing values for channel ${channel}: on=${ledOn} | off=${ledOff} (PWM ${pwmValue})`);
 

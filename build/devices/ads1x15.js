@@ -235,7 +235,12 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                 this.busy = true;
                 this.readAgain = false;
                 for (let i = 0; i < 4; i++) {
-                    yield this.readAdcAsync(i);
+                    try {
+                        yield this.readAdcAsync(i);
+                    }
+                    catch (e) {
+                        this.error(`Couldn't read ADC ${i}: ${e}`);
+                    }
                 }
             } while (this.readAgain);
             this.busy = false;

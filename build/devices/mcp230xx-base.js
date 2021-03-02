@@ -120,9 +120,15 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
         return __awaiter(this, void 0, void 0, function* () {
             if (this.initialized) {
                 // checking if the directions are still the same, if not, the chip might have reset itself
-                const readDirections = yield this.readRegister(Register.IODIR);
-                if (readDirections === this.directions) {
-                    return true;
+                try {
+                    const readDirections = yield this.readRegister(Register.IODIR);
+                    if (readDirections === this.directions) {
+                        return true;
+                    }
+                }
+                catch (e) {
+                    this.error("Couldn't read IODIR register: " + e);
+                    return false;
                 }
                 this.error('GPIO directions unexpectedly changed, reconfiguring the device');
                 this.initialized = false;

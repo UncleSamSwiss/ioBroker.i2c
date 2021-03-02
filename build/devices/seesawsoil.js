@@ -73,10 +73,15 @@ class SeesawSoil extends seesaw_handler_base_1.SeesawHandlerBase {
     }
     readCurrentValuesAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            const tempC = yield this.getTemp();
-            const capread = yield this.touchRead(0);
-            yield this.setStateAckAsync('temperature', tempC);
-            yield this.setStateAckAsync('capacitive', capread);
+            try {
+                const tempC = yield this.getTemp();
+                const capread = yield this.touchRead(0);
+                yield this.setStateAckAsync('temperature', tempC);
+                yield this.setStateAckAsync('capacitive', capread);
+            }
+            catch (e) {
+                this.error("Couldn't read current values: " + e);
+            }
         });
     }
 }

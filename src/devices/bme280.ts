@@ -235,7 +235,7 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
         this.debug('Reading current values');
         try {
             // Grab temperature, humidity, and pressure in a single read
-            const buffer = new Buffer(8);
+            const buffer = Buffer.alloc(8);
             await this.readI2cBlock(Register.PRESSURE_DATA, 8, buffer);
 
             // Temperature (temperature first since we need t_fine for pressure and humidity)
