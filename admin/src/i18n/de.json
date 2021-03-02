@@ -91,5 +91,6 @@
     "currentLsb": "Strom pro Bit (LSB)",
     "Repeatability": "Wiederholbarkeit",
     "repeatabilityLow": "Tief",
-    "repeatabilityHigh": "Hoch"
+    "repeatabilityHigh": "Hoch",
+    "bits": "Bits"
 }
