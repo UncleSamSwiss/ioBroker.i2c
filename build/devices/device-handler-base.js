@@ -117,6 +117,9 @@ class DeviceHandlerBase {
     info(message) {
         this.adapter.log.info(`${this.type} ${this.hexAddress}: ${message}`);
     }
+    warn(message) {
+        this.adapter.log.warn(`${this.type} ${this.hexAddress}: ${message}`);
+    }
     error(message) {
         this.adapter.log.error(`${this.type} ${this.hexAddress}: ${message}`);
     }
