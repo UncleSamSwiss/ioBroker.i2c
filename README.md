@@ -260,8 +260,12 @@ If you are developing on a desktop PC and want to test I2C on a SBC (e.g. a Rasp
 Keep in mind that the RPC server is completely unsecured, so this should only be used for development inside a secure network!
 
 ## Changelog
+<!--
+	Placeholder for the next version (at the beginning of the line):
+	### __WORK IN PROGRESS__
+-->
 
-### 1.2.0 (2021-xx-xx)
+### __WORK IN PROGRESS__
 
 -   (UncleSamSwiss) Added support for MCP342x family (#53).
 
