@@ -265,9 +265,10 @@ Keep in mind that the RPC server is completely unsecured, so this should only be
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.2.0 (2021-03-02)
 
--   (UncleSamSwiss) Added support for MCP342x family (#53).
+-   (UncleSamSwiss) Added support for MCP342x family (#44).
+-   (UncleSamSwiss) Added proper error handling on all periodic I2C operations (#112).
 
 ### 1.1.1 (2020-11-29)
 

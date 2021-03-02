@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.1.1",
+        "version": "1.2.0",
         "news": {
+            "1.2.0": {
+                "en": "Added support for MCP342x family (#44).\nAdded proper error handling on all periodic I2C operations (#112).",
+                "de": "Unterstützung für die MCP342x-Familie hinzugefügt (# 44).\nRichtige Fehlerbehandlung für alle periodischen I2C-Operationen hinzugefügt (# 112).",
+                "ru": "Добавлена поддержка семейства MCP342x (# 44).\nДобавлена правильная обработка ошибок для всех периодических операций I2C (# 112).",
+                "pt": "Adicionado suporte para a família MCP342x (# 44).\nAdicionado tratamento de erros adequado em todas as operações periódicas I2C (# 112).",
+                "nl": "Ondersteuning toegevoegd voor MCP342x-familie (# 44).\nCorrecte foutafhandeling toegevoegd voor alle periodieke I2C-bewerkingen (# 112).",
+                "fr": "Ajout de la prise en charge de la famille MCP342x (# 44).\nAjout d'une gestion correcte des erreurs sur toutes les opérations I2C périodiques (# 112).",
+                "it": "Aggiunto supporto per la famiglia MCP342x (# 44).\nAggiunta la corretta gestione degli errori su tutte le operazioni periodiche I2C (# 112).",
+                "es": "Soporte agregado para la familia MCP342x (# 44).\nSe agregó el manejo adecuado de errores en todas las operaciones periódicas I2C (# 112).",
+                "pl": "Dodano obsługę rodziny MCP342x (# 44).\nDodano poprawną obsługę błędów we wszystkich okresowych operacjach I2C (# 112).",
+                "zh-cn": "添加了对MCP342x系列（＃44）的支持。\n在所有定期的I2C操作上添加了适当的错误处理（＃112）。"
+            },
             "1.1.1": {
                 "en": "Fixed issue with device search not working.",
                 "de": "Problem behoben, bei dem die Gerätesuche nicht funktionierte.",
