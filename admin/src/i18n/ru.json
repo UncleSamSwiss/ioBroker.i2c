@@ -1,4 +1,6 @@
 {
     "i2c adapter settings": "Настройки адаптера для I²C",
-    "General": "Общая"
+    "General": "Общая",
+    "Name": "Имя",
+    "Data type": "Тип данных"
 }
