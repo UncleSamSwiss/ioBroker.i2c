@@ -49,7 +49,7 @@
     "url": "https://github.com/UncleSamSwiss/ioBroker.i2c"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "os": [
     "linux"
