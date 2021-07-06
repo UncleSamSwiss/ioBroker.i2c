@@ -77,7 +77,7 @@
     "@material-ui/lab": "^4.0.0-alpha.58",
     "@material-ui/utils": "^4.11.2",
     "@sentry/browser": "^6.5.0",
-    "@types/chai": "^4.2.18",
+    "@types/chai": "^4.2.19",
     "@types/chai-as-promised": "^7.1.4",
     "@types/gulp": "^4.0.8",
     "@types/i2c-bus": "^5.1.0",
