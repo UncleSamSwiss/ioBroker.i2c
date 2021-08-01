@@ -55,7 +55,7 @@
     "linux"
   ],
   "dependencies": {
-    "@iobroker/adapter-core": "^2.5.0",
+    "@iobroker/adapter-core": "^2.5.1",
     "i2c-bus": "^5.2.2"
   },
   "devDependencies": {
