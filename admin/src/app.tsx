@@ -45,13 +45,18 @@ class App extends GenericApp {
             return super.render();
         }
 
+        const { theme } = this.state;
+
         const context: AppContext = {
             socket: this.socket,
             instanceId: this.instanceId,
         };
 
         return (
-            <div className="App">
+            <div
+                className="App"
+                style={{ background: theme.palette.background.default, color: theme.palette.text.primary }}
+            >
                 <Settings
                     native={this.state.native}
                     context={context}
