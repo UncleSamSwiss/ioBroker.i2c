@@ -53,7 +53,10 @@ class App extends GenericApp {
         };
 
         return (
-            <div className="App" style={{ background: theme.palette.background.default, color: theme.palette.text.primary }}>
+            <div
+                className="App"
+                style={{ background: theme.palette.background.default, color: theme.palette.text.primary }}
+            >
                 <Settings
                     native={this.state.native}
                     context={context}
