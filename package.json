@@ -70,6 +70,7 @@
     "@babel/plugin-transform-typescript": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-typescript": "^7.15.0",
+    "@iobroker/adapter-dev": "^0.1.0",
     "@iobroker/adapter-react": "^1.6.30",
     "@iobroker/testing": "^2.4.4",
     "@material-ui/core": "^4.12.3",
@@ -79,7 +80,6 @@
     "@sentry/browser": "^6.12.0",
     "@types/chai": "^4.2.21",
     "@types/chai-as-promised": "^7.1.4",
-    "@types/gulp": "^4.0.9",
     "@types/i2c-bus": "^5.1.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "^16.7.10",
@@ -98,7 +98,6 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.25.1",
-    "gulp": "^4.0.2",
     "mocha": "^9.1.1",
     "parcel-bundler": "^1.12.5",
     "prettier": "^2.3.2",
@@ -128,6 +127,7 @@
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:ts && npm run test:package",
     "lint": "eslint --ext .ts,.tsx src/ admin/src/",
+    "translate": "translate-adapter",
     "release": "release-script"
   },
   "bugs": {
