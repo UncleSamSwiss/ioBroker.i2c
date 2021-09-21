@@ -308,14 +308,14 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
     }
     writeRegister(register, value) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.debug('Writing ' + shared_1.toHexString(register) + ' = ' + shared_1.toHexString(value, 4));
+            this.debug('Writing ' + (0, shared_1.toHexString)(register) + ' = ' + (0, shared_1.toHexString)(value, 4));
             yield this.writeWord(register, value);
         });
     }
     readRegister(register) {
         return __awaiter(this, void 0, void 0, function* () {
             const value = yield this.readWord(register);
-            this.debug('Read ' + shared_1.toHexString(register) + ' = ' + shared_1.toHexString(value, 4));
+            this.debug('Read ' + (0, shared_1.toHexString)(register) + ' = ' + (0, shared_1.toHexString)(value, 4));
             return value;
         });
     }

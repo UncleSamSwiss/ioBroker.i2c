@@ -31,7 +31,7 @@ class Generic extends device_handler_base_1.DeviceHandlerBase {
             });
             for (const registerConfig of this.config.registers) {
                 const handler = {
-                    hex: shared_1.toHexString(registerConfig.register),
+                    hex: (0, shared_1.toHexString)(registerConfig.register),
                     config: registerConfig,
                 };
                 this.handlers[registerConfig.register] = handler;

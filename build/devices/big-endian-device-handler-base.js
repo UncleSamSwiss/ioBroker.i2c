@@ -24,13 +24,13 @@ class BigEndianDeviceHandlerBase extends device_handler_base_1.DeviceHandlerBase
         return __awaiter(this, void 0, void 0, function* () {
             let word = yield this.adapter.i2cBus.readWord(this.address, command);
             word = swapWord(word);
-            this.silly(`readWord(${shared_1.toHexString(command)}): ${shared_1.toHexString(word, 4)}`);
+            this.silly(`readWord(${(0, shared_1.toHexString)(command)}): ${(0, shared_1.toHexString)(word, 4)}`);
             return word;
         });
     }
     writeWord(command, word) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.silly(`writeWord(${shared_1.toHexString(command)}, ${shared_1.toHexString(word, 4)})`);
+            this.silly(`writeWord(${(0, shared_1.toHexString)(command)}, ${(0, shared_1.toHexString)(word, 4)})`);
             word = swapWord(word);
             return yield this.adapter.i2cBus.writeWord(this.address, command, word);
         });

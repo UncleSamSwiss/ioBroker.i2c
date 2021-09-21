@@ -16,7 +16,7 @@ class I2CServer {
     constructor(bus, log) {
         this.bus = bus;
         this.log = log;
-        this.server = http_1.createServer((req, res) => this.handleRequest(req, res));
+        this.server = (0, http_1.createServer)((req, res) => this.handleRequest(req, res));
     }
     start(port) {
         this.log.debug(`RPC Server: listening on port ${port}`);
@@ -27,7 +27,7 @@ class I2CServer {
     }
     handleRequest(request, response) {
         const reqUrl = `http://${request.headers.host}${request.url}`;
-        const parseUrl = url_1.parse(reqUrl, true);
+        const parseUrl = (0, url_1.parse)(reqUrl, true);
         const pathname = parseUrl.pathname;
         // we're doing everything json
         response.setHeader('Content-Type', 'application/json');

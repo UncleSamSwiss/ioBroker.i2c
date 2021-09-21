@@ -134,13 +134,13 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
                 this.initialized = false;
             }
             try {
-                this.debug('Setting initial output value to ' + shared_1.toHexString(this.writeValue, this.pinCount / 4));
+                this.debug('Setting initial output value to ' + (0, shared_1.toHexString)(this.writeValue, this.pinCount / 4));
                 yield this.writeRegister(Register.OLAT, this.writeValue);
-                this.debug('Setting polarities to ' + shared_1.toHexString(this.polarities, this.pinCount / 4));
+                this.debug('Setting polarities to ' + (0, shared_1.toHexString)(this.polarities, this.pinCount / 4));
                 yield this.writeRegister(Register.IPOL, this.polarities);
-                this.debug('Setting pull-ups to ' + shared_1.toHexString(this.pullUps, this.pinCount / 4));
+                this.debug('Setting pull-ups to ' + (0, shared_1.toHexString)(this.pullUps, this.pinCount / 4));
                 yield this.writeRegister(Register.GPPU, this.pullUps);
-                this.debug('Setting directions to ' + shared_1.toHexString(this.directions, this.pinCount / 4));
+                this.debug('Setting directions to ' + (0, shared_1.toHexString)(this.directions, this.pinCount / 4));
                 yield this.writeRegister(Register.IODIR, this.directions);
                 this.initialized = true;
             }
@@ -157,7 +157,7 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
             if (!(yield this.checkInitializedAsync())) {
                 return;
             }
-            this.debug('Sending ' + shared_1.toHexString(this.writeValue, this.pinCount / 4));
+            this.debug('Sending ' + (0, shared_1.toHexString)(this.writeValue, this.pinCount / 4));
             try {
                 yield this.writeRegister(Register.OLAT, this.writeValue);
             }
@@ -187,7 +187,7 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
             if (oldValue == this.readValue && !force) {
                 return;
             }
-            this.debug('Read ' + shared_1.toHexString(this.readValue, this.pinCount / 4));
+            this.debug('Read ' + (0, shared_1.toHexString)(this.readValue, this.pinCount / 4));
             for (let i = 0; i < this.pinCount; i++) {
                 const mask = 1 << i;
                 if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir != 'out') {

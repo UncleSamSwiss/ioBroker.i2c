@@ -66,7 +66,7 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
                     native: pinConfig,
                 });
             }
-            this.debug('Setting initial value to ' + shared_1.toHexString(this.writeValue));
+            this.debug('Setting initial value to ' + (0, shared_1.toHexString)(this.writeValue));
             yield this.sendCurrentValueAsync();
             yield this.readCurrentValueAsync(true);
             if (hasInput && this.config.pollingInterval > 0) {
@@ -97,7 +97,7 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
     }
     sendCurrentValueAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.debug('Sending ' + shared_1.toHexString(this.writeValue));
+            this.debug('Sending ' + (0, shared_1.toHexString)(this.writeValue));
             try {
                 yield this.sendByte(this.writeValue);
             }
@@ -125,7 +125,7 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
             if (oldValue == this.readValue && !force) {
                 return;
             }
-            this.debug('Read ' + shared_1.toHexString(this.readValue));
+            this.debug('Read ' + (0, shared_1.toHexString)(this.readValue));
             for (let i = 0; i < 8; i++) {
                 const mask = 1 << i;
                 if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir !== 'out') {

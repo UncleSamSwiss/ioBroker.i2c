@@ -455,7 +455,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
     }
     sendCurrentValuesAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.debug('Sending ' + shared_1.toHexString(this.writeValue, this.config.pins.length / 4));
+            this.debug('Sending ' + (0, shared_1.toHexString)(this.writeValue, this.config.pins.length / 4));
             try {
                 yield this.writeRegister(this.registers.Data, this.writeValue);
             }
@@ -475,7 +475,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 return;
             }
             if (oldValue != this.readValue || force) {
-                this.debug('Read data ' + shared_1.toHexString(this.readValue, this.config.pins.length / 4));
+                this.debug('Read data ' + (0, shared_1.toHexString)(this.readValue, this.config.pins.length / 4));
                 for (let i = 0; i < this.config.pins.length; i++) {
                     const mask = 1 << i;
                     if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].mode == 'input') {
@@ -495,7 +495,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 this.error("Couldn't read key data: " + e);
                 return;
             }
-            const keyDataStr = shared_1.toHexString(keyData, this.config.pins.length / 4);
+            const keyDataStr = (0, shared_1.toHexString)(keyData, this.config.pins.length / 4);
             this.debug('Read key data ' + keyDataStr);
             const bankSize = this.config.pins.length / 2;
             let row = -1;

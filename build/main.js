@@ -90,7 +90,7 @@ class I2cAdapter extends utils.Adapter {
                     this.deviceHandlers.push(handler);
                 }
                 catch (error) {
-                    this.log.error(`Couldn't create ${deviceConfig.type} ${shared_1.toHexString(deviceConfig.address)}: ${error}`);
+                    this.log.error(`Couldn't create ${deviceConfig.type} ${(0, shared_1.toHexString)(deviceConfig.address)}: ${error}`);
                 }
             }
             yield Promise.all(this.deviceHandlers.map((h) => __awaiter(this, void 0, void 0, function* () {
@@ -188,7 +188,7 @@ class I2cAdapter extends utils.Adapter {
                             wait = true;
                         }
                         catch (e) {
-                            this.log.error('Error reading from ' + shared_1.toHexString(obj.message.address));
+                            this.log.error('Error reading from ' + (0, shared_1.toHexString)(obj.message.address));
                         }
                         break;
                     case 'write':
@@ -211,7 +211,7 @@ class I2cAdapter extends utils.Adapter {
                             wait = true;
                         }
                         catch (e) {
-                            this.log.error('Error writing to ' + shared_1.toHexString(obj.message.address));
+                            this.log.error('Error writing to ' + (0, shared_1.toHexString)(obj.message.address));
                         }
                         break;
                     default:

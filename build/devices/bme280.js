@@ -119,9 +119,9 @@ class BME280 extends little_endian_device_handler_base_1.LittleEndianDeviceHandl
         return __awaiter(this, void 0, void 0, function* () {
             yield this.writeByte(Register.CHIPID, 0);
             const chipId = yield this.readByte(Register.CHIPID);
-            this.info('Chip ID: ' + shared_1.toHexString(chipId));
+            this.info('Chip ID: ' + (0, shared_1.toHexString)(chipId));
             if (chipId < 0x56 || chipId > 0x60 || chipId == 0x59) {
-                throw `Unsupported chip ID ${shared_1.toHexString(chipId)}; are you sure this is a BME280?`;
+                throw `Unsupported chip ID ${(0, shared_1.toHexString)(chipId)}; are you sure this is a BME280?`;
             }
         });
     }
@@ -137,18 +137,18 @@ class BME280 extends little_endian_device_handler_base_1.LittleEndianDeviceHandl
             const h5_1 = yield this.readByte(Register.DIG_H5 + 1);
             const h6 = yield this.readByte(Register.DIG_H6);
             this.cal = {
-                dig_T1: utils_1.uint16(buffer[1], buffer[0]),
-                dig_T2: utils_1.int16(buffer[3], buffer[2]),
-                dig_T3: utils_1.int16(buffer[5], buffer[4]),
-                dig_P1: utils_1.uint16(buffer[7], buffer[6]),
-                dig_P2: utils_1.int16(buffer[9], buffer[8]),
-                dig_P3: utils_1.int16(buffer[11], buffer[10]),
-                dig_P4: utils_1.int16(buffer[13], buffer[12]),
-                dig_P5: utils_1.int16(buffer[15], buffer[14]),
-                dig_P6: utils_1.int16(buffer[17], buffer[16]),
-                dig_P7: utils_1.int16(buffer[19], buffer[18]),
-                dig_P8: utils_1.int16(buffer[21], buffer[20]),
-                dig_P9: utils_1.int16(buffer[23], buffer[22]),
+                dig_T1: (0, utils_1.uint16)(buffer[1], buffer[0]),
+                dig_T2: (0, utils_1.int16)(buffer[3], buffer[2]),
+                dig_T3: (0, utils_1.int16)(buffer[5], buffer[4]),
+                dig_P1: (0, utils_1.uint16)(buffer[7], buffer[6]),
+                dig_P2: (0, utils_1.int16)(buffer[9], buffer[8]),
+                dig_P3: (0, utils_1.int16)(buffer[11], buffer[10]),
+                dig_P4: (0, utils_1.int16)(buffer[13], buffer[12]),
+                dig_P5: (0, utils_1.int16)(buffer[15], buffer[14]),
+                dig_P6: (0, utils_1.int16)(buffer[17], buffer[16]),
+                dig_P7: (0, utils_1.int16)(buffer[19], buffer[18]),
+                dig_P8: (0, utils_1.int16)(buffer[21], buffer[20]),
+                dig_P9: (0, utils_1.int16)(buffer[23], buffer[22]),
                 dig_H1: h1,
                 dig_H2: h2,
                 dig_H3: h3,
@@ -175,13 +175,13 @@ class BME280 extends little_endian_device_handler_base_1.LittleEndianDeviceHandl
                 const buffer = Buffer.alloc(8);
                 yield this.readI2cBlock(Register.PRESSURE_DATA, 8, buffer);
                 // Temperature (temperature first since we need t_fine for pressure and humidity)
-                const adc_T = utils_1.uint20(buffer[3], buffer[4], buffer[5]);
+                const adc_T = (0, utils_1.uint20)(buffer[3], buffer[4], buffer[5]);
                 const tvar1 = (((adc_T >> 3) - (this.cal.dig_T1 << 1)) * this.cal.dig_T2) >> 11;
                 const tvar2 = (((((adc_T >> 4) - this.cal.dig_T1) * ((adc_T >> 4) - this.cal.dig_T1)) >> 12) * this.cal.dig_T3) >> 14;
                 const t_fine = tvar1 + tvar2;
                 const temperature_C = ((t_fine * 5 + 128) >> 8) / 100;
                 // Pressure
-                const adc_P = utils_1.uint20(buffer[0], buffer[1], buffer[2]);
+                const adc_P = (0, utils_1.uint20)(buffer[0], buffer[1], buffer[2]);
                 let pvar1 = t_fine / 2 - 64000;
                 let pvar2 = (pvar1 * pvar1 * this.cal.dig_P6) / 32768;
                 pvar2 = pvar2 + pvar1 * this.cal.dig_P5 * 2;
@@ -198,7 +198,7 @@ class BME280 extends little_endian_device_handler_base_1.LittleEndianDeviceHandl
                     pressure_hPa = p / 100;
                 }
                 // Humidity (available on the BME280, will be zero on the BMP280 since it has no humidity sensor)
-                const adc_H = utils_1.uint16(buffer[6], buffer[7]);
+                const adc_H = (0, utils_1.uint16)(buffer[6], buffer[7]);
                 let h = t_fine - 76800;
                 h =
                     (adc_H - (this.cal.dig_H4 * 64 + (this.cal.dig_H5 / 16384) * h)) *
@@ -212,14 +212,14 @@ class BME280 extends little_endian_device_handler_base_1.LittleEndianDeviceHandl
                         hum: humidity,
                         press: pressure_hPa,
                     }));
-                yield this.setStateAckAsync('humidity', utils_1.round(humidity));
+                yield this.setStateAckAsync('humidity', (0, utils_1.round)(humidity));
                 if (this.useAmericanUnits) {
-                    yield this.setStateAckAsync('temperature', utils_1.round((temperature_C * 9) / 5 + 32));
-                    yield this.setStateAckAsync('pressure', utils_1.round(pressure_hPa * 0.02952998751, 1000));
+                    yield this.setStateAckAsync('temperature', (0, utils_1.round)((temperature_C * 9) / 5 + 32));
+                    yield this.setStateAckAsync('pressure', (0, utils_1.round)(pressure_hPa * 0.02952998751, 1000));
                 }
                 else {
-                    yield this.setStateAckAsync('temperature', utils_1.round(temperature_C));
-                    yield this.setStateAckAsync('pressure', utils_1.round(pressure_hPa)); // hPa == mbar :-)
+                    yield this.setStateAckAsync('temperature', (0, utils_1.round)(temperature_C));
+                    yield this.setStateAckAsync('pressure', (0, utils_1.round)(pressure_hPa)); // hPa == mbar :-)
                 }
             }
             catch (e) {

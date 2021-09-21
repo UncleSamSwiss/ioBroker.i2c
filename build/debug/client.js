@@ -141,7 +141,7 @@ class I2CClient {
                     },
                 };
                 this.log.debug(`RPC Client: Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
-                const req = http_1.request(this.address, options, (resp) => {
+                const req = (0, http_1.request)(this.address, options, (resp) => {
                     let data = '';
                     if (resp.statusCode !== 200) {
                         reject(new Error(`Got status code ${resp.statusCode}`));
