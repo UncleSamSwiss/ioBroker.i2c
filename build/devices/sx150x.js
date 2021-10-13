@@ -480,7 +480,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                     const mask = 1 << i;
                     if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].mode == 'input') {
                         const value = (this.readValue & mask) > 0;
-                        yield this.setStateAckAsync(i, value);
+                        this.setStateAck(i, value);
                     }
                 }
             }
@@ -524,7 +524,7 @@ class SX150x extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
             }
             const keyValue = this.config.keypad.keyValues[row][col];
             this.debug(`Decoded key [${row},${col}] = "${keyValue}"`);
-            yield this.setStateAckAsync('key', keyValue);
+            this.setStateAck('key', keyValue);
         });
     }
     addOutputListener(pin, id) {

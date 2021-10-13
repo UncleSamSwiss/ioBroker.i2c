@@ -133,7 +133,7 @@ class PCF8574 extends device_handler_base_1.DeviceHandlerBase {
                     if (this.config.pins[i].inv) {
                         value = !value;
                     }
-                    yield this.setStateAckAsync(i, value);
+                    this.setStateAck(i, value);
                 }
             }
         });

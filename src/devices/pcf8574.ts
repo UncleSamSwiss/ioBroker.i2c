@@ -143,7 +143,7 @@ export default class PCF8574 extends DeviceHandlerBase<PCF8574Config> {
                 if (this.config.pins[i].inv) {
                     value = !value;
                 }
-                await this.setStateAckAsync(i, value);
+                this.setStateAck(i, value);
             }
         }
     }

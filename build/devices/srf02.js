@@ -82,7 +82,7 @@ class SRF02 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase 
                     // masking awai the highest bit (undocumented!)
                     value = buffer.readUInt16BE() & 0x7fff;
                 }
-                yield this.setStateAckAsync('distance', value);
+                this.setStateAck('distance', value);
             }
             catch (e) {
                 this.error("Couldn't read current value: " + e);

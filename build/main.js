@@ -55,6 +55,10 @@ class I2cAdapter extends utils.Adapter {
             yield this.setStateAsync(id, value, true);
         });
     }
+    setStateAck(id, value) {
+        this.currentStateValues[this.namespace + '.' + id] = value;
+        this.setState(id, value, true);
+    }
     getStateValue(id) {
         return this.currentStateValues[this.namespace + '.' + id];
     }

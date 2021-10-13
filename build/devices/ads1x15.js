@@ -303,7 +303,7 @@ class ADS1x15 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBas
                     value = (result * channelConfig.gain) / 32768.0 / 1000;
                 }
             }
-            yield this.setStateAckAsync(index, value);
+            this.setStateAck(index, value);
         });
     }
     writeRegister(register, value) {

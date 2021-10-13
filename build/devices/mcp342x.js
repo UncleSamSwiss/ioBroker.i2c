@@ -107,7 +107,7 @@ class MCP342x extends device_handler_base_1.DeviceHandlerBase {
                 }
                 const lsb = this.getLsb(config.resolution);
                 const pga = 1 << config.gain;
-                yield this.setStateAckAsync(index + 1, (value * lsb) / pga);
+                this.setStateAck(index + 1, (value * lsb) / pga);
             }
         });
     }

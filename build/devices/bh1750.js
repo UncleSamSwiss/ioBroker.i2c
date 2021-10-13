@@ -73,7 +73,7 @@ class BH1750 extends device_handler_base_1.DeviceHandlerBase {
                     JSON.stringify({
                         lux: lux,
                     }));
-                yield this.setStateAckAsync('lux', (0, utils_1.round)(lux));
+                this.setStateAck('lux', (0, utils_1.round)(lux));
             }
             catch (e) {
                 this.error("Couldn't read current values: " + e);

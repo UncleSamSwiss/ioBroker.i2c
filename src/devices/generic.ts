@@ -251,7 +251,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
         }
 
         // save the value into the state
-        await this.setStateAckAsync(handler.hex, value);
+        this.setStateAck(handler.hex, value);
     }
 
     private createBuffer(handler: RegisterHandler): Buffer {

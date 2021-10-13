@@ -594,7 +594,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 const mask = 1 << i;
                 if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].mode == 'input') {
                     const value = (this.readValue & mask) > 0;
-                    await this.setStateAckAsync(i, value);
+                    this.setStateAck(i, value);
                 }
             }
         }
@@ -641,7 +641,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
         const keyValue = this.config.keypad.keyValues[row][col];
         this.debug(`Decoded key [${row},${col}] = "${keyValue}"`);
-        await this.setStateAckAsync('key', keyValue);
+        this.setStateAck('key', keyValue);
     }
 
     private addOutputListener(pin: number, id?: string): void {

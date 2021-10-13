@@ -216,7 +216,7 @@ class Generic extends device_handler_base_1.DeviceHandlerBase {
                 return;
             }
             // save the value into the state
-            yield this.setStateAckAsync(handler.hex, value);
+            this.setStateAck(handler.hex, value);
         });
     }
     createBuffer(handler) {

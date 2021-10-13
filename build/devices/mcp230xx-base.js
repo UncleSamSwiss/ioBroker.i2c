@@ -192,7 +192,7 @@ class MCP230xxBase extends little_endian_device_handler_base_1.LittleEndianDevic
                 const mask = 1 << i;
                 if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir != 'out') {
                     const value = (this.readValue & mask) > 0;
-                    yield this.setStateAckAsync(this.indexToName(i), value);
+                    this.setStateAck(this.indexToName(i), value);
                 }
             }
         });

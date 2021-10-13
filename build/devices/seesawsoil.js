@@ -76,8 +76,8 @@ class SeesawSoil extends seesaw_handler_base_1.SeesawHandlerBase {
             try {
                 const tempC = yield this.getTemp();
                 const capread = yield this.touchRead(0);
-                yield this.setStateAckAsync('temperature', tempC);
-                yield this.setStateAckAsync('capacitive', capread);
+                this.setStateAck('temperature', tempC);
+                this.setStateAck('capacitive', capread);
             }
             catch (e) {
                 this.error("Couldn't read current values: " + e);

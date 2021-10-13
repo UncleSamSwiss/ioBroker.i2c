@@ -260,8 +260,8 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
             this.error(`Couldn't read values: ${e}`);
             return;
         }
-        await this.setStateAckAsync('x', measurement.x * gainFactor);
-        await this.setStateAckAsync('y', measurement.y * gainFactor);
-        await this.setStateAckAsync('z', measurement.z * gainFactor);
+        this.setStateAck('x', measurement.x * gainFactor);
+        this.setStateAck('y', measurement.y * gainFactor);
+        this.setStateAck('z', measurement.z * gainFactor);
     }
 }

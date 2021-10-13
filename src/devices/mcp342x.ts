@@ -123,7 +123,7 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
             const lsb = this.getLsb(config.resolution);
             const pga = 1 << config.gain;
 
-            await this.setStateAckAsync(index + 1, (value * lsb) / pga);
+            this.setStateAck(index + 1, (value * lsb) / pga);
         }
     }
 

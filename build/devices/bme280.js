@@ -212,14 +212,14 @@ class BME280 extends little_endian_device_handler_base_1.LittleEndianDeviceHandl
                         hum: humidity,
                         press: pressure_hPa,
                     }));
-                yield this.setStateAckAsync('humidity', (0, utils_1.round)(humidity));
+                this.setStateAck('humidity', (0, utils_1.round)(humidity));
                 if (this.useAmericanUnits) {
-                    yield this.setStateAckAsync('temperature', (0, utils_1.round)((temperature_C * 9) / 5 + 32));
-                    yield this.setStateAckAsync('pressure', (0, utils_1.round)(pressure_hPa * 0.02952998751, 1000));
+                    this.setStateAck('temperature', (0, utils_1.round)((temperature_C * 9) / 5 + 32));
+                    this.setStateAck('pressure', (0, utils_1.round)(pressure_hPa * 0.02952998751, 1000));
                 }
                 else {
-                    yield this.setStateAckAsync('temperature', (0, utils_1.round)(temperature_C));
-                    yield this.setStateAckAsync('pressure', (0, utils_1.round)(pressure_hPa)); // hPa == mbar :-)
+                    this.setStateAck('temperature', (0, utils_1.round)(temperature_C));
+                    this.setStateAck('pressure', (0, utils_1.round)(pressure_hPa)); // hPa == mbar :-)
                 }
             }
             catch (e) {

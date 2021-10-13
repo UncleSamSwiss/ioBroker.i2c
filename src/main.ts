@@ -67,6 +67,11 @@ export class I2cAdapter extends utils.Adapter {
         await this.setStateAsync(id, value, true);
     }
 
+    public setStateAck<T extends StateValue>(id: string, value: T): void {
+        this.currentStateValues[this.namespace + '.' + id] = value;
+        this.setState(id, value, true);
+    }
+
     public getStateValue<T extends StateValue>(id: string): T | undefined {
         return this.currentStateValues[this.namespace + '.' + id] as T | undefined;
     }

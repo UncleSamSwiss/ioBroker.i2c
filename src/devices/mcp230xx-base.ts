@@ -205,7 +205,7 @@ export abstract class MCP230xxBase extends LittleEndianDeviceHandlerBase<MCP230x
             const mask = 1 << i;
             if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].dir != 'out') {
                 const value = (this.readValue & mask) > 0;
-                await this.setStateAckAsync(this.indexToName(i), value);
+                this.setStateAck(this.indexToName(i), value);
             }
         }
     }

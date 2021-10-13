@@ -104,6 +104,9 @@ class DeviceHandlerBase {
             yield this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
         });
     }
+    setStateAck(state, value) {
+        this.adapter.setStateAck(this.hexAddress + '.' + state, value);
+    }
     getStateValue(state) {
         return this.adapter.getStateValue(this.hexAddress + '.' + state);
     }

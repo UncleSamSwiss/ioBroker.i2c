@@ -239,9 +239,9 @@ class xMC5883 extends device_handler_base_1.DeviceHandlerBase {
                 this.error(`Couldn't read values: ${e}`);
                 return;
             }
-            yield this.setStateAckAsync('x', measurement.x * gainFactor);
-            yield this.setStateAckAsync('y', measurement.y * gainFactor);
-            yield this.setStateAckAsync('z', measurement.z * gainFactor);
+            this.setStateAck('x', measurement.x * gainFactor);
+            this.setStateAck('y', measurement.y * gainFactor);
+            this.setStateAck('z', measurement.z * gainFactor);
         });
     }
 }

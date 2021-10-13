@@ -122,13 +122,13 @@ class INA219 extends big_endian_device_handler_base_1.BigEndianDeviceHandlerBase
                 const currentReg = yield this.readWord(0x04);
                 // Calculate the power LSB
                 const powerLsb = 20 * this.config.currentLsb;
-                // The least signficant bit is 10uV which is 0.01 mV
-                yield this.setStateAckAsync('shunt', this.toInt16(shuntVoltageReg) * 0.01);
+                // The least significant bit is 10uV which is 0.01 mV
+                this.setStateAck('shunt', this.toInt16(shuntVoltageReg) * 0.01);
                 // Shift to the right 3 to drop CNVR and OVF and multiply by LSB
-                // Each least signficant bit is 4mV
-                yield this.setStateAckAsync('bus', (busVoltageReg >> 3) * 0.004);
-                yield this.setStateAckAsync('power', powerReg * powerLsb);
-                yield this.setStateAckAsync('current', this.toInt16(currentReg) * this.config.currentLsb);
+                // Each least significant bit is 4mV
+                this.setStateAck('bus', (busVoltageReg >> 3) * 0.004);
+                this.setStateAck('power', powerReg * powerLsb);
+                this.setStateAck('current', this.toInt16(currentReg) * this.config.currentLsb);
             }
             catch (e) {
                 this.error(`Couldn't read values: ${e}`);

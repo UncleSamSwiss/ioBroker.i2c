@@ -87,7 +87,7 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
                 value = buffer.readUInt16BE() & 0x7fff;
             }
 
-            await this.setStateAckAsync('distance', value);
+            this.setStateAck('distance', value);
         } catch (e) {
             this.error("Couldn't read current value: " + e);
         }

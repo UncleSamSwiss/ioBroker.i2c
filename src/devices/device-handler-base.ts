@@ -99,6 +99,10 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
         await this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
     }
 
+    protected setStateAck<T extends StateValue>(state: string | number, value: T): void {
+        this.adapter.setStateAck(this.hexAddress + '.' + state, value);
+    }
+
     protected getStateValue<T extends StateValue>(state: string | number): T | undefined {
         return this.adapter.getStateValue<T>(this.hexAddress + '.' + state);
     }

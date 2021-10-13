@@ -318,7 +318,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             }
         }
 
-        await this.setStateAckAsync(index, value);
+        this.setStateAck(index, value);
     }
 
     private async writeRegister(register: ADS1x15_REG_POINTER, value: number): Promise<void> {
