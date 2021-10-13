@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "news": {
+            "1.2.1": {
+                "en": "Reading multiple values from I2C into states is now faster. This should increase the polling frequency for most devices.",
+                "de": "Das Einlesen mehrerer Werte von I2C in Zustände ist jetzt schneller. Dies sollte die Abfragefrequenz für die meisten Geräte erhöhen.",
+                "ru": "Чтение нескольких значений из I2C в состояния теперь выполняется быстрее. Это должно увеличить частоту опроса для большинства устройств.",
+                "pt": "Ler vários valores de I2C em estados agora é mais rápido. Isso deve aumentar a frequência de pesquisa para a maioria dos dispositivos.",
+                "nl": "Het inlezen van meerdere waarden van I2C naar toestanden gaat nu sneller. Dit zou de pollingfrequentie voor de meeste apparaten moeten verhogen.",
+                "fr": "La lecture de plusieurs valeurs d'I2C dans des états est désormais plus rapide. Cela devrait augmenter la fréquence d'interrogation pour la plupart des appareils.",
+                "it": "La lettura di più valori da I2C negli stati è ora più veloce. Ciò dovrebbe aumentare la frequenza di polling per la maggior parte dei dispositivi.",
+                "es": "Leer varios valores de I2C en estados ahora es más rápido. Esto debería aumentar la frecuencia de sondeo para la mayoría de los dispositivos.",
+                "pl": "Odczytywanie wielu wartości z I2C do stanów jest teraz szybsze. Powinno to zwiększyć częstotliwość odpytywania większości urządzeń.",
+                "zh-cn": "从 I2C 读取多个值到状态现在更快。这应该会增加大多数设备的轮询频率。"
+            },
             "1.2.0": {
                 "en": "Added support for MCP342x family (#44).\nAdded proper error handling on all periodic I2C operations (#112).",
                 "de": "Unterstützung für die MCP342x-Familie hinzugefügt (# 44).\nRichtige Fehlerbehandlung für alle periodischen I2C-Operationen hinzugefügt (# 112).",
