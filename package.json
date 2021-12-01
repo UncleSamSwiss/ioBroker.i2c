@@ -68,7 +68,7 @@
     "@babel/plugin-proposal-numeric-separator": "^7.16.0",
     "@babel/plugin-proposal-optional-chaining": "^7.16.0",
     "@babel/plugin-transform-typescript": "^7.16.1",
-    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
     "@iobroker/adapter-dev": "^0.1.0",
     "@iobroker/adapter-react": "^1.6.31",
