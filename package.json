@@ -59,7 +59,7 @@
     "i2c-bus": "^5.2.2"
   },
   "devDependencies": {
-    "@alcalzone/release-script": "^2.2.1",
+    "@alcalzone/release-script": "^3.4.2",
     "@babel/cli": "^7.16.7",
     "@babel/core": "^7.16.7",
     "@babel/plugin-proposal-class-properties": "^7.16.7",
