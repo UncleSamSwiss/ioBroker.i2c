@@ -88,7 +88,7 @@
     "@types/react-dom": "^17.0.11",
     "@types/sinon": "^10.0.11",
     "@types/sinon-chai": "^3.2.8",
-    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "autobind-decorator": "^2.4.0",
     "axios": "^0.27.2",
