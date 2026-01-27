@@ -1,10 +1,14 @@
-import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
-import * as i2c from 'i2c-bus';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { createServer } from 'http';
+import type * as i2c from 'i2c-bus';
 import { parse } from 'url';
 
 export class I2CServer {
     private readonly server: Server;
-    constructor(private bus: i2c.PromisifiedBus, private readonly log: ioBroker.Logger) {
+    constructor(
+        private bus: i2c.PromisifiedBus,
+        private readonly log: ioBroker.Logger,
+    ) {
         this.server = createServer((req: IncomingMessage, res: ServerResponse) => this.handleRequest(req, res));
     }
 
@@ -29,7 +33,7 @@ export class I2CServer {
         let buf: any = null;
 
         // listen for incoming data
-        request.on('data', (data) => {
+        request.on('data', data => {
             if (buf === null) {
                 buf = data;
             } else {
@@ -55,14 +59,14 @@ export class I2CServer {
             }
 
             compute
-                .then((res) => {
-                    this.log.debug('RPC Server: Sending response ' + JSON.stringify(res));
+                .then(res => {
+                    this.log.debug(`RPC Server: Sending response ${JSON.stringify(res)}`);
                     response.end(JSON.stringify(res));
                 })
-                .catch((err) => {
+                .catch(err => {
                     console.error(err);
                     response.statusCode = 500;
-                    response.end('oops! server error: ' + err);
+                    response.end(`oops! server error: ${err}`);
                 });
         });
     }
@@ -80,24 +84,26 @@ export class I2CServer {
                     return await this.bus.scan(json.args.address);
                 } else if (json.args && json.args.startAddr) {
                     return await this.bus.scan(json.args.startAddr, json.args.endAddr);
-                } else {
-                    return await this.bus.scan();
                 }
+                return await this.bus.scan();
+
             case 'deviceId':
                 return await this.bus.deviceId(json.args.address);
-            case 'i2cRead':
+            case 'i2cRead': {
                 buffer = Buffer.alloc(json.args.length);
                 const i2cRead = await this.bus.i2cRead(json.args.address, json.args.length, buffer);
                 return { bytesRead: i2cRead.bytesRead, buffer: i2cRead.buffer.toString('hex') };
-            case 'i2cWrite':
+            }
+            case 'i2cWrite': {
                 buffer = Buffer.from(json.args.buffer, 'hex');
                 const i2cWrite = await this.bus.i2cWrite(json.args.address, json.args.length, buffer);
                 return { bytesWritten: i2cWrite.bytesWritten, buffer: i2cWrite.buffer.toString('hex') };
+            }
             case 'readByte':
                 return await this.bus.readByte(json.args.address, json.args.command);
             case 'readWord':
                 return await this.bus.readWord(json.args.address, json.args.command);
-            case 'readI2cBlock':
+            case 'readI2cBlock': {
                 buffer = Buffer.alloc(json.args.length);
                 const readI2cBlock = await this.bus.readI2cBlock(
                     json.args.address,
@@ -106,6 +112,7 @@ export class I2CServer {
                     buffer,
                 );
                 return { bytesRead: readI2cBlock.bytesRead, buffer: readI2cBlock.buffer.toString('hex') };
+            }
             case 'receiveByte':
                 return await this.bus.receiveByte(json.args.address);
             case 'sendByte':
@@ -120,7 +127,7 @@ export class I2CServer {
             case 'writeQuick':
                 await this.bus.writeQuick(json.args.address, json.args.command, json.args.bit);
                 return {}; // prefer an empty object to void
-            case 'writeI2cBlock':
+            case 'writeI2cBlock': {
                 buffer = Buffer.from(json.args.buffer, 'hex');
                 const writeI2cBlock = await this.bus.writeI2cBlock(
                     json.args.address,
@@ -129,6 +136,7 @@ export class I2CServer {
                     buffer,
                 );
                 return { bytesRead: writeI2cBlock.bytesWritten, buffer: writeI2cBlock.buffer.toString('hex') };
+            }
             default:
                 throw new Error(`Property 'method' is unknown: ${json.method}`);
         }

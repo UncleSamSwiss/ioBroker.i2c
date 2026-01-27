@@ -1,7 +1,8 @@
-import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import type { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { toHexString } from '../lib/shared';
-import { I2cAdapter } from '../main';
+import type { I2cAdapter } from '../main';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
+import type { DeviceHandlerInfo } from './device-handler-base';
 
 export interface SX150xConfig extends ImplementationConfigBase {
     pollingInterval: number;
@@ -93,7 +94,7 @@ interface PinRegisters {
     TFall?: number;
 }
 
-export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
+export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private readonly registers: Readonly<Registers>;
 
     private readonly writeRegister: (command: number, value: number) => Promise<void>;
@@ -118,18 +119,18 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'sensor',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         const keypadId = `${this.hexAddress}.key`;
         if (this.config.keypad.rowCount > 0 && this.registers.KeyData) {
-            await this.adapter.extendObjectAsync(keypadId, {
+            await this.adapter.extendObject(keypadId, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Pressed Key`,
@@ -152,7 +153,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
             switch (pinConfig.mode) {
                 case 'input':
                     hasInput = true;
-                    await this.adapter.extendObjectAsync(id, {
+                    await this.adapter.extendObject(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} Input ${i}`,
@@ -167,7 +168,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 case 'output':
                     outputState = i;
                     this.addOutputListener(i);
-                    await this.adapter.extendObjectAsync(id, {
+                    await this.adapter.extendObject(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} Output ${i}`,
@@ -184,7 +185,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 case 'led-blink':
                     outputState = i;
                     this.addOutputListener(i);
-                    await this.adapter.extendObjectAsync(id, {
+                    await this.adapter.extendObject(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i}`,
@@ -196,8 +197,8 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         native: pinConfig as any,
                     });
                     break;
-                case 'led-channel':
-                    await this.adapter.extendObjectAsync(id, {
+                case 'led-channel': {
+                    await this.adapter.extendObject(id, {
                         type: 'channel',
                         common: {
                             name: `${this.hexAddress} LED ${i}`,
@@ -206,7 +207,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     outputState = `${id}.on`;
                     this.addOutputListener(i, `${id}.on`);
-                    await this.adapter.extendObjectAsync(`${id}.on`, {
+                    await this.adapter.extendObject(`${id}.on`, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i} ON`,
@@ -220,7 +221,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     const pinRegister = this.registers.Pins[i];
                     if (pinRegister.TOn) {
                         this.addLedLevelListener(i, 'timeOn');
-                        await this.adapter.extendObjectAsync(`${id}.timeOn`, {
+                        await this.adapter.extendObject(`${id}.timeOn`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} ON Time`,
@@ -234,7 +235,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         });
                     }
                     this.addLedLevelListener(i, 'intensityOn');
-                    await this.adapter.extendObjectAsync(`${id}.intensityOn`, {
+                    await this.adapter.extendObject(`${id}.intensityOn`, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i} ON Intensity`,
@@ -248,7 +249,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     if (pinRegister.Off) {
                         this.addLedLevelListener(i, 'timeOff');
-                        await this.adapter.extendObjectAsync(`${id}.timeOff`, {
+                        await this.adapter.extendObject(`${id}.timeOff`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} OFF Time`,
@@ -261,7 +262,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                             },
                         });
                         this.addLedLevelListener(i, 'intensityOff');
-                        await this.adapter.extendObjectAsync(`${id}.intensityOff`, {
+                        await this.adapter.extendObject(`${id}.intensityOff`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} OFF Intensity`,
@@ -276,7 +277,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     }
                     if (pinRegister.TRise) {
                         this.addLedLevelListener(i, 'timeRaise');
-                        await this.adapter.extendObjectAsync(`${id}.timeRaise`, {
+                        await this.adapter.extendObject(`${id}.timeRaise`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} Fade-in Time`,
@@ -289,7 +290,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                             },
                         });
                         this.addLedLevelListener(i, 'timeFall');
-                        await this.adapter.extendObjectAsync(`${id}.timeFall`, {
+                        await this.adapter.extendObject(`${id}.timeFall`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} Fade-out Time`,
@@ -303,6 +304,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         });
                     }
                     break;
+                }
                 case 'keypad':
                     hasInput = true;
                 // fall through!
@@ -346,13 +348,13 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 await this.adapter.getObjectAsync(this.config.interrupt);
 
                 // subscribe to the object and add change listener
-                this.adapter.addForeignStateChangeListener(this.config.interrupt, async (_value) => {
+                this.adapter.addForeignStateChangeListener(this.config.interrupt, async _value => {
                     this.debug('Interrupt detected');
                     await this.readCurrentValuesAsync(false);
                 });
 
                 this.debug('Interrupt enabled');
-            } catch (error) {
+            } catch {
                 this.error(`Interrupt object ${this.config.interrupt} not found!`);
             }
         }
@@ -361,6 +363,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async configureDeviceAsync(): Promise<void> {
@@ -371,7 +374,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         await this.writeByte(this.registers.Reset, 0x34);
 
         // configure registers
-        await this.writePinBitmapAsync(this.registers.InputDisable, (p) => p.mode != 'input' && p.mode != 'keypad');
+        await this.writePinBitmapAsync(this.registers.InputDisable, p => p.mode != 'input' && p.mode != 'keypad');
         await this.writePinBitmapAsync(
             this.registers.PullUp,
             (p, i) =>
@@ -380,7 +383,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         );
         await this.writePinBitmapAsync(
             this.registers.PullDown,
-            (p) => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'down',
+            p => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'down',
         );
         await this.writePinBitmapAsync(
             this.registers.OpenDrain,
@@ -389,20 +392,20 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 (p.mode == 'output' && p.openDrain) ||
                 (p.mode == 'keypad' && i < bankSize),
         );
-        await this.writePinBitmapAsync(this.registers.Polarity, (p) => p.mode != 'keypad' && p.invert);
+        await this.writePinBitmapAsync(this.registers.Polarity, p => p.mode != 'keypad' && p.invert);
         await this.writePinBitmapAsync(
             this.registers.Dir,
             (p, i) => p.mode == 'input' || (p.mode == 'keypad' && i >= bankSize),
         );
         await this.writePinBitmapAsync(
             this.registers.InterruptMask, // this is inverted: 0 : An event on this IO will trigger an interrupt
-            (p) => p.mode != 'input' || p.interrupt == 'none',
+            p => p.mode != 'input' || p.interrupt == 'none',
         );
         await this.writeSenseAsync();
         await this.writeLevelShifterAsync();
         await this.writeClockAsync();
         await this.writeMiscAsync();
-        await this.writePinBitmapAsync(this.registers.LEDDriverEnable, (p) => p.mode.startsWith('led-'));
+        await this.writePinBitmapAsync(this.registers.LEDDriverEnable, p => p.mode.startsWith('led-'));
         await this.writeByte(this.registers.DebounceConfig, this.config.debounceTime);
         await this.writePinBitmapAsync(
             this.registers.DebounceEnable,
@@ -428,7 +431,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         }
 
         if (this.registers.HighInput) {
-            await this.writePinBitmapAsync(this.registers.HighInput, (p) => p.mode == 'input' && p.highInput);
+            await this.writePinBitmapAsync(this.registers.HighInput, p => p.mode == 'input' && p.highInput);
         }
     }
 
@@ -499,7 +502,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private async writeClockAsync(): Promise<void> {
         let value = 0;
         const pins = this.config.pins;
-        if (pins.find((p) => p.mode.startsWith('led-') || p.debounce) || this.config.keypad.rowCount > 0) {
+        if (pins.find(p => p.mode.startsWith('led-') || p.debounce) || this.config.keypad.rowCount > 0) {
             // OSC is required
             if (this.config.oscExternal) {
                 value |= 0x20;
@@ -518,7 +521,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         if (this.config.ledLog.length > 1 && this.config.ledLog[1]) {
             value |= 0x80;
         }
-        if (this.config.pins.find((p) => p.mode.startsWith('led-'))) {
+        if (this.config.pins.find(p => p.mode.startsWith('led-'))) {
             value |= this.config.ledFrequency << 4;
         }
         if (this.config.ledLog[0]) {
@@ -571,11 +574,11 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
     }
 
     private async sendCurrentValuesAsync(): Promise<void> {
-        this.debug('Sending ' + toHexString(this.writeValue, this.config.pins.length / 4));
+        this.debug(`Sending ${toHexString(this.writeValue, this.config.pins.length / 4)}`);
         try {
             await this.writeRegister(this.registers.Data, this.writeValue);
-        } catch (e) {
-            this.error("Couldn't send current value: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't send current value: ${e}`);
         }
     }
 
@@ -583,13 +586,13 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         const oldValue = this.readValue;
         try {
             this.readValue = await this.readRegister(this.registers.Data);
-        } catch (e) {
-            this.error("Couldn't read current data: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't read current data: ${e}`);
             return;
         }
 
         if (oldValue != this.readValue || force) {
-            this.debug('Read data ' + toHexString(this.readValue, this.config.pins.length / 4));
+            this.debug(`Read data ${toHexString(this.readValue, this.config.pins.length / 4)}`);
             for (let i = 0; i < this.config.pins.length; i++) {
                 const mask = 1 << i;
                 if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].mode == 'input') {
@@ -606,13 +609,13 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         let keyData = 0;
         try {
             keyData = await this.readRegister(this.registers.KeyData);
-        } catch (e) {
-            this.error("Couldn't read key data: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't read key data: ${e}`);
             return;
         }
 
         const keyDataStr = toHexString(keyData, this.config.pins.length / 4);
-        this.debug('Read key data ' + keyDataStr);
+        this.debug(`Read key data ${keyDataStr}`);
         const bankSize = this.config.pins.length / 2;
         let row = -1;
         let col = -1;
@@ -646,7 +649,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
     private addOutputListener(pin: number, id?: string): void {
         this.adapter.addStateChangeListener<boolean>(
-            id || this.hexAddress + '.' + pin,
+            id || `${this.hexAddress}.${pin}`,
             async (_oldValue: boolean, newValue: boolean) => await this.changeOutputAsync(pin, newValue),
         );
     }
@@ -676,8 +679,8 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         try {
             await this.writeLedConfigAsync(pin, led);
             await this.setStateAckAsync(`${pin}.${type}`, value);
-        } catch (e) {
-            this.error("Couldn't write LED config: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't write LED config: ${e}`);
         }
     }
 
@@ -811,3 +814,14 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         return registers;
     }
 }
+
+export const SX150x: DeviceHandlerInfo = {
+    type: 'SX150x',
+    createHandler: (deviceConfig, adapter) => new SX150xHandler(deviceConfig, adapter),
+    names: [
+        { name: 'SX1507', addresses: [0x3e, 0x3f, 0x70, 0x71] },
+        { name: 'SX1508', addresses: [0x20, 0x21, 0x22, 0x23] },
+        { name: 'SX1509', addresses: [0x3e, 0x3f, 0x70, 0x71] },
+    ],
+    config: {},
+};

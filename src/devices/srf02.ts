@@ -1,13 +1,14 @@
-import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import type { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
-import { I2cAdapter } from '../main';
+import type { I2cAdapter } from '../main';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
+import type { DeviceHandlerInfo } from './device-handler-base';
 
 export interface SRF02Config extends ImplementationConfigBase {
     pollingInterval: number;
 }
 
-export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
+export class SRF02Handler extends BigEndianDeviceHandlerBase<SRF02Config> {
     private readonly useRegisters: boolean;
 
     constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
@@ -18,19 +19,19 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'sensor',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.distance', {
+        await this.adapter.extendObject(`${this.hexAddress}.distance`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Distance',
+                name: `${this.hexAddress} Distance`,
                 read: true,
                 write: false,
                 type: 'number',
@@ -39,10 +40,10 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
             },
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+        await this.adapter.extendObject(`${this.hexAddress}.measure`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Measure',
+                name: `${this.hexAddress} Measure`,
                 read: false,
                 write: true,
                 type: 'boolean',
@@ -51,7 +52,7 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
         });
 
         this.adapter.addStateChangeListener(
-            this.hexAddress + '.measure',
+            `${this.hexAddress}.measure`,
             async () => await this.readCurrentValueAsync(),
         );
 
@@ -63,6 +64,7 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async readCurrentValueAsync(): Promise<void> {
@@ -88,8 +90,8 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
             }
 
             this.setStateAck('distance', value);
-        } catch (e) {
-            this.error("Couldn't read current value: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't read current value: ${e}`);
         }
     }
 
@@ -98,3 +100,13 @@ export default class SRF02 extends BigEndianDeviceHandlerBase<SRF02Config> {
         await delay.runAsnyc();
     }
 }
+
+export const SRF02: DeviceHandlerInfo = {
+    type: 'SRF02',
+    createHandler: (deviceConfig, adapter) => new SRF02Handler(deviceConfig, adapter),
+    names: [
+        { name: 'SRF02', addresses: [0x70] },
+        { name: 'GY-US42', addresses: [0x70] },
+    ],
+    config: {},
+};

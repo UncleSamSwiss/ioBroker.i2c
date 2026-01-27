@@ -24,9 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { toHexString } from '../lib/shared';
 import { int16, round, uint16, uint20 } from '../lib/utils';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { LittleEndianDeviceHandlerBase } from './little-endian-device-handler-base';
 
 export interface BME280Config extends ImplementationConfigBase {
@@ -89,29 +90,29 @@ interface Calibration {
     dig_H6: number;
 }
 
-export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> {
+export class BME280Handler extends LittleEndianDeviceHandlerBase<BME280Config> {
     private useAmericanUnits!: boolean;
     private cal!: Calibration;
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'thermo',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         const systemConfig = await this.adapter.getForeignObjectAsync('system.config');
         this.useAmericanUnits = !!(systemConfig && systemConfig.common && systemConfig.common.tempUnit == '°F');
         this.info(`Using ${this.useAmericanUnits ? 'American' : 'metric'} units`);
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.temperature', {
+        await this.adapter.extendObject(`${this.hexAddress}.temperature`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Temperature',
+                name: `${this.hexAddress} Temperature`,
                 read: true,
                 write: false,
                 type: 'number',
@@ -120,10 +121,10 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
             },
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.humidity', {
+        await this.adapter.extendObject(`${this.hexAddress}.humidity`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Humidity',
+                name: `${this.hexAddress} Humidity`,
                 read: true,
                 write: false,
                 type: 'number',
@@ -132,10 +133,10 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
             },
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.pressure', {
+        await this.adapter.extendObject(`${this.hexAddress}.pressure`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Pressure',
+                name: `${this.hexAddress} Pressure`,
                 read: true,
                 write: false,
                 type: 'number',
@@ -144,10 +145,10 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
             },
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+        await this.adapter.extendObject(`${this.hexAddress}.measure`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Measure',
+                name: `${this.hexAddress} Measure`,
                 read: false,
                 write: true,
                 type: 'boolean',
@@ -156,7 +157,7 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
         });
 
         this.adapter.addStateChangeListener(
-            this.hexAddress + '.measure',
+            `${this.hexAddress}.measure`,
             async () => await this.readCurrentValuesAsync(),
         );
 
@@ -173,17 +174,18 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
         }
     }
 
-    async stopAsync(): Promise<void> {
+    stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async checkChipIdAsync(): Promise<void> {
         await this.writeByte(Register.CHIPID, 0);
         const chipId = await this.readByte(Register.CHIPID);
-        this.info('Chip ID: ' + toHexString(chipId));
+        this.info(`Chip ID: ${toHexString(chipId)}`);
         if (chipId < 0x56 || chipId > 0x60 || chipId == 0x59) {
-            throw `Unsupported chip ID ${toHexString(chipId)}; are you sure this is a BME280?`;
+            throw new Error(`Unsupported chip ID ${toHexString(chipId)}; are you sure this is a BME280?`);
         }
     }
 
@@ -220,7 +222,7 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
             dig_H6: h6,
         };
 
-        this.debug('cal = ' + JSON.stringify(this.cal));
+        this.debug(`cal = ${JSON.stringify(this.cal)}`);
     }
 
     private async configureChipAsync(): Promise<void> {
@@ -281,12 +283,11 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
             const humidity = h > 100 ? 100 : h < 0 ? 0 : h;
 
             this.debug(
-                'Read: ' +
-                    JSON.stringify({
-                        temp: temperature_C,
-                        hum: humidity,
-                        press: pressure_hPa,
-                    }),
+                `Read: ${JSON.stringify({
+                    temp: temperature_C,
+                    hum: humidity,
+                    press: pressure_hPa,
+                })}`,
             );
 
             this.setStateAck('humidity', round(humidity));
@@ -297,8 +298,21 @@ export default class BME280 extends LittleEndianDeviceHandlerBase<BME280Config> 
                 this.setStateAck('temperature', round(temperature_C));
                 this.setStateAck('pressure', round(pressure_hPa)); // hPa == mbar :-)
             }
-        } catch (e) {
-            this.error("Couldn't read current values: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't read current values: ${e}`);
         }
     }
 }
+
+export const BME280: DeviceHandlerInfo = {
+    type: 'BME280',
+    createHandler: (deviceConfig, adapter) => new BME280Handler(deviceConfig, adapter),
+    names: [{ name: 'BME280', addresses: [0x76, 0x77] }],
+    config: {
+        pollingInterval: {
+            type: 'number',
+            label: 'Polling Interval (sec)',
+            default: 10,
+        },
+    },
+};

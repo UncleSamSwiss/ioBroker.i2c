@@ -56,7 +56,7 @@ export class Polling {
             try {
                 this.delay = new Delay(interval);
                 await this.delay.runAsnyc();
-            } catch (error) {
+            } catch {
                 // delay got cancelled, let's break out of the loop
                 break;
             }

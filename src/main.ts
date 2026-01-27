@@ -1,5 +1,5 @@
 /*
- * Created with @iobroker/create-adapter v1.29.1
+ * Created with @iobroker/create-adapter v3.1.2
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
@@ -8,8 +8,11 @@ import * as utils from '@iobroker/adapter-core';
 import * as i2c from 'i2c-bus';
 import { I2CClient } from './debug/client';
 import { I2CServer } from './debug/server';
-import { DeviceHandlerBase } from './devices/device-handler-base';
+import type { DeviceHandlerBase } from './devices/device-handler-base';
 import { toHexString } from './lib/shared';
+import { AllDevices } from './devices/all-devices';
+import { I2cDeviceManagement } from './I2cDeviceManager';
+import { I2CDeviceConfig } from './lib/adapter-config';
 
 export type StateValue = string | number | boolean | null;
 
@@ -18,6 +21,8 @@ export type StateChangeListener<T extends StateValue> = (oldValue: T, newValue: 
 export type ForeignStateChangeListener<T extends StateValue> = (value: T) => Promise<void>;
 
 export class I2cAdapter extends utils.Adapter {
+    private readonly deviceManagement: I2cDeviceManagement;
+
     private bus!: i2c.PromisifiedBus;
     private server?: I2CServer;
 
@@ -26,13 +31,13 @@ export class I2cAdapter extends utils.Adapter {
     private currentStateValues: Record<string, StateValue> = {};
 
     private readonly deviceHandlers: DeviceHandlerBase<any>[] = [];
-
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
-            dirname: __dirname.indexOf('node_modules') !== -1 ? undefined : __dirname + '/../',
             ...options,
             name: 'i2c',
         });
+        this.deviceManagement = new I2cDeviceManagement(this);
+
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('message', this.onMessage.bind(this));
@@ -43,8 +48,12 @@ export class I2cAdapter extends utils.Adapter {
         return this.bus;
     }
 
+    public get handlers(): ReadonlyArray<DeviceHandlerBase<any>> {
+        return this.deviceHandlers;
+    }
+
     public addStateChangeListener<T extends StateValue>(id: string, listener: StateChangeListener<T>): void {
-        const key = this.namespace + '.' + id;
+        const key = `${this.namespace}.${id}`;
         if (!this.stateChangeListeners[key]) {
             this.stateChangeListeners[key] = [];
         }
@@ -63,23 +72,24 @@ export class I2cAdapter extends utils.Adapter {
     }
 
     public async setStateAckAsync<T extends StateValue>(id: string, value: T): Promise<void> {
-        this.currentStateValues[this.namespace + '.' + id] = value;
-        await this.setStateAsync(id, value, true);
+        this.currentStateValues[`${this.namespace}.${id}`] = value;
+        await this.setState(id, value, true);
     }
 
     public setStateAck<T extends StateValue>(id: string, value: T): void {
-        this.currentStateValues[this.namespace + '.' + id] = value;
+        this.currentStateValues[`${this.namespace}.${id}`] = value;
         this.setState(id, value, true);
     }
 
     public getStateValue<T extends StateValue>(id: string): T | undefined {
-        return this.currentStateValues[this.namespace + '.' + id] as T | undefined;
+        return this.currentStateValues[`${this.namespace}.${id}`] as T | undefined;
     }
 
     /**
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
+        await this.migrateConfig();
         const allStates = await this.getStatesAsync('*');
         for (const id in allStates) {
             if (allStates[id] && allStates[id].ack) {
@@ -87,7 +97,7 @@ export class I2cAdapter extends utils.Adapter {
             }
         }
 
-        this.log.info('Using bus number: ' + this.config.busNumber);
+        this.log.info(`Using bus number: ${this.config.busNumber}`);
 
         this.bus = await this.openBusAsync(this.config.busNumber);
 
@@ -96,41 +106,66 @@ export class I2cAdapter extends utils.Adapter {
             this.server.start(this.config.serverPort);
         }
 
-        if (!this.config.devices || this.config.devices.length === 0) {
-            // no devices configured, nothing to do in this adapter
-            return;
-        }
-
-        for (let i = 0; i < this.config.devices.length; i++) {
-            const deviceConfig = this.config.devices[i];
-            if (!deviceConfig.name || !deviceConfig.type) {
-                continue;
-            }
-
+        const devices = await this.getDevicesAsync();
+        for (const device of devices) {
+            const deviceConfig = device.native as I2CDeviceConfig;
             try {
-                const module = await import(__dirname + '/devices/' + deviceConfig.type.toLowerCase());
-                const handler: DeviceHandlerBase<any> = new module.default(deviceConfig, this);
-                this.deviceHandlers.push(handler);
-            } catch (error) {
+                this.createHandler(deviceConfig);
+            } catch (error: any) {
                 this.log.error(`Couldn't create ${deviceConfig.type} ${toHexString(deviceConfig.address)}: ${error}`);
             }
         }
 
         await Promise.all(
-            this.deviceHandlers.map(async (h) => {
-                try {
-                    await h.startAsync();
-                } catch (error) {
+            this.deviceHandlers.map(h =>
+                h.startAsync().catch(error => {
                     this.log.error(`Couldn't start ${h.type} ${h.hexAddress}: ${error}`);
-                }
-            }),
+                }),
+            ),
         );
 
         this.subscribeStates('*');
     }
 
+    private createHandler(deviceConfig: I2CDeviceConfig): DeviceHandlerBase<any> {
+        if (!deviceConfig.name || !deviceConfig.type) {
+            throw new Error(`Skipping device at ${toHexString(deviceConfig.address)} without name or type`);
+        }
+
+        const info = AllDevices.find(d => d.type === deviceConfig.type);
+        if (!info) {
+            throw new Error(`Unsupported device type: ${deviceConfig.type}`);
+        }
+
+        const handler = info.createHandler(deviceConfig, this);
+        this.deviceHandlers.push(handler);
+        return handler;
+    }
+
+    public async updateHandler(deviceConfig: I2CDeviceConfig): Promise<void> {
+        let handler = this.deviceHandlers.find(h => h.address === deviceConfig.address);
+        if (handler) {
+            await handler.stopAsync();
+            this.deviceHandlers.splice(this.deviceHandlers.indexOf(handler), 1);
+        }
+
+        handler = this.createHandler(deviceConfig);
+        await handler.startAsync();
+    }
+
+    public async deleteHandler(hexAddress: string): Promise<void> {
+        const handler = this.deviceHandlers.find(h => h.hexAddress === hexAddress);
+        if (handler) {
+            await handler.stopAsync();
+            this.deviceHandlers.splice(this.deviceHandlers.indexOf(handler), 1);
+            await this.delObjectAsync(hexAddress, { recursive: true });
+        }
+    }
+
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
+     *
+     * @param callback - Callback function
      */
     private async onUnload(callback: () => void): Promise<void> {
         try {
@@ -139,18 +174,36 @@ export class I2cAdapter extends utils.Adapter {
                 this.server.stop();
             }
 
-            await Promise.all(this.deviceHandlers.map((h) => h.stopAsync()));
+            await Promise.all(this.deviceHandlers.map(h => h.stopAsync()));
 
             await this.bus.close();
 
             callback();
-        } catch (e) {
+        } catch {
             callback();
         }
     }
 
+    // If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
+    // You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
+    // /**
+    //  * Is called if a subscribed object changes
+    //  */
+    // private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
+    //     if (obj) {
+    //         // The object was changed
+    //         this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
+    //     } else {
+    //         // The object was deleted
+    //         this.log.info(`object ${id} deleted`);
+    //     }
+    // }
+
     /**
      * Is called if a subscribed state changes
+     *
+     * @param id - State ID
+     * @param state - State object
      */
     private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
         if (!state) {
@@ -162,7 +215,7 @@ export class I2cAdapter extends utils.Adapter {
 
         if (this.foreignStateChangeListeners[id]) {
             const listeners = this.foreignStateChangeListeners[id];
-            await Promise.all(listeners.map((listener) => listener(state.val)));
+            await Promise.all(listeners.map(listener => listener(state.val)));
             return;
         }
 
@@ -171,35 +224,36 @@ export class I2cAdapter extends utils.Adapter {
         }
 
         if (!this.stateChangeListeners[id]) {
-            this.log.error('Unsupported state change: ' + id);
+            this.log.error(`Unsupported state change: ${id}`);
             return;
         }
 
         const listeners = this.stateChangeListeners[id];
         const oldValue = this.currentStateValues[id];
-        await Promise.all(listeners.map((listener) => listener(oldValue, state.val)));
+        await Promise.all(listeners.map(listener => listener(oldValue, state.val)));
     }
 
     /**
      * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
      * Using this method requires "common.message" property to be set to true in io-package.json
+     *
+     * @param obj - The message object
      */
     private async onMessage(obj: ioBroker.Message): Promise<void> {
-        this.log.silly('onMessage: ' + JSON.stringify(obj));
-        let wait = false;
+        this.log.silly(`onMessage: ${JSON.stringify(obj)}`);
         if (typeof obj === 'object' && obj.message) {
             switch (obj.command) {
-                case 'search':
+                case 'search': {
                     const res = await this.searchDevicesAsync(parseInt(obj.message as string));
                     const result = JSON.stringify(res || []);
-                    this.log.debug('Search found: ' + result);
+                    this.log.debug(`Search found: ${result}`);
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
-                    wait = true;
                     break;
+                }
 
-                case 'read':
+                case 'read': {
                     if (typeof obj.message !== 'object' || typeof obj.message.address !== 'number') {
                         this.log.error('Invalid read message');
                         return;
@@ -214,13 +268,13 @@ export class I2cAdapter extends utils.Adapter {
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, buf, obj.callback);
                         }
-                        wait = true;
-                    } catch (e) {
-                        this.log.error('Error reading from ' + toHexString(obj.message.address));
+                    } catch {
+                        this.log.error(`Error reading from ${toHexString(obj.message.address)}`);
                     }
                     break;
+                }
 
-                case 'write':
+                case 'write': {
                     if (
                         typeof obj.message !== 'object' ||
                         typeof obj.message.address !== 'number' ||
@@ -243,45 +297,62 @@ export class I2cAdapter extends utils.Adapter {
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, obj.message.data, obj.callback);
                         }
-                        wait = true;
-                    } catch (e) {
-                        this.log.error('Error writing to ' + toHexString(obj.message.address));
+                    } catch {
+                        this.log.error(`Error writing to ${toHexString(obj.message.address)}`);
                     }
                     break;
+                }
+
                 default:
-                    this.log.warn('Unknown command: ' + obj.command);
+                    if (!obj.command.startsWith('dm:')) {
+                        this.log.warn(`Unknown command: ${obj.command}`);
+                    }
                     break;
             }
         }
-
-        if (!wait && obj.callback) {
-            this.sendTo(obj.from, obj.command, obj.message, obj.callback);
-        }
     }
 
-    private async searchDevicesAsync(busNumber: number): Promise<number[]> {
+    public async searchDevicesAsync(busNumber: number): Promise<number[]> {
         if (busNumber === this.config.busNumber) {
-            this.log.debug('Searching on current bus ' + busNumber);
+            this.log.debug(`Searching on current bus ${busNumber}`);
             return await this.bus.scan();
-        } else {
-            this.log.debug('Searching on new bus ' + busNumber);
-            const searchBus = await this.openBusAsync(busNumber);
-            const result = await this.bus.scan();
-            await searchBus.close();
-            return result;
         }
+        this.log.debug(`Searching on new bus ${busNumber}`);
+        const searchBus = await this.openBusAsync(busNumber);
+        const result = await this.bus.scan();
+        await searchBus.close();
+        return result;
     }
 
     private async openBusAsync(busNumber: number): Promise<i2c.PromisifiedBus> {
         if (this.config.clientAddress) {
             return new I2CClient(this.config.clientAddress, this.log);
-        } else {
-            return await i2c.openPromisified(busNumber);
         }
+        return await i2c.openPromisified(busNumber);
+    }
+
+    private async migrateConfig(): Promise<void> {
+        if (!this.config.devices || !Array.isArray(this.config.devices) || this.config.devices.length === 0) {
+            return;
+        }
+
+        for (const device of this.config.devices) {
+            // update device object in database
+            const id = toHexString(device.address);
+            try {
+                await this.extendObject(id, {
+                    native: device,
+                });
+            } catch (error: any) {
+                this.log.error(`Error migrating device ${id}: ${error}`);
+            }
+        }
+
+        this.log.info('Migrated device configuration to device objects');
+        await this.updateConfig({ devices: [] });
     }
 }
-
-if (module.parent) {
+if (require.main !== module) {
     // Export the constructor in compact mode
     module.exports = (options: Partial<utils.AdapterOptions> | undefined) => new I2cAdapter(options);
 } else {

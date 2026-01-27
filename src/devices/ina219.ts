@@ -3,8 +3,10 @@
  * A lot of this code is based on https://github.com/adafruit/Adafruit_INA219
  * License: BSD license, all text here must be included in any redistribution.
  */
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
+import { getAllAddresses } from '../lib/i2c';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
+import type { DeviceHandlerInfo } from './device-handler-base';
 
 export interface INA219Config extends ImplementationConfigBase {
     /** unit: msec */
@@ -31,18 +33,18 @@ export interface INA219Config extends ImplementationConfigBase {
     currentLsb: number;
 }
 
-export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
+export class INA219Handler extends BigEndianDeviceHandlerBase<INA219Config> {
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
-        await this.adapter.extendObjectAsync(`${this.hexAddress}.shunt`, {
+        await this.adapter.extendObject(`${this.hexAddress}.shunt`, {
             type: 'state',
             common: {
                 name: `${this.hexAddress} Shunt Voltage`,
@@ -54,7 +56,7 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             },
         });
 
-        await this.adapter.extendObjectAsync(`${this.hexAddress}.bus`, {
+        await this.adapter.extendObject(`${this.hexAddress}.bus`, {
             type: 'state',
             common: {
                 name: `${this.hexAddress} Bus Voltage`,
@@ -66,7 +68,7 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             },
         });
 
-        await this.adapter.extendObjectAsync(`${this.hexAddress}.power`, {
+        await this.adapter.extendObject(`${this.hexAddress}.power`, {
             type: 'state',
             common: {
                 name: `${this.hexAddress} Power`,
@@ -78,7 +80,7 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             },
         });
 
-        await this.adapter.extendObjectAsync(`${this.hexAddress}.current`, {
+        await this.adapter.extendObject(`${this.hexAddress}.current`, {
             type: 'state',
             common: {
                 name: `${this.hexAddress} Current`,
@@ -90,10 +92,10 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             },
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+        await this.adapter.extendObject(`${this.hexAddress}.measure`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Measure',
+                name: `${this.hexAddress} Measure`,
                 read: false,
                 write: true,
                 type: 'boolean',
@@ -101,7 +103,7 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             },
         });
 
-        this.adapter.addStateChangeListener(this.hexAddress + '.measure', async () => await this.updateValuesAsync());
+        this.adapter.addStateChangeListener(`${this.hexAddress}.measure`, async () => await this.updateValuesAsync());
 
         await this.configureDeviceAsync();
 
@@ -113,6 +115,7 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async configureDeviceAsync(): Promise<void> {
@@ -164,7 +167,7 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
             this.setStateAck('power', powerReg * powerLsb);
 
             this.setStateAck('current', this.toInt16(currentReg) * this.config.currentLsb);
-        } catch (e) {
+        } catch (e: any) {
             this.error(`Couldn't read values: ${e}`);
         }
     }
@@ -173,3 +176,98 @@ export default class INA219 extends BigEndianDeviceHandlerBase<INA219Config> {
         return value > 0x7fff ? value - 0x10000 : value;
     }
 }
+
+export const INA219: DeviceHandlerInfo = {
+    type: 'INA219',
+    createHandler: (deviceConfig, adapter) => new INA219Handler(deviceConfig, adapter),
+    names: [{ name: 'INA219', addresses: getAllAddresses(0x40, 16) }],
+    config: {
+        'INA219.pollingInterval': {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 1000,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+            help: 'Set to 0 to disable polling',
+        },
+        'INA219.singleShot': {
+            type: 'checkbox',
+            label: 'Single Shot Mode',
+            default: false,
+            xs: 5,
+        },
+        'INA219.voltageRange': {
+            type: 'select',
+            label: 'Voltage Range',
+            options: [
+                { value: 0, label: '16V' },
+                { value: 1, label: '32V' },
+            ],
+            default: 0,
+            xs: 4,
+            md: 3,
+            newLine: true,
+        },
+        'INA219.gain': {
+            type: 'select',
+            label: 'Gain',
+            options: [
+                { value: 0, label: '+/-40mV' },
+                { value: 1, label: '+/-80mV' },
+                { value: 2, label: '+/-160mV' },
+                { value: 3, label: '+/-320mV' },
+            ],
+            default: 3,
+            xs: 4,
+            md: 3,
+        },
+        'INA219.adcResolution': {
+            type: 'select',
+            label: 'ADC Resolution',
+            options: [
+                { value: 0, label: '9bit, 1 sample' },
+                { value: 1, label: '10bit, 1 sample' },
+                { value: 2, label: '11bit, 1 sample' },
+                { value: 3, label: '12bit, 1 sample' },
+                { value: 9, label: '12bit, 2 samples' },
+                { value: 10, label: '12bit, 4 samples' },
+                { value: 11, label: '12bit, 8 samples' },
+                { value: 12, label: '12bit, 16 samples' },
+                { value: 13, label: '12bit, 32 samples' },
+                { value: 14, label: '12bit, 64 samples' },
+                { value: 15, label: '12bit, 128 samples' },
+            ],
+            default: 3,
+            xs: 4,
+            md: 3,
+        },
+        'INA219.shuntValue': {
+            type: 'number',
+            label: 'Shunt Resistor Value',
+            default: 100,
+            unit: 'mOhm',
+            min: 1,
+            xs: 4,
+            md: 3,
+            newLine: true,
+        },
+        'INA219.expectedCurrent': {
+            type: 'number',
+            label: 'Expected Maximum Current',
+            default: 2,
+            unit: 'A',
+            xs: 4,
+            md: 3,
+        },
+        'INA219.currentLsb': {
+            type: 'number',
+            label: 'Current LSB',
+            default: 1000,
+            unit: 'mA/bit',
+            xs: 4,
+            md: 3,
+        },
+    },
+};

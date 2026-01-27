@@ -1,5 +1,6 @@
-import { I2CDeviceConfig } from '../lib/adapter-config';
-import { I2cAdapter } from '../main';
+import type { I2CDeviceConfig } from '../lib/adapter-config';
+import type { I2cAdapter } from '../main';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface xMC5883Config {
@@ -28,11 +29,9 @@ interface ReadConfig {
     gainFactor: number;
 }
 
-export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
+export class xMC5883Handler extends DeviceHandlerBase<xMC5883Config> {
     private readonly configureDeviceAsync: () => Promise<ReadConfig>;
     private readonly readValuesAsync: () => Promise<Measurement>;
-
-    private gainFactor = 0;
 
     constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
         super(deviceConfig, adapter);
@@ -48,17 +47,17 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         await Promise.all(
-            ['X', 'Y', 'Z'].map(async (coord) => {
-                await this.adapter.extendObjectAsync(`${this.hexAddress}.${coord.toLowerCase()}`, {
+            ['X', 'Y', 'Z'].map(async coord => {
+                await this.adapter.extendObject(`${this.hexAddress}.${coord.toLowerCase()}`, {
                     type: 'state',
                     common: {
                         name: `${this.hexAddress} ${coord}`,
@@ -79,13 +78,13 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
                 await this.adapter.getObjectAsync(this.config.interrupt);
 
                 // subscribe to the object and add change listener
-                this.adapter.addForeignStateChangeListener(this.config.interrupt, async (_value) => {
+                this.adapter.addForeignStateChangeListener(this.config.interrupt, async _value => {
                     this.debug('Interrupt detected');
                     await this.updateValuesAsync(gainFactor);
                 });
 
                 this.debug('Interrupt enabled');
-            } catch (error) {
+            } catch {
                 this.error(`Interrupt object ${this.config.interrupt} not found!`);
             }
         } else {
@@ -96,6 +95,7 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async configureQMC5883Async(): Promise<ReadConfig> {
@@ -256,7 +256,7 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
             this.debug('Reading values');
             measurement = await this.readValuesAsync();
             this.debug(`Read ${JSON.stringify(measurement)}`);
-        } catch (e) {
+        } catch (e: any) {
             this.error(`Couldn't read values: ${e}`);
             return;
         }
@@ -265,3 +265,13 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
         this.setStateAck('z', measurement.z * gainFactor);
     }
 }
+
+export const xMC5883: DeviceHandlerInfo = {
+    type: 'xMC5883',
+    createHandler: (deviceConfig, adapter) => new xMC5883Handler(deviceConfig, adapter),
+    names: [
+        { name: 'HMC5883L', addresses: [0x1e] },
+        { name: 'QMC5883L', addresses: [0x0d] },
+    ],
+    config: {},
+};

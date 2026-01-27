@@ -14,16 +14,16 @@ export default [
             '*.config.mjs',
             'build',
             'dist',
-            'admin/build', 
             'admin/words.js',
             'admin/admin.d.ts',
             'admin/blockly.js',
             '**/adapter-config.d.ts',
+            'widgets/**/*.js'
         ],
     },
     {
         // you may disable some 'jsdoc' warnings - but using jsdoc is highly recommended
-        // as this improves maintainability. jsdoc warnings will not block buiuld process.
+        // as this improves maintainability. jsdoc warnings will not block build process.
         rules: {
             // 'jsdoc/require-jsdoc': 'off',
             // 'jsdoc/require-param': 'off',

@@ -5,7 +5,7 @@ declare global {
     namespace ioBroker {
         interface AdapterConfig {
             busNumber: number;
-            devices: I2CDeviceConfig[];
+            devices?: I2CDeviceConfig[];
 
             // for debugging purposes only
             serverPort?: number;

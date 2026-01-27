@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 // this class is based on https://github.com/alphacharlie/node-ads1x15/blob/master/index.js
 // probably MIT license (not explicitely mentioned, but it is based on the Adafruit Python code which is MIT)
 
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
+import { getAllAddresses } from '../lib/i2c';
 import { toHexString } from '../lib/shared';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
+import type { DeviceHandlerInfo } from './device-handler-base';
 
 export interface ADS1x15Config extends ImplementationConfigBase {
     pollingInterval?: number; // legacy value in seconds
@@ -152,7 +155,7 @@ const pgaADS1x15: Record<number, ADS1x15_REG_CONFIG_PGA> = {
     256: ADS1x15_REG_CONFIG_PGA.VAL_0_256V,
 };
 
-export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
+export class ADS1x15Handler extends BigEndianDeviceHandlerBase<ADS1x15Config> {
     private pga = 6144; // set this to a sane default...
     private busy = false;
     private readAgain = false;
@@ -162,13 +165,13 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'sensor',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         if (this.name === 'ADS1015') {
@@ -197,7 +200,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             if (this.muxes[i] !== 0) {
                 hasEnabled = true;
             }
-            await this.adapter.extendObjectAsync(`${this.hexAddress}.${i}`, {
+            await this.adapter.extendObject(`${this.hexAddress}.${i}`, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Channel ${i}`,
@@ -231,10 +234,11 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
         }
     }
 
-    async stopAsync(): Promise<void> {
+    stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
         this.currentDelay?.cancel();
+        return Promise.resolve();
     }
 
     private async readCurrentValueAsync(): Promise<void> {
@@ -250,7 +254,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             for (let i = 0; i < 4; i++) {
                 try {
                     await this.readAdcAsync(i);
-                } catch (e) {
+                } catch (e: any) {
                     this.error(`Couldn't read ADC ${i}: ${e}`);
                 }
             }
@@ -261,7 +265,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
     private async readAdcAsync(index: number): Promise<void> {
         const channelConfig = this.config.channels[index];
         if (!channelConfig || channelConfig.channelType === 'off') {
-            this.adapter.log.debug('Channel ' + index + ' disabled');
+            this.adapter.log.debug(`Channel ${index} disabled`);
             return;
         }
 
@@ -277,7 +281,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
 
         // Set samples per second
         const spsMap = this.ic == IC.ADS1015 ? spsADS1015 : spsADS1115;
-        if (spsMap.hasOwnProperty(channelConfig.samples)) {
+        if (channelConfig.samples in spsMap) {
             config |= spsMap[channelConfig.samples];
         } else {
             this.debug('Using default 250 SPS');
@@ -285,7 +289,7 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
         }
 
         // Set PGA/voltage range
-        if (pgaADS1x15.hasOwnProperty(channelConfig.gain)) {
+        if (channelConfig.gain in pgaADS1x15) {
             config |= pgaADS1x15[channelConfig.gain];
         } else {
             this.debug('Using default PGA 6.144 V');
@@ -322,13 +326,29 @@ export default class ADS1x15 extends BigEndianDeviceHandlerBase<ADS1x15Config> {
     }
 
     private async writeRegister(register: ADS1x15_REG_POINTER, value: number): Promise<void> {
-        this.debug('Writing ' + toHexString(register) + ' = ' + toHexString(value, 4));
+        this.debug(`Writing ${toHexString(register)} = ${toHexString(value, 4)}`);
         await this.writeWord(register, value);
     }
 
     private async readRegister(register: ADS1x15_REG_POINTER): Promise<number> {
         const value = await this.readWord(register);
-        this.debug('Read ' + toHexString(register) + ' = ' + toHexString(value, 4));
+        this.debug(`Read ${toHexString(register)} = ${toHexString(value, 4)}`);
         return value;
     }
 }
+
+export const ADS1x15: DeviceHandlerInfo = {
+    type: 'ADS1x15',
+    createHandler: (deviceConfig, adapter) => new ADS1x15Handler(deviceConfig, adapter),
+    names: [
+        { name: 'ADS1015', addresses: getAllAddresses(0x48, 4) },
+        { name: 'ADS1115', addresses: getAllAddresses(0x48, 4) },
+    ],
+    config: {
+        pollingIntervalMs: {
+            type: 'number',
+            label: 'Polling Interval (ms)',
+            default: 60000,
+        },
+    },
+};
