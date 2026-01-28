@@ -143,7 +143,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
                             label: n,
                         })),
                         {
-                            value: 'generic',
+                            value: 'Generic',
                             label: 'Generic',
                         },
                     ],

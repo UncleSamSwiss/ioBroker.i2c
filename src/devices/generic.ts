@@ -10,21 +10,24 @@ export interface GenericConfig extends ImplementationConfigBase {
     registers: RegisterConfig[];
 }
 
-export type RegisterType =
-    | 'int8'
-    | 'uint8'
-    | 'int16_be'
-    | 'int16_le'
-    | 'uint16_be'
-    | 'uint16_le'
-    | 'int32_be'
-    | 'int32_le'
-    | 'uint32_be'
-    | 'uint32_le'
-    | 'float_be'
-    | 'float_le'
-    | 'double_be'
-    | 'double_le';
+const RegisterTypes = [
+    'int8',
+    'uint8',
+    'int16_be',
+    'int16_le',
+    'uint16_be',
+    'uint16_le',
+    'int32_be',
+    'int32_le',
+    'uint32_be',
+    'uint32_le',
+    'float_be',
+    'float_le',
+    'double_be',
+    'double_le',
+] as const;
+
+export type RegisterType = (typeof RegisterTypes)[number];
 
 export interface RegisterConfig {
     register: number;
@@ -298,5 +301,64 @@ export const Generic: DeviceHandlerInfo = {
     type: 'Generic',
     createHandler: (deviceConfig, adapter) => new GenericHandler(deviceConfig, adapter),
     names: [{ name: 'Generic', addresses: getAllAddresses(0x08, 112) }],
-    config: {},
+    config: {
+        'Generic.name': {
+            type: 'text',
+            label: 'Device Name Override',
+            default: '',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'Generic.registers': {
+            type: 'table',
+            xs: 12,
+            uniqueColumns: ['register', 'name'],
+            noMultiEdit: true,
+            items: [
+                {
+                    type: 'number',
+                    label: 'Register Address',
+                    attr: 'register',
+                    default: 0,
+                    min: 0,
+                    max: 255,
+                },
+                {
+                    type: 'text',
+                    label: 'Register Name',
+                    attr: 'name',
+                    default: '',
+                },
+                {
+                    type: 'select',
+                    label: 'Data Type',
+                    attr: 'type',
+                    options: RegisterTypes.map(t => ({ value: t, label: t })),
+                    default: 'uint8',
+                },
+                {
+                    type: 'checkbox',
+                    label: 'Read',
+                    attr: 'read',
+                    default: true,
+                },
+                {
+                    type: 'checkbox',
+                    label: 'Write',
+                    attr: 'write',
+                    default: false,
+                },
+                {
+                    type: 'number',
+                    label: 'Polling Interval',
+                    attr: 'pollingInterval',
+                    unit: 'ms',
+                    default: 1000,
+                    min: 0,
+                    disabled: '!data.read',
+                },
+            ] as any,
+        },
+    },
 };
