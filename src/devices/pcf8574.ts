@@ -180,7 +180,7 @@ function createPinConfig(index: number, defaultDir: PinDirection): Record<string
             type: 'staticText',
             xs: 2,
             md: 1,
-            text: `Pin ${index + 1}`,
+            text: `Pin ${index}`,
             newLine: true,
         },
         [`PCF8574.pins.${index}.dir`]: {
@@ -193,7 +193,6 @@ function createPinConfig(index: number, defaultDir: PinDirection): Record<string
             default: defaultDir,
             xs: 7,
             md: 6,
-            lg: 5,
             label: 'Direction',
         },
         [`PCF8574.pins.${index}.inv`]: {
@@ -235,7 +234,7 @@ export const PCF8574: DeviceHandlerInfo = {
         },
     ],
     config: {
-        pollingInterval: {
+        'PCF8574.pollingInterval': {
             type: 'number',
             label: 'Polling Interval',
             default: 200,
@@ -245,7 +244,7 @@ export const PCF8574: DeviceHandlerInfo = {
             md: 3,
             help: 'Set to 0 to disable polling',
         },
-        interrupt: {
+        'PCF8574.interrupt': {
             type: 'objectId',
             label: 'Interrupt State Object ID',
             xs: 12,

@@ -116,5 +116,38 @@ export const SHT3x: DeviceHandlerInfo = {
     type: 'SHT3x',
     createHandler: (deviceConfig, adapter) => new SHT3xHandler(deviceConfig, adapter),
     names: [{ name: 'SHT3x', addresses: [0x44, 0x45] }],
-    config: {},
+    config: {
+        'SHT3x.pollingInterval': {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 10,
+            unit: 'sec',
+            min: 0,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'SHT3x.repeatability': {
+            type: 'select',
+            label: 'Repeatability',
+            default: 'low',
+            options: [
+                {
+                    value: 'low',
+                    label: 'Low',
+                },
+                {
+                    value: 'medium',
+                    label: 'Medium',
+                },
+                {
+                    value: 'high',
+                    label: 'High',
+                },
+            ],
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+    },
 };

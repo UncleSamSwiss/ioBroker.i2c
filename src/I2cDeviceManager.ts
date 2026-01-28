@@ -55,6 +55,11 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
             const allAddresses = new Set<number>(foundAddresses);
             existingDevices.forEach(d => allAddresses.add(d.native.address));
 
+            // Comment in this code for debugging to show all possible addresses:
+            /*for (let i = 0x07; i <= 0x77; i++) {
+                allAddresses.add(i);
+            }*/
+
             const sortedAddresses = Array.from(allAddresses).sort((a, b) => a - b);
             for (const address of sortedAddresses) {
                 const deviceObject = existingDevices.find(d => d.native.address === address);
@@ -66,6 +71,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
                     icon: DefaultIcon,
                     enabled: !!deviceObject,
                     status: connected ? 'connected' : 'disconnected',
+                    model: deviceObject?.native.name,
                     actions: [
                         {
                             id: 'settings',
@@ -141,8 +147,9 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
                             label: 'Generic',
                         },
                     ],
-                    xs: 4,
-                    md: 2,
+                    xs: 12,
+                    sm: 6,
+                    md: 4,
                 },
                 ...AllDevices.flatMap(d =>
                     d.names.map(n => ({ ...n, type: d.type, config: { ...d.config, ...n.config } })),

@@ -97,11 +97,15 @@ export const SeesawSoil: DeviceHandlerInfo = {
     createHandler: (deviceConfig, adapter) => new SeesawSoilHandler(deviceConfig, adapter),
     names: [{ name: 'Seesaw', addresses: [0x36] }],
     config: {
-        pollingInterval: {
+        'SeesawSoil.pollingInterval': {
             type: 'number',
-            default: 60,
-            min: 0,
             label: 'Polling Interval',
+            default: 60,
+            unit: 'sec',
+            min: 0,
+            xs: 7,
+            sm: 5,
+            md: 3,
         },
     },
 };

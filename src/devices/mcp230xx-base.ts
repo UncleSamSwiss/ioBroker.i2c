@@ -264,7 +264,6 @@ export function createPinConfig(
             default: 'out',
             xs: 7,
             md: 6,
-            lg: 5,
             label: 'Direction',
         },
         [`${type}.pins.${index}.inv`]: {

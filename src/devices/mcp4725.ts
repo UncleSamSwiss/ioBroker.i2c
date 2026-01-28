@@ -85,5 +85,26 @@ export const MCP4725: DeviceHandlerInfo = {
     type: 'MCP4725',
     createHandler: (deviceConfig, adapter) => new MCP4725Handler(deviceConfig, adapter),
     names: [{ name: 'MCP4725', addresses: getAllAddresses(0x60, 8) }],
-    config: {},
+    config: {
+        'MCP4725.referenceVoltage': {
+            type: 'number',
+            label: 'Reference Voltage',
+            default: 3300,
+            unit: 'mV',
+            min: 2700,
+            max: 5500,
+            step: 100,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'MCP4725.writeToEeprom': {
+            type: 'checkbox',
+            label: 'Write to EEPROM',
+            default: false,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+    },
 };

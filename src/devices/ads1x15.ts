@@ -2,6 +2,7 @@
 // this class is based on https://github.com/alphacharlie/node-ads1x15/blob/master/index.js
 // probably MIT license (not explicitely mentioned, but it is based on the Adafruit Python code which is MIT)
 
+import type { ConfigItemAny } from '@iobroker/dm-utils';
 import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
 import { getAllAddresses } from '../lib/i2c';
@@ -218,8 +219,6 @@ export class ADS1x15Handler extends BigEndianDeviceHandlerBase<ADS1x15Config> {
             return;
         }
 
-        await this.readCurrentValueAsync();
-
         // backwards compatibility:
         // - old pollingInterval was in seconds
         // - new pollingIntervalMs is in milliseconds
@@ -231,6 +230,8 @@ export class ADS1x15Handler extends BigEndianDeviceHandlerBase<ADS1x15Config> {
         }
         if (pollingIntervalMs > 0) {
             this.startPolling(async () => await this.readCurrentValueAsync(), pollingIntervalMs, 100);
+        } else {
+            await this.readCurrentValueAsync();
         }
     }
 
@@ -265,7 +266,7 @@ export class ADS1x15Handler extends BigEndianDeviceHandlerBase<ADS1x15Config> {
     private async readAdcAsync(index: number): Promise<void> {
         const channelConfig = this.config.channels[index];
         if (!channelConfig || channelConfig.channelType === 'off') {
-            this.adapter.log.debug(`Channel ${index} disabled`);
+            this.debug(`Channel ${index} disabled`);
             return;
         }
 
@@ -337,18 +338,79 @@ export class ADS1x15Handler extends BigEndianDeviceHandlerBase<ADS1x15Config> {
     }
 }
 
+function createChannelConfigs(name: 'ADS1015' | 'ADS1115'): Record<string, ConfigItemAny> {
+    let allowedSamples: number[];
+    if (name === 'ADS1015') {
+        allowedSamples = [128, 250, 490, 920, 1600, 2400, 3300];
+    } else {
+        allowedSamples = [8, 16, 32, 64, 128, 250, 475, 860];
+    }
+
+    function ct(index: number): string {
+        return `data.ADS1x15.channels["${index}"].channelType`;
+    }
+
+    const configs: Record<string, ConfigItemAny> = {};
+    for (let i = 0; i < 4; i++) {
+        const ctDisabled =
+            i === 1
+                ? `${ct(0)} === "diffTo1"`
+                : i === 3
+                  ? `${ct(0)} === "diffTo3" || ${ct(1)} === "diffTo3" || ${ct(2)} === "diffTo3"`
+                  : undefined;
+        configs[`ADS1x15.channels.${i}.channelType`] = {
+            type: 'select',
+            label: `Channel ${i} Mode`,
+            options: [
+                { value: 'off', label: 'Unused', hidden: ctDisabled },
+                { value: 'off', label: 'Unused by other channel(s)', hidden: `!(${ctDisabled})` },
+                { value: 'single', label: 'Single-ended' },
+                { value: 'diffTo1', label: 'Differential to Channel 1', hidden: i >= 1 || `${ct(1)} !== "off"` },
+                { value: 'diffTo3', label: 'Differential to Channel 3', hidden: i >= 3 || `${ct(3)} !== "off"` },
+            ],
+            disabled: ctDisabled,
+            default: 'off',
+            xs: 4,
+            newLine: true,
+        };
+        configs[`ADS1x15.channels.${i}.samples`] = {
+            type: 'select',
+            label: 'Samples per second',
+            options: allowedSamples.map(s => ({ value: s, label: s.toString() })),
+            default: allowedSamples[0],
+            hidden: `${ct(i)} === "off"`,
+            xs: 4,
+        };
+        configs[`ADS1x15.channels.${i}.gain`] = {
+            type: 'select',
+            label: 'Gain',
+            options: [6144, 4096, 2048, 1024, 512, 256].map(g => ({ value: g, label: `${g / 1000.0} V` })),
+            default: 6144,
+            hidden: `${ct(i)} === "off"`,
+            xs: 4,
+        };
+    }
+
+    return configs;
+}
+
 export const ADS1x15: DeviceHandlerInfo = {
     type: 'ADS1x15',
     createHandler: (deviceConfig, adapter) => new ADS1x15Handler(deviceConfig, adapter),
     names: [
-        { name: 'ADS1015', addresses: getAllAddresses(0x48, 4) },
-        { name: 'ADS1115', addresses: getAllAddresses(0x48, 4) },
+        { name: 'ADS1015', addresses: getAllAddresses(0x48, 4), config: createChannelConfigs('ADS1015') },
+        { name: 'ADS1115', addresses: getAllAddresses(0x48, 4), config: createChannelConfigs('ADS1115') },
     ],
     config: {
-        pollingIntervalMs: {
+        'ADS1x15.pollingIntervalMs': {
             type: 'number',
             label: 'Polling Interval (ms)',
             default: 60000,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+            help: 'Set to 0 to disable polling',
         },
     },
 };

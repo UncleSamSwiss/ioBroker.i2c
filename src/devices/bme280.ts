@@ -309,10 +309,15 @@ export const BME280: DeviceHandlerInfo = {
     createHandler: (deviceConfig, adapter) => new BME280Handler(deviceConfig, adapter),
     names: [{ name: 'BME280', addresses: [0x76, 0x77] }],
     config: {
-        pollingInterval: {
+        'BME280.pollingInterval': {
             type: 'number',
-            label: 'Polling Interval (sec)',
+            label: 'Polling Interval',
             default: 10,
+            unit: 'sec',
+            min: 0,
+            xs: 7,
+            sm: 5,
+            md: 3,
         },
     },
 };

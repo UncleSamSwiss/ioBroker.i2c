@@ -122,10 +122,15 @@ export const BH1750: DeviceHandlerInfo = {
     createHandler: (deviceConfig, adapter) => new BH1750Handler(deviceConfig, adapter),
     names: [{ name: 'BH1750', addresses: [0x23, 0x5c] }],
     config: {
-        pollingInterval: {
+        'BH1750.pollingInterval': {
             type: 'number',
-            label: 'Polling Interval (sec)',
+            label: 'Polling Interval',
             default: 10,
+            unit: 'sec',
+            min: 0,
+            xs: 7,
+            sm: 5,
+            md: 3,
         },
     },
 };

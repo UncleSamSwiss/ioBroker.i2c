@@ -37,7 +37,7 @@ export const MCP23008: DeviceHandlerInfo = {
     createHandler: (deviceConfig, adapter) => new MCP23008Handler(deviceConfig, adapter),
     names: [{ name: 'MCP23008', addresses: getAllAddresses(0x20, 8) }],
     config: {
-        pollingInterval: {
+        'MCP23008.pollingInterval': {
             type: 'number',
             label: 'Polling Interval',
             default: 200,
@@ -46,7 +46,7 @@ export const MCP23008: DeviceHandlerInfo = {
             sm: 5,
             md: 3,
         },
-        interrupt: {
+        'MCP23008.interrupt': {
             type: 'objectId',
             label: 'Interrupt State Object ID',
             xs: 12,

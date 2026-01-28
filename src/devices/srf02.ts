@@ -108,5 +108,16 @@ export const SRF02: DeviceHandlerInfo = {
         { name: 'SRF02', addresses: [0x70] },
         { name: 'GY-US42', addresses: [0x70] },
     ],
-    config: {},
+    config: {
+        'SRF02.pollingInterval': {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 10,
+            unit: 'sec',
+            min: 0,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+    },
 };

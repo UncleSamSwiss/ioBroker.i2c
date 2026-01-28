@@ -1,3 +1,4 @@
+import type { ConfigItemAny, ConfigItemSelectOption } from '@iobroker/dm-utils';
 import type { I2CDeviceConfig } from '../lib/adapter-config';
 import type { I2cAdapter } from '../main';
 import type { DeviceHandlerInfo } from './device-handler-base';
@@ -266,12 +267,99 @@ export class xMC5883Handler extends DeviceHandlerBase<xMC5883Config> {
     }
 }
 
+function createConfig(name: 'HMC5883L' | 'QMC5883L'): Record<string, ConfigItemAny> {
+    let defaultRange: number;
+    let rangeOptions: ConfigItemSelectOption[];
+    let defaultOversampling: number;
+    let oversamplingOptions: ConfigItemSelectOption[];
+    if (name === 'HMC5883L') {
+        defaultRange = 2;
+        rangeOptions = [
+            { value: 0, label: '± 0.88 Gs' },
+            { value: 1, label: '± 1.3 Gs' },
+            { value: 2, label: '± 1.9 Gs' },
+            { value: 3, label: '± 2.5 Gs' },
+            { value: 4, label: '± 4.0 Gs' },
+            { value: 5, label: '± 4.7 Gs' },
+            { value: 6, label: '± 5.6 Gs' },
+            { value: 7, label: '± 8.1 Gs' },
+        ];
+
+        defaultOversampling = 0;
+        oversamplingOptions = [
+            { value: 0, label: '1' },
+            { value: 1, label: '2' },
+            { value: 2, label: '4' },
+            { value: 3, label: '8' },
+        ];
+    } else {
+        defaultRange = 0;
+        rangeOptions = [
+            { value: 0, label: '± 2 Gs' },
+            { value: 1, label: '± 8 Gs' },
+        ];
+
+        defaultOversampling = 2;
+        oversamplingOptions = [
+            { value: 3, label: '64' },
+            { value: 2, label: '128' },
+            { value: 1, label: '256' },
+            { value: 0, label: '512' },
+        ];
+    }
+
+    return {
+        'xMC5883.range': {
+            type: 'select',
+            label: 'Range',
+            default: defaultRange,
+            options: rangeOptions,
+            xs: 12,
+            sm: 6,
+            md: 4,
+        },
+        'xMC5883.oversampling': {
+            type: 'select',
+            label: 'Oversampling',
+            default: defaultOversampling,
+            options: oversamplingOptions,
+            xs: 12,
+            sm: 6,
+            md: 4,
+        },
+    };
+}
+
 export const xMC5883: DeviceHandlerInfo = {
     type: 'xMC5883',
     createHandler: (deviceConfig, adapter) => new xMC5883Handler(deviceConfig, adapter),
     names: [
-        { name: 'HMC5883L', addresses: [0x1e] },
-        { name: 'QMC5883L', addresses: [0x0d] },
+        {
+            name: 'HMC5883L',
+            addresses: [0x1e],
+            config: createConfig('HMC5883L'),
+        },
+        {
+            name: 'QMC5883L',
+            addresses: [0x0d],
+            config: createConfig('QMC5883L'),
+        },
     ],
-    config: {},
+    config: {
+        'xMC5883.pollingInterval': {
+            type: 'number',
+            label: 'Refresh Interval',
+            default: 5000,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'xMC5883.interrupt': {
+            type: 'objectId',
+            label: 'Interrupt State Object ID',
+            xs: 12,
+            newLine: true,
+        },
+    },
 };

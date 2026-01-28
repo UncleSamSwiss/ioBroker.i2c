@@ -297,6 +297,6 @@ export class GenericHandler extends DeviceHandlerBase<GenericConfig> {
 export const Generic: DeviceHandlerInfo = {
     type: 'Generic',
     createHandler: (deviceConfig, adapter) => new GenericHandler(deviceConfig, adapter),
-    names: [{ name: 'Generic', addresses: getAllAddresses(0x03, 117) }],
+    names: [{ name: 'Generic', addresses: getAllAddresses(0x08, 112) }],
     config: {},
 };

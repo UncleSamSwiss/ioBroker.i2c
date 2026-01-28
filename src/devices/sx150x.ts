@@ -1,3 +1,4 @@
+import type { ConfigItemAny, ConfigItemSelectOption } from '@iobroker/dm-utils';
 import type { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { toHexString } from '../lib/shared';
 import type { I2cAdapter } from '../main';
@@ -815,13 +816,747 @@ export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
     }
 }
 
+interface PinCapabilities {
+    levelShift: boolean;
+    blink: boolean;
+    breath: boolean;
+}
+
+// Helper to create data path accessor
+function d(path: string): string {
+    return `data.SX150x.${path}`;
+}
+
+// Helper to check if any pin has a mode starting with 'led-'
+function hasLedPins(pinCount: number): string {
+    const checks: string[] = [];
+    for (let i = 0; i < pinCount; i++) {
+        checks.push(`${d(`pins?.["${i}"]?.mode`)}?.startsWith("led-")`);
+    }
+    return checks.join(' || ');
+}
+
+// Helper to check if any pin has input mode with debounce enabled
+function hasDebouncedPins(pinCount: number): string {
+    const checks: string[] = [];
+    for (let i = 0; i < pinCount; i++) {
+        checks.push(`(${d(`pins?.["${i}"]?.mode`)} === "input" && ${d(`pins?.["${i}"]?.debounce`)})`);
+    }
+    return `${hasKeypadPins()} || ${checks.join(' || ')}`;
+}
+
+// Helper to check if keypad is active
+function hasKeypadPins(): string {
+    return `(${d('keypad?.rowCount')} ?? 0) > 0`;
+}
+
+// Helper to get showLed condition (based on "features" checkboxes behavior)
+function showLedCondition(pinCount: number): string {
+    // showLed is true if any pin has led- mode OR user checked the showLed checkbox
+    return `data._showLed || (${hasLedPins(pinCount)})`;
+}
+
+// Helper to get showDebounce condition
+function showDebounceCondition(pinCount: number): string {
+    // showDebounce is true if user checked it OR if keypad is active OR if any pin has debounce
+    return `data._showDebounce || data._showKeypad || (${hasDebouncedPins(pinCount)})`;
+}
+
+// Helper to get showKeypad condition
+function showKeypadCondition(): string {
+    return `data._showKeypad || (${hasKeypadPins()})`;
+}
+
+function createConfig(name: `SX150${7 | 8 | 9}`): Record<string, ConfigItemAny> {
+    const config: Record<string, ConfigItemAny> = {};
+    const caps = [] as PinCapabilities[];
+    let pinCount: number;
+    switch (name) {
+        case 'SX1507':
+            pinCount = 4;
+            for (let i = 0; i < 4; i++) {
+                caps[i] = { levelShift: false, blink: true, breath: i > 0 };
+            }
+            break;
+        case 'SX1508':
+            pinCount = 8;
+            for (let i = 0; i < 8; i++) {
+                caps[i] = { levelShift: i < 4, blink: (i >> 1) % 2 === 1, breath: i % 4 === 3 };
+            }
+            break;
+        default:
+            pinCount = 16;
+            for (let i = 0; i < 16; i++) {
+                caps[i] = { levelShift: i < 8, blink: true, breath: (i >> 2) % 2 === 1 };
+            }
+            break;
+    }
+
+    const hasKeypad = pinCount > 4;
+    const hasHighInput = pinCount > 4;
+    const hasAutoSleep = pinCount === 16;
+    const bankSize = pinCount / 2;
+
+    // =====================================
+    // Features checkboxes section
+    // =====================================
+    Object.assign(config, {
+        _featuresHeader: {
+            type: 'staticText',
+            text: 'Features',
+            xs: 12,
+            newLine: true,
+        },
+        // showLed checkbox - disabled if there are already LED pins configured
+        _showLed: {
+            type: 'checkbox',
+            label: 'LEDs',
+            default: false,
+            disabled: hasLedPins(pinCount),
+            xs: 3,
+        },
+        // showDebounce checkbox - disabled if keypad is active or debounced pins exist
+        _showDebounce: {
+            type: 'checkbox',
+            label: 'Debouncing',
+            default: false,
+            disabled: `data._showKeypad || (${hasDebouncedPins(pinCount)})`,
+            xs: 3,
+        },
+    });
+
+    // showKeypad checkbox - only for devices with keypad support (pinCount > 4)
+    if (hasKeypad) {
+        config._showKeypad = {
+            type: 'checkbox',
+            label: 'Keypad',
+            default: false,
+            disabled: hasKeypadPins(),
+            xs: 3,
+        };
+    }
+
+    // =====================================
+    // Oscillator settings (shown when LED, debounce, or keypad is enabled)
+    // =====================================
+    const showOscillator = hasKeypad
+        ? `(${showLedCondition(pinCount)}) || (${showDebounceCondition(pinCount)}) || (${showKeypadCondition()})`
+        : `(${showLedCondition(pinCount)}) || (${showDebounceCondition(pinCount)})`;
+
+    config._oscHeader = {
+        type: 'staticText',
+        text: 'Oscillator',
+        hidden: `!(${showOscillator})`,
+        xs: 12,
+        newLine: true,
+    };
+
+    // Note: oscExternal is shown as a toggle switch - Internal/External
+    // Using checkbox: unchecked = Internal (false), checked = External (true)
+    config['SX150x.oscExternal'] = {
+        type: 'checkbox',
+        label: 'External Oscillator',
+        default: false,
+        hidden: `!(${showOscillator})`,
+        xs: 7,
+        md: 5,
+        newLine: true,
+    };
+
+    // Oscillator frequency options (only shown when internal oscillator selected)
+    const oscFrequencyOptions = [
+        { value: 0, label: 'Off' },
+        { value: 1, label: '2 MHz' },
+        { value: 2, label: '1 MHz' },
+        { value: 3, label: '500 kHz' },
+        { value: 4, label: '250 kHz' },
+        { value: 5, label: '125 kHz' },
+        { value: 6, label: '62.5 kHz' },
+        { value: 7, label: '~31.3 kHz' },
+        { value: 8, label: '~15.6 kHz' },
+        { value: 9, label: '~7.8 kHz' },
+        { value: 10, label: '~3.9 kHz' },
+        { value: 11, label: '~2 kHz' },
+        { value: 12, label: '~977 Hz' },
+        { value: 13, label: '~488 Hz' },
+        { value: 14, label: '~244 Hz' },
+    ];
+
+    config['SX150x.oscFrequency'] = {
+        type: 'select',
+        label: 'OSCOUT frequency',
+        options: oscFrequencyOptions,
+        default: 0,
+        hidden: `!(${showOscillator}) || ${d('oscExternal')}`,
+        xs: 5,
+        md: 4,
+    };
+
+    // =====================================
+    // LED settings (shown when showLed is active)
+    // =====================================
+    const ledFrequencyOptions = [
+        { value: 1, label: '2 MHz' },
+        { value: 2, label: '1 MHz' },
+        { value: 3, label: '500 kHz' },
+        { value: 4, label: '250 kHz' },
+        { value: 5, label: '125 kHz' },
+        { value: 6, label: '62.5 kHz' },
+        { value: 7, label: '31.25 kHz' },
+    ];
+
+    config['SX150x.ledFrequency'] = {
+        type: 'select',
+        label: 'LED driver frequency',
+        options: ledFrequencyOptions,
+        default: 1,
+        hidden: `!(${showLedCondition(pinCount)})`,
+        xs: 6,
+        md: 3,
+        newLine: true,
+    };
+
+    // LED Log (logarithmic) toggle for first bank
+    // Using checkbox: unchecked = Linear (false), checked = Logarithmic (true)
+    config['SX150x.ledLog.0'] = {
+        type: 'checkbox',
+        label: pinCount > 4 ? 'LED driver mode Bank A' : 'LED driver mode',
+        default: false,
+        hidden: `!(${showLedCondition(pinCount)})`,
+        xs: 6,
+        md: 4,
+    };
+
+    // LED Log for second bank (only for devices with more than 4 pins)
+    if (pinCount > 4) {
+        config['SX150x.ledLog.1'] = {
+            type: 'checkbox',
+            label: 'LED driver mode Bank B',
+            default: false,
+            hidden: `!(${showLedCondition(pinCount)})`,
+            xs: 6,
+            md: 4,
+        };
+    }
+
+    // =====================================
+    // Debounce settings (shown when showDebounce or showKeypad is active)
+    // =====================================
+    const debounceTimeOptions = [
+        { value: 0, label: '0.5 ms' },
+        { value: 1, label: '1 ms' },
+        { value: 2, label: '2 ms' },
+        { value: 3, label: '4 ms' },
+        { value: 4, label: '8 ms' },
+        { value: 5, label: '16 ms' },
+        { value: 6, label: '32 ms' },
+        { value: 7, label: '64 ms' },
+    ];
+
+    const showDebounceSettings = hasKeypad
+        ? `(${showDebounceCondition(pinCount)}) || (${showKeypadCondition()})`
+        : showDebounceCondition(pinCount);
+
+    config['SX150x.debounceTime'] = {
+        type: 'select',
+        label: 'Debounce time',
+        options: debounceTimeOptions,
+        default: 0,
+        hidden: `!(${showDebounceSettings})`,
+        xs: 6,
+        md: 4,
+        newLine: true,
+    };
+
+    // =====================================
+    // Keypad settings (only for devices with keypad support)
+    // =====================================
+    if (hasKeypad) {
+        // Row count options
+        const keyRowsOptions = [{ value: 0, label: 'Off' }];
+        for (let i = 1; i < bankSize; i++) {
+            keyRowsOptions.push({ value: i, label: (i + 1).toString() });
+        }
+
+        config['SX150x.keypad.rowCount'] = {
+            type: 'select',
+            label: 'Number of rows',
+            options: keyRowsOptions,
+            default: 0,
+            hidden: `!(${showKeypadCondition()})`,
+            xs: 6,
+            md: 3,
+            newLine: true,
+        };
+
+        // Column count options
+        const keyColsOptions = [{ value: 0, label: '1' }];
+        for (let i = 1; i < bankSize; i++) {
+            keyColsOptions.push({ value: i, label: (i + 1).toString() });
+        }
+
+        config['SX150x.keypad.columnCount'] = {
+            type: 'select',
+            label: 'Number of columns',
+            options: keyColsOptions,
+            default: 0,
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 6,
+            md: 3,
+        };
+
+        // Auto sleep (only for SX1509)
+        if (hasAutoSleep) {
+            const keyAutoSleepOptions = [
+                { value: 0, label: 'Off' },
+                { value: 1, label: '128 ms' },
+                { value: 2, label: '256 ms' },
+                { value: 3, label: '512 ms' },
+                { value: 4, label: '1 sec' },
+                { value: 5, label: '2 sec' },
+                { value: 6, label: '4 sec' },
+                { value: 7, label: '8 sec' },
+            ];
+
+            config['SX150x.keypad.autoSleep'] = {
+                type: 'select',
+                label: 'Auto sleep time',
+                options: keyAutoSleepOptions,
+                default: 0,
+                hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+                xs: 6,
+                md: 3,
+            };
+        }
+
+        // Scan time options - must be >= debounce time
+        const keyScanTimeOptions: ConfigItemSelectOption[] = [];
+        for (let i = 0; i < 8; i++) {
+            keyScanTimeOptions.push({
+                value: i,
+                label: `${1 << i} ms`,
+                hidden: `${i} < (${d('debounceTime')} ?? 0)`,
+            });
+        }
+
+        config['SX150x.keypad.scanTime'] = {
+            type: 'select',
+            label: 'Scan time',
+            options: keyScanTimeOptions,
+            default: 0,
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 6,
+            md: 3,
+        };
+
+        // Keypad values header
+        config._keypadValuesHeader = {
+            type: 'staticText',
+            text: 'Keypad key values',
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 12,
+            newLine: true,
+        };
+
+        // Create keypad value inputs as a grid
+        // First, add empty space before column headers (matches original: <Grid item xs={2} md={1}></Grid>)
+        config._keyColHeaderSpacer = {
+            type: 'staticText',
+            text: '',
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 2,
+            md: 1,
+            newLine: true,
+        };
+
+        // Create column headers
+        for (let col = 0; col < bankSize; col++) {
+            config[`_keyColHeader${col}`] = {
+                type: 'staticText',
+                text: { en: `Column ${col}`, de: `Spalte ${col}` },
+                hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')} || ${col} > (${d('keypad?.columnCount')} ?? 0)`,
+                xs: 1,
+            };
+        }
+
+        // Create rows with row header and value inputs
+        for (let row = 0; row < bankSize; row++) {
+            config[`_keyRowHeader${row}`] = {
+                type: 'staticText',
+                text: { en: `Row ${row}`, de: `Zeile ${row}` },
+                hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')} || ${row} > (${d('keypad?.rowCount')} ?? 0)`,
+                xs: 2,
+                md: 1,
+                newLine: true,
+            };
+
+            for (let col = 0; col < bankSize; col++) {
+                // Default value: letter (A,B,C...) + row number
+                const defaultValue = String.fromCharCode(65 + col) + row;
+                config[`SX150x.keypad.keyValues.${row}.${col}`] = {
+                    type: 'text',
+                    default: defaultValue,
+                    hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')} || ${row} > (${d('keypad?.rowCount')} ?? 0) || ${col} > (${d('keypad?.columnCount')} ?? 0)`,
+                    xs: 1,
+                };
+            }
+        }
+    }
+
+    // =====================================
+    // Pin configurations
+    // =====================================
+    for (let i = 0; i < pinCount; i++) {
+        const pinCaps = caps[i];
+        const isInBankB = i >= bankSize;
+        const correspondingBankAPin = i - bankSize;
+        const correspondingBankBPin = i + bankSize;
+
+        // Pin divider
+        config[`_pinDivider${i}`] = {
+            type: 'divider',
+            xs: 12,
+            newLine: true,
+        };
+
+        // Pin label
+        config[`_pinLabel${i}`] = {
+            type: 'staticText',
+            text: { en: `Pin ${i}`, de: `Pin ${i}` },
+            xs: 2,
+            md: 1,
+        };
+
+        // Build mode options based on capabilities
+        // Mode is disabled when pin is controlled by keypad or level-shifter from bank A
+        const modeOptions: ConfigItemSelectOption[] = [];
+
+        // Check if this pin is used for keypad
+        const isKeypadPin = hasKeypad
+            ? isInBankB
+                ? `${correspondingBankAPin} <= (${d('keypad?.columnCount')} ?? 0) && (${d('keypad?.rowCount')} ?? 0) > 0` // Bank B: column pins
+                : `${i} <= (${d('keypad?.rowCount')} ?? 0) && (${d('keypad?.rowCount')} ?? 0) > 0` // Bank A: row pins
+            : 'false';
+
+        // Check if this pin is level-shifter slave (bank B controlled by bank A)
+        const isLevelShifterSlave =
+            isInBankB && pinCaps.levelShift
+                ? `${d(`pins?.["${correspondingBankAPin}"]?.mode`)} === "level-shifter"`
+                : 'false';
+
+        // Combined condition for pin being externally controlled
+        const pinControlledExternally = hasKeypad
+            ? `(${isKeypadPin}) || (${isLevelShifterSlave})`
+            : isLevelShifterSlave;
+
+        // Keypad mode (shown when keypad controls this pin)
+        if (hasKeypad) {
+            modeOptions.push({
+                value: 'keypad',
+                label: 'Keypad',
+                hidden: `!(${isKeypadPin})`,
+            });
+        }
+
+        // Level-shifter slave mode (shown when bank A controls this pin)
+        if (isInBankB && pinCaps.levelShift) {
+            modeOptions.push({
+                value: 'level-shifter',
+                label: 'Level Shifter',
+                hidden: `!(${isLevelShifterSlave})`,
+            });
+        }
+
+        // Standard modes (shown when not externally controlled)
+        modeOptions.push({
+            value: 'none',
+            label: 'None',
+            hidden: pinControlledExternally,
+        });
+        modeOptions.push({
+            value: 'input',
+            label: 'Input',
+            hidden: pinControlledExternally,
+        });
+        modeOptions.push({
+            value: 'output',
+            label: 'Output',
+            hidden: pinControlledExternally,
+        });
+
+        // Level-shifter option for bank A pins that support it
+        if (pinCaps.levelShift && !isInBankB) {
+            // Level shifter is disabled if the corresponding bank B pin is already in use (not 'none' or 'level-shifter')
+            const bankBMode = d(`pins?.["${correspondingBankBPin}"]?.mode`);
+            modeOptions.push({
+                value: 'level-shifter',
+                label: 'Level Shifter',
+                hidden: `(${pinControlledExternally}) || (${bankBMode} !== "none" && ${bankBMode} !== "level-shifter")`,
+            });
+        }
+
+        // LED modes (shown when showLed is enabled and not externally controlled)
+        const showLedCond = showLedCondition(pinCount);
+        modeOptions.push({
+            value: 'led-channel',
+            label: 'LED as channel',
+            hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+        });
+        modeOptions.push({
+            value: 'led-static',
+            label: 'LED static value',
+            hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+        });
+
+        if (pinCaps.blink) {
+            modeOptions.push({
+                value: 'led-single',
+                label: 'LED single shot',
+                hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+            });
+            modeOptions.push({
+                value: 'led-blink',
+                label: 'LED blinking',
+                hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+            });
+        }
+
+        config[`SX150x.pins.${i}.mode`] = {
+            type: 'select',
+            label: 'Mode',
+            options: modeOptions,
+            default: 'none',
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // Invert checkbox (for input, output, led-, and level-shifter modes)
+        const pinMode = d(`pins?.["${i}"]?.mode`);
+        config[`SX150x.pins.${i}.invert`] = {
+            type: 'checkbox',
+            label: 'inverted',
+            default: false,
+            hidden: `${pinMode} !== "input" && ${pinMode} !== "output" && !${pinMode}.startsWith("led-") && ${pinMode} !== "level-shifter"`,
+            xs: 2,
+        };
+
+        // Resistor dropdown (for input and output modes)
+        config[`SX150x.pins.${i}.resistor`] = {
+            type: 'select',
+            label: 'Resistor',
+            options: [
+                { value: 'none', label: 'None' },
+                { value: 'up', label: 'Pull-up' },
+                { value: 'down', label: 'Pull-down' },
+            ],
+            default: 'none',
+            hidden: `${pinMode} !== "input" && ${pinMode} !== "output"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // Open drain checkbox (for output mode)
+        config[`SX150x.pins.${i}.openDrain`] = {
+            type: 'checkbox',
+            label: 'open drain',
+            default: false,
+            hidden: `${pinMode} !== "output"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // Debounce checkbox (for input mode when showDebounce is enabled)
+        config[`SX150x.pins.${i}.debounce`] = {
+            type: 'checkbox',
+            label: 'debounce',
+            default: false,
+            hidden: `${pinMode} !== "input" || !(${showDebounceSettings})`,
+            xs: 2,
+        };
+
+        // Interrupt dropdown (for input mode)
+        config[`SX150x.pins.${i}.interrupt`] = {
+            type: 'select',
+            label: 'Interrupt trigger',
+            options: [
+                { value: 'none', label: 'None' },
+                { value: 'raising', label: 'Raising' },
+                { value: 'falling', label: 'Falling' },
+                { value: 'both', label: 'Both' },
+            ],
+            default: 'none',
+            hidden: `${pinMode} !== "input"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // High input checkbox (for input mode on devices that support it)
+        if (hasHighInput) {
+            config[`SX150x.pins.${i}.highInput`] = {
+                type: 'checkbox',
+                label: 'high input voltage',
+                default: false,
+                hidden: `${pinMode} !== "input"`,
+                xs: 2,
+            };
+        }
+
+        // Level shifter mode dropdown (for level-shifter mode)
+        if (pinCaps.levelShift) {
+            const pin1 = !isInBankB ? i : correspondingBankAPin;
+            const pin2 = !isInBankB ? correspondingBankBPin : i;
+            config[`SX150x.pins.${i}.levelShifterMode`] = {
+                type: 'select',
+                label: 'Level shifter mode',
+                options: [
+                    { value: 'AtoB', label: { en: `Pin ${pin1} → Pin ${pin2}` } },
+                    { value: 'BtoA', label: { en: `Pin ${pin2} → Pin ${pin1}` } },
+                ],
+                default: 'AtoB',
+                hidden: `${pinMode} !== "level-shifter"`,
+                disabled: isInBankB, // Bank B pins are controlled by bank A
+                xs: 3,
+                md: 2,
+                xl: 1,
+            };
+        }
+
+        // LED intensity on (for led-static, led-single, led-blink modes)
+        config[`SX150x.pins.${i}.led.intensityOn`] = {
+            type: 'number',
+            label: 'ON intensity',
+            default: 255,
+            min: 0,
+            max: 255,
+            hidden: `!${pinMode}?.startsWith("led-") || ${pinMode} === "led-channel"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED time on (for led-single and led-blink modes)
+        // Options are dynamically calculated based on led frequency
+        const ledTimeOptions: ConfigItemSelectOption[] = [];
+        for (let f = 1; f <= 7; f++) {
+            const clockFrequency = 2000000 / (1 << (f - 1));
+            for (let t = 1; t < 32; t++) {
+                const factor = t < 16 ? 64 : 512;
+                let value = (factor * t * 255) / clockFrequency;
+                let unit = 'sec';
+                if (value < 1) {
+                    value *= 1000;
+                    unit = 'ms';
+                }
+
+                ledTimeOptions.push({
+                    value: t,
+                    label: `${value.toFixed(2)} ${unit}`,
+                    hidden: `${d('ledFrequency')} !== ${f}`,
+                });
+            }
+        }
+
+        config[`SX150x.pins.${i}.led.timeOn`] = {
+            type: 'select',
+            label: 'ON time',
+            options: ledTimeOptions,
+            default: 1,
+            hidden: `${pinMode} !== "led-single" && ${pinMode} !== "led-blink"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED intensity off (for led-blink mode)
+        const ledIntensityOffOptions: ConfigItemSelectOption[] = [];
+        for (let t = 0; t < 8; t++) {
+            ledIntensityOffOptions.push({ value: t, label: (t * 4).toString() });
+        }
+
+        config[`SX150x.pins.${i}.led.intensityOff`] = {
+            type: 'select',
+            label: 'OFF intensity',
+            options: ledIntensityOffOptions,
+            default: 0,
+            hidden: `${pinMode} !== "led-blink"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED time off (for led-blink mode)
+        config[`SX150x.pins.${i}.led.timeOff`] = {
+            type: 'select',
+            label: 'OFF time',
+            options: ledTimeOptions,
+            default: 1,
+            hidden: `${pinMode} !== "led-blink"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED fade options (for pins that support breath)
+        if (pinCaps.breath) {
+            const ledFadeOptions: ConfigItemSelectOption[] = [{ value: 0, label: 'Off' }];
+            for (let t = 1; t < 32; t++) {
+                ledFadeOptions.push({ value: t, label: `${t}` });
+            }
+
+            config[`SX150x.pins.${i}.led.timeRaise`] = {
+                type: 'select',
+                label: 'Fade in time',
+                options: ledFadeOptions,
+                default: 0,
+                hidden: `!${pinMode}?.startsWith("led-") || ${pinMode} === "led-channel"`,
+                xs: 3,
+                md: 2,
+                xl: 1,
+            };
+
+            config[`SX150x.pins.${i}.led.timeFall`] = {
+                type: 'select',
+                label: 'Fade out time',
+                options: ledFadeOptions,
+                default: 0,
+                hidden: `!${pinMode}?.startsWith("led-") || ${pinMode} === "led-channel"`,
+                xs: 3,
+                md: 2,
+                xl: 1,
+            };
+        }
+    }
+
+    return config;
+}
+
 export const SX150x: DeviceHandlerInfo = {
     type: 'SX150x',
     createHandler: (deviceConfig, adapter) => new SX150xHandler(deviceConfig, adapter),
     names: [
-        { name: 'SX1507', addresses: [0x3e, 0x3f, 0x70, 0x71] },
-        { name: 'SX1508', addresses: [0x20, 0x21, 0x22, 0x23] },
-        { name: 'SX1509', addresses: [0x3e, 0x3f, 0x70, 0x71] },
+        { name: 'SX1507', addresses: [0x3e, 0x3f, 0x70, 0x71], config: createConfig('SX1507') },
+        { name: 'SX1508', addresses: [0x20, 0x21, 0x22, 0x23], config: createConfig('SX1508') },
+        { name: 'SX1509', addresses: [0x3e, 0x3f, 0x70, 0x71], config: createConfig('SX1509') },
     ],
-    config: {},
+    config: {
+        pollingInterval: {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 200,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        interrupt: {
+            type: 'objectId',
+            label: 'Interrupt State Object ID',
+            xs: 12,
+            newLine: true,
+        },
+    },
 };

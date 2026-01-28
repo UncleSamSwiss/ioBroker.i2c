@@ -244,11 +244,12 @@ export const PCA9685: DeviceHandlerInfo = {
     createHandler: (deviceConfig, adapter) => new PCA9685Handler(deviceConfig, adapter),
     names: [{ name: 'PCA9685', addresses: getAllAddresses(0x40, 64) }],
     config: {
-        frequency: {
+        'PCA9685.frequency': {
             type: 'number',
             default: 100,
             min: 24,
             max: 1526,
+            step: 1,
             label: 'PWM Frequency',
             xs: 7,
             sm: 5,
