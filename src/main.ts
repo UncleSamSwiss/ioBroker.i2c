@@ -8,11 +8,11 @@ import * as utils from '@iobroker/adapter-core';
 import * as i2c from 'i2c-bus';
 import { I2CClient } from './debug/client';
 import { I2CServer } from './debug/server';
-import type { DeviceHandlerBase } from './devices/device-handler-base';
-import { toHexString } from './lib/shared';
 import { AllDevices } from './devices/all-devices';
+import type { DeviceHandlerBase } from './devices/device-handler-base';
 import { I2cDeviceManagement } from './I2cDeviceManager';
-import { I2CDeviceConfig } from './lib/adapter-config';
+import type { I2CDeviceConfig } from './lib/adapter-config';
+import { toHexString } from './lib/shared';
 
 export type StateValue = string | number | boolean | null;
 
