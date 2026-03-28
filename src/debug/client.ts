@@ -1,4 +1,4 @@
-import { request } from 'http';
+import { request } from 'node:http';
 import * as i2c from 'i2c-bus';
 
 export class I2CClient implements i2c.PromisifiedBus {
