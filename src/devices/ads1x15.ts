@@ -368,6 +368,7 @@ function createChannelConfigs(name: 'ADS1015' | 'ADS1115'): Record<string, Confi
                 { value: 'diffTo1', label: 'Differential to Channel 1', hidden: i >= 1 || `${ct(1)} !== "off"` },
                 { value: 'diffTo3', label: 'Differential to Channel 3', hidden: i >= 3 || `${ct(3)} !== "off"` },
             ],
+            format: 'dropdown',
             disabled: ctDisabled,
             default: 'off',
             xs: 4,
@@ -378,6 +379,7 @@ function createChannelConfigs(name: 'ADS1015' | 'ADS1115'): Record<string, Confi
             label: 'Samples per second',
             options: allowedSamples.map(s => ({ value: s, label: s.toString() })),
             default: allowedSamples[0],
+            format: 'dropdown',
             hidden: `${ct(i)} === "off"`,
             xs: 4,
         };
@@ -386,6 +388,7 @@ function createChannelConfigs(name: 'ADS1015' | 'ADS1115'): Record<string, Confi
             label: 'Gain',
             options: [6144, 4096, 2048, 1024, 512, 256].map(g => ({ value: g, label: `${g / 1000.0} V` })),
             default: 6144,
+            format: 'dropdown',
             hidden: `${ct(i)} === "off"`,
             xs: 4,
         };

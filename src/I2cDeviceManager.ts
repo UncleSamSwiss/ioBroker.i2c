@@ -1,12 +1,13 @@
 import type {
     ActionContext,
     DeviceInfo,
-    DeviceRefresh,
+    DeviceLoadContext,
     InstanceDetails,
     JsonFormData,
     JsonFormSchema,
 } from '@iobroker/dm-utils';
-import { ACTIONS, DeviceManagement } from '@iobroker/dm-utils';
+import { DeviceManagement } from '@iobroker/dm-utils';
+import type { DeviceRefreshResponse } from '@iobroker/dm-utils/build/types/base';
 import { AllDevices } from './devices/all-devices';
 import type { I2CDeviceConfig } from './lib/adapter-config';
 import { Delay } from './lib/async';
@@ -30,10 +31,13 @@ const changeBusNumberForm: JsonFormSchema = {
 const DefaultIcon =
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTUgOUg5djZoNlY5em0tMiA0aC0ydi0yaDJ2MnptOC0yVjloLTJWN2MwLTEuMS0uOS0yLTItMmgtMlYzaC0ydjJoLTJWM0g5djJIN2MtMS4xIDAtMiAuOS0yIDJ2MkgzdjJoMnYySDN2MmgydjJjMCAxLjEuOSAyIDIgMmgydjJoMnYtMmgydjJoMnYtMmgyYzEuMSAwIDItLjkgMi0ydi0yaDJ2LTJoLTJ2LTJoMnptLTQgNkg3VjdoMTB2MTB6Ii8+PC9zdmc+';
 
+type HexDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+type I2cDeviceId = `0x${HexDigit}${HexDigit}`;
+
 /**
  * I2C device manager
  */
-export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
+export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceId> {
     protected override async getInstanceInfo(): Promise<InstanceDetails> {
         const info = await super.getInstanceInfo();
         if (!info.actions) {
@@ -49,8 +53,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
         return info;
     }
 
-    protected override async listDevices(): Promise<DeviceInfo[]> {
-        const devices: DeviceInfo[] = [];
+    protected override async loadDevices(context: DeviceLoadContext<I2cDeviceId>): Promise<void> {
         try {
             const deviceObjects = await this.adapter.getDevicesAsync();
             const existingDevices = deviceObjects.map(d => ({ ...d, native: d.native as I2CDeviceConfig }));
@@ -63,40 +66,42 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
                 allAddresses.add(i);
             }*/
 
+            context.setTotalDevices(allAddresses.size);
+
             const sortedAddresses = Array.from(allAddresses).sort((a, b) => a - b);
             for (const address of sortedAddresses) {
                 const deviceObject = existingDevices.find(d => d.native.address === address);
                 const connected = foundAddresses.includes(address);
-                const hex = toHexString(address);
-                devices.push({
-                    id: hex,
-                    name: deviceObject ? deviceObject.common.name : `${hex} (Unused)`,
-                    icon: DefaultIcon,
-                    enabled: !!deviceObject,
-                    status: connected ? 'connected' : 'disconnected',
-                    model: deviceObject?.native.name,
-                    actions: [
-                        {
-                            id: 'settings',
-                            icon: 'settings',
-                            handler: deviceObject
-                                ? (deviceId, context) => this.showDeviceSettings(deviceId, context)
-                                : undefined,
-                        },
-                        {
-                            id: ACTIONS.ENABLE_DISABLE,
-                            handler: (deviceId, context) =>
-                                deviceObject
-                                    ? this.disableDevice(deviceId, context)
-                                    : this.showDeviceSettings(deviceId, context),
-                        },
-                    ],
-                });
+                context.addDevice(this.createDeviceInfo(address, deviceObject, connected));
             }
         } catch (error: any) {
             this.log.error(`Error listing I2C devices: ${error}`);
         }
-        return devices;
+    }
+
+    private createDeviceInfo(address: number, device?: ioBroker.Object, connected?: boolean): DeviceInfo<I2cDeviceId> {
+        const hex = toHexString(address) as I2cDeviceId;
+        return {
+            id: hex,
+
+            name: device ? device.common.name : `${hex} (Unused)`,
+            icon: DefaultIcon,
+            enabled: !!device,
+            status: connected ? 'connected' : 'disconnected',
+            model: device?.native.name,
+            actions: [
+                {
+                    id: 'settings',
+                    icon: 'settings',
+                    handler: device ? (deviceId, context) => this.showDeviceSettings(deviceId, context) : undefined,
+                },
+                {
+                    id: 'enable/disable', // TODO: should be: ACTIONS.ENABLE_DISABLE,
+                    handler: (deviceId, context) =>
+                        device ? this.disableDevice(deviceId, context) : this.showDeviceSettings(deviceId, context),
+                },
+            ],
+        };
     }
 
     private async changeBusNumber(context: ActionContext): Promise<{
@@ -120,11 +125,9 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
     }
 
     private async showDeviceSettings(
-        deviceId: string,
+        deviceId: I2cDeviceId,
         context: ActionContext,
-    ): Promise<{
-        refresh: DeviceRefresh;
-    }> {
+    ): Promise<DeviceRefreshResponse<'adapter', I2cDeviceId>> {
         const address = parseInt(deviceId.substring(2), 16);
         const names = AllDevices.flatMap(d => d.names)
             .filter(n => n.name !== 'Generic' && n.addresses.includes(address))
@@ -150,6 +153,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
                             label: 'Generic',
                         },
                     ],
+                    format: 'dropdown',
                     xs: 12,
                     sm: 6,
                     md: 4,
@@ -182,7 +186,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
         });
 
         if (!data) {
-            return { refresh: false };
+            return { refresh: 'none' };
         }
 
         const config = indexedToArray(data) as I2CDeviceConfig;
@@ -197,22 +201,22 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
             console.error(error);
         }
 
-        return { refresh: true };
+        const obj = await this.adapter.getObjectAsync(deviceId);
+
+        return { update: this.createDeviceInfo(address, obj ?? undefined, true) };
     }
 
     private async disableDevice(
-        deviceId: string,
+        deviceId: I2cDeviceId,
         context: ActionContext,
-    ): Promise<{
-        refresh: DeviceRefresh;
-    }> {
+    ): Promise<DeviceRefreshResponse<'adapter', I2cDeviceId>> {
         const confirmed = await context.showConfirmation(
             `Are you sure you want to disable and remove the device at address ${deviceId}?`,
         );
         if (!confirmed) {
-            return { refresh: false };
+            return { refresh: 'none' };
         }
         await this.adapter.deleteHandler(deviceId);
-        return { refresh: true };
+        return { update: this.createDeviceInfo(parseInt(deviceId.substring(2), 16)) };
     }
 }

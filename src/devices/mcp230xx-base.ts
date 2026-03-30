@@ -262,6 +262,7 @@ export function createPinConfig(
                 { value: 'out', label: 'Output' },
             ],
             default: 'out',
+            format: 'dropdown',
             xs: 7,
             md: 6,
             label: 'Direction',

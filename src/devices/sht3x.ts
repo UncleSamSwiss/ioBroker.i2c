@@ -145,6 +145,7 @@ export const SHT3x: DeviceHandlerInfo = {
                     label: 'High',
                 },
             ],
+            format: 'dropdown',
             xs: 7,
             sm: 5,
             md: 3,

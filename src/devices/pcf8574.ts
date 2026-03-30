@@ -191,6 +191,7 @@ function createPinConfig(index: number, defaultDir: PinDirection): Record<string
                 { value: 'out', label: 'Output' },
             ],
             default: defaultDir,
+            format: 'dropdown',
             xs: 7,
             md: 6,
             label: 'Direction',
