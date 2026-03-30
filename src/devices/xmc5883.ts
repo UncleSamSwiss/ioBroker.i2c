@@ -4,6 +4,9 @@ import type { I2cAdapter } from '../main';
 import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
+/**
+ * xMC5883 device configuration
+ */
 export interface xMC5883Config {
     /** in ms */
     refreshInterval: number;
@@ -30,10 +33,19 @@ interface ReadConfig {
     gainFactor: number;
 }
 
+/**
+ * xMC5883 device handler
+ */
 export class xMC5883Handler extends DeviceHandlerBase<xMC5883Config> {
     private readonly configureDeviceAsync: () => Promise<ReadConfig>;
     private readonly readValuesAsync: () => Promise<Measurement>;
 
+    /**
+     * Creates an instance of xMC5883Handler.
+     *
+     * @param deviceConfig Device configuration
+     * @param adapter I2C adapter
+     */
     constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
         super(deviceConfig, adapter);
 
@@ -46,6 +58,9 @@ export class xMC5883Handler extends DeviceHandlerBase<xMC5883Config> {
         }
     }
 
+    /**
+     * Starts the device handler.
+     */
     async startAsync(): Promise<void> {
         this.debug('Starting');
         await this.adapter.extendObject(this.hexAddress, {
@@ -93,6 +108,9 @@ export class xMC5883Handler extends DeviceHandlerBase<xMC5883Config> {
         }
     }
 
+    /**
+     * Stops the device handler.
+     */
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();

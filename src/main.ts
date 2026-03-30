@@ -20,6 +20,9 @@ export type StateChangeListener<T extends StateValue> = (oldValue: T, newValue: 
 
 export type ForeignStateChangeListener<T extends StateValue> = (value: T) => Promise<void>;
 
+/**
+ * Main adapter class for i2c adapter.
+ */
 export class I2cAdapter extends utils.Adapter {
     private readonly deviceManagement: I2cDeviceManagement;
 
@@ -31,6 +34,12 @@ export class I2cAdapter extends utils.Adapter {
     private currentStateValues: Record<string, StateValue> = {};
 
     private readonly deviceHandlers: DeviceHandlerBase<any>[] = [];
+
+    /**
+     * Creates an instance of the i2c adapter.
+     *
+     * @param options The adapter options
+     */
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -44,14 +53,26 @@ export class I2cAdapter extends utils.Adapter {
         this.on('unload', this.onUnload.bind(this));
     }
 
+    /**
+     * Gets the i2c bus instance.
+     */
     public get i2cBus(): i2c.PromisifiedBus {
         return this.bus;
     }
 
+    /**
+     * Gets the list of currently running device handlers.
+     */
     public get handlers(): ReadonlyArray<DeviceHandlerBase<any>> {
         return this.deviceHandlers;
     }
 
+    /**
+     * Adds a state change listener for own states.
+     *
+     * @param id The state ID to listen to (without adapter namespace)
+     * @param listener The listener function
+     */
     public addStateChangeListener<T extends StateValue>(id: string, listener: StateChangeListener<T>): void {
         const key = `${this.namespace}.${id}`;
         if (!this.stateChangeListeners[key]) {
@@ -60,6 +81,12 @@ export class I2cAdapter extends utils.Adapter {
         this.stateChangeListeners[key].push(listener);
     }
 
+    /**
+     * Adds a state change listener for foreign states.
+     *
+     * @param id The state ID to listen to (with adapter namespace)
+     * @param listener The listener function
+     */
     public addForeignStateChangeListener<T extends StateValue>(
         id: string,
         listener: ForeignStateChangeListener<T>,
@@ -71,16 +98,23 @@ export class I2cAdapter extends utils.Adapter {
         this.foreignStateChangeListeners[id].push(listener);
     }
 
+    /**
+     * Sets the state value with the ack flag set to true.
+     *
+     * @param id The state ID (without adapter namespace)
+     * @param value The state value
+     */
     public async setStateAckAsync<T extends StateValue>(id: string, value: T): Promise<void> {
         this.currentStateValues[`${this.namespace}.${id}`] = value;
         await this.setState(id, value, true);
     }
 
-    public setStateAck<T extends StateValue>(id: string, value: T): void {
-        this.currentStateValues[`${this.namespace}.${id}`] = value;
-        this.setState(id, value, true);
-    }
-
+    /**
+     * Gets the state value.
+     *
+     * @param id The state ID (without adapter namespace)
+     * @returns The state value
+     */
     public getStateValue<T extends StateValue>(id: string): T | undefined {
         return this.currentStateValues[`${this.namespace}.${id}`] as T | undefined;
     }
@@ -142,6 +176,11 @@ export class I2cAdapter extends utils.Adapter {
         return handler;
     }
 
+    /**
+     * Recreates the device handler for the given device configuration.
+     *
+     * @param deviceConfig The device configuration
+     */
     public async updateHandler(deviceConfig: I2CDeviceConfig): Promise<void> {
         let handler = this.deviceHandlers.find(h => h.address === deviceConfig.address);
         if (handler) {
@@ -153,6 +192,11 @@ export class I2cAdapter extends utils.Adapter {
         await handler.startAsync();
     }
 
+    /**
+     * Deletes the device handler for the given hex address.
+     *
+     * @param hexAddress The device hex address
+     */
     public async deleteHandler(hexAddress: string): Promise<void> {
         const handler = this.deviceHandlers.find(h => h.hexAddress === hexAddress);
         if (handler) {
@@ -312,6 +356,12 @@ export class I2cAdapter extends utils.Adapter {
         }
     }
 
+    /**
+     * Searches for i2c devices on the given I2C bus number.
+     *
+     * @param busNumber The I2C bus number
+     * @returns A list of device addresses found on the bus
+     */
     public async searchDevicesAsync(busNumber: number): Promise<number[]> {
         if (busNumber === this.config.busNumber) {
             this.log.debug(`Searching on current bus ${busNumber}`);
@@ -319,7 +369,7 @@ export class I2cAdapter extends utils.Adapter {
         }
         this.log.debug(`Searching on new bus ${busNumber}`);
         const searchBus = await this.openBusAsync(busNumber);
-        const result = await this.bus.scan();
+        const result = await searchBus.scan();
         await searchBus.close();
         return result;
     }

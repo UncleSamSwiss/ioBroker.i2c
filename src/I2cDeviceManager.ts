@@ -30,6 +30,9 @@ const changeBusNumberForm: JsonFormSchema = {
 const DefaultIcon =
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTUgOUg5djZoNlY5em0tMiA0aC0ydi0yaDJ2MnptOC0yVjloLTJWN2MwLTEuMS0uOS0yLTItMmgtMlYzaC0ydjJoLTJWM0g5djJIN2MtMS4xIDAtMiAuOS0yIDJ2MkgzdjJoMnYySDN2MmgydjJjMCAxLjEuOSAyIDIgMmgydjJoMnYtMmgydjJoMnYtMmgyYzEuMSAwIDItLjkgMi0ydi0yaDJ2LTJoLTJ2LTJoMnptLTQgNkg3VjdoMTB2MTB6Ii8+PC9zdmc+';
 
+/**
+ * I2C device manager
+ */
 export class I2cDeviceManagement extends DeviceManagement<I2cAdapter> {
     protected override async getInstanceInfo(): Promise<InstanceDetails> {
         const info = await super.getInstanceInfo();

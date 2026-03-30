@@ -5,38 +5,93 @@ import type { I2cAdapter } from '../main';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
 import type { DeviceHandlerInfo } from './device-handler-base';
 
+/**
+ * SX150x device configuration
+ */
 export interface SX150xConfig extends ImplementationConfigBase {
+    /** The polling interval in milliseconds */
     pollingInterval: number;
+
+    /** The interrupt object ID */
     interrupt?: string;
 
+    /** Flag indicating if an external oscillator is used */
     oscExternal: boolean;
+
+    /** The frequency of the internal oscillator in Hz */
     oscFrequency: number;
+
+    /** Flags indicating LED logarithmic scale */
     ledLog: boolean[]; // 1 or 2 elements in array
+
+    /** The frequency of the LED (enum, not Hz) */
     ledFrequency: number;
+
+    /** The debounce time in milliseconds */
     debounceTime: number;
+
+    /** Keypad configuration */
     keypad: KeypadConfig;
 
+    /** Pin configurations */
     pins: PinConfig[];
 }
 
+/**
+ * Keypad configuration
+ */
 export interface KeypadConfig {
-    rowCount: number; // 0 -> off, then off by one (1 -> 2)
-    columnCount: number; // off by one (0 -> 1)
+    /**
+     * The number of rows in the keypad.
+     * 0 means keypad functionality is off.
+     * Otherwise, the value is offset by one (e.g., 1 means 2 rows).
+     */
+    rowCount: number;
+    /**
+     * The number of columns in the keypad.
+     * The value is offset by one (e.g., 0 means 1 column).
+     */
+    columnCount: number;
+
+    /**
+     * Auto-sleep time in milliseconds.
+     */
     autoSleep: number;
+
+    /**
+     * Scan time in milliseconds.
+     */
     scanTime: number;
+
+    /**
+     * Key values mapping [row][column]
+     */
     keyValues: string[][];
 }
 
+/**
+ * Pin configuration
+ */
 export interface PinConfig {
+    /** Pin mode */
     mode: PinMode;
+    /** Resistor configuration */
     resistor: 'none' | 'up' | 'down';
+    /** Open drain configuration */
     openDrain: boolean;
+    /** Invert input/output polarity */
     invert: boolean;
+    /** Debounce input */
     debounce: boolean;
+    /** Interrupt configuration */
     interrupt: 'none' | 'raising' | 'falling' | 'both';
+    /** High input configuration */
     highInput: boolean;
+
+    /** Level shifter direction */
     levelShifterMode: 'AtoB' | 'BtoA';
 
+    /** LED configuration */
     led: LedConfig;
 }
 
@@ -51,12 +106,21 @@ export type PinMode =
     | 'keypad'
     | 'level-shifter';
 
+/**
+ * LED configuration
+ */
 export interface LedConfig {
+    /** Time the LED is ON (0-31, not in ms) */
     timeOn: number;
+    /** LED intensity when ON (0-255)*/
     intensityOn: number;
+    /** Time the LED is OFF (0-31, not in ms)*/
     timeOff: number;
+    /** LED intensity when OFF (0-255) */
     intensityOff: number;
+    /** Time to fade in (0-31, not in ms) */
     timeRaise: number;
+    /** Time to fade out (0-31, not in ms) */
     timeFall: number;
 }
 
@@ -95,6 +159,9 @@ interface PinRegisters {
     TFall?: number;
 }
 
+/**
+ * SX150x device handler
+ */
 export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private readonly registers: Readonly<Registers>;
 
@@ -104,6 +171,12 @@ export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private writeValue = 0;
     private readValue = 0;
 
+    /**
+     * Creates an instance of SX150xHandler.
+     *
+     * @param deviceConfig Device configuration
+     * @param adapter I2C adapter
+     */
     constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
         super(deviceConfig, adapter);
 
@@ -118,6 +191,9 @@ export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
         }
     }
 
+    /**
+     * Starts the device handler.
+     */
     async startAsync(): Promise<void> {
         this.debug('Starting');
         await this.adapter.extendObject(this.hexAddress, {
@@ -361,6 +437,9 @@ export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
         }
     }
 
+    /**
+     * Stops the device handler.
+     */
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();

@@ -46,7 +46,11 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
     }
 
     // methods to override
+
+    /** Starts the device handler. */
     abstract startAsync(): Promise<void>;
+
+    /** Stops the device handler. */
     abstract stopAsync(): Promise<void>;
 
     // polling related methods
