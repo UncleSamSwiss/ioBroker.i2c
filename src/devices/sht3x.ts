@@ -99,8 +99,8 @@ export class SHT3xHandler extends BigEndianDeviceHandlerBase<SHT3xConfig> {
             const temperatureRaw = buffer.readUInt16BE(0);
             const humidityRaw = buffer.readUInt16BE(3);
 
-            this.setStateAck('temperature', temperatureRaw * 0.00267033 - 45);
-            this.setStateAck('humidity', humidityRaw * 0.0015259);
+            await this.setStateAckAsync('temperature', temperatureRaw * 0.00267033 - 45);
+            await this.setStateAckAsync('humidity', humidityRaw * 0.0015259);
         } catch (e: any) {
             this.error(`Couldn't read current value: ${e}`);
         }

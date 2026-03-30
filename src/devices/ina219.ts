@@ -158,15 +158,15 @@ export class INA219Handler extends BigEndianDeviceHandlerBase<INA219Config> {
             const powerLsb = 20 * this.config.currentLsb;
 
             // The least significant bit is 10uV which is 0.01 mV
-            this.setStateAck('shunt', this.toInt16(shuntVoltageReg) * 0.01);
+            await this.setStateAckAsync('shunt', this.toInt16(shuntVoltageReg) * 0.01);
 
             // Shift to the right 3 to drop CNVR and OVF and multiply by LSB
             // Each least significant bit is 4mV
-            this.setStateAck('bus', (busVoltageReg >> 3) * 0.004);
+            await this.setStateAckAsync('bus', (busVoltageReg >> 3) * 0.004);
 
-            this.setStateAck('power', powerReg * powerLsb);
+            await this.setStateAckAsync('power', powerReg * powerLsb);
 
-            this.setStateAck('current', this.toInt16(currentReg) * this.config.currentLsb);
+            await this.setStateAckAsync('current', this.toInt16(currentReg) * this.config.currentLsb);
         } catch (e: any) {
             this.error(`Couldn't read values: ${e}`);
         }

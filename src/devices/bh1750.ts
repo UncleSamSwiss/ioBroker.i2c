@@ -110,7 +110,7 @@ export class BH1750Handler extends DeviceHandlerBase<BH1750Config> {
                 })}`,
             );
 
-            this.setStateAck('lux', round(lux));
+            await this.setStateAckAsync('lux', round(lux));
         } catch (e: any) {
             this.error(`Couldn't read current values: ${e}`);
         }

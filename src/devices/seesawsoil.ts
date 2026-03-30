@@ -84,8 +84,8 @@ export class SeesawSoilHandler extends SeesawHandlerBase<SeesawSoilConfig> {
             const tempC = await this.getTemp();
             const capread = await this.touchRead(0);
 
-            this.setStateAck('temperature', tempC);
-            this.setStateAck('capacitive', capread);
+            await this.setStateAckAsync('temperature', tempC);
+            await this.setStateAckAsync('capacitive', capread);
         } catch (e: any) {
             this.error(`Couldn't read current values: ${e}`);
         }

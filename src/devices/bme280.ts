@@ -290,13 +290,13 @@ export class BME280Handler extends LittleEndianDeviceHandlerBase<BME280Config> {
                 })}`,
             );
 
-            this.setStateAck('humidity', round(humidity));
+            await this.setStateAckAsync('humidity', round(humidity));
             if (this.useAmericanUnits) {
-                this.setStateAck('temperature', round((temperature_C * 9) / 5 + 32));
-                this.setStateAck('pressure', round(pressure_hPa * 0.02952998751, 1000));
+                await this.setStateAckAsync('temperature', round((temperature_C * 9) / 5 + 32));
+                await this.setStateAckAsync('pressure', round(pressure_hPa * 0.02952998751, 1000));
             } else {
-                this.setStateAck('temperature', round(temperature_C));
-                this.setStateAck('pressure', round(pressure_hPa)); // hPa == mbar :-)
+                await this.setStateAckAsync('temperature', round(temperature_C));
+                await this.setStateAckAsync('pressure', round(pressure_hPa)); // hPa == mbar :-)
             }
         } catch (e: any) {
             this.error(`Couldn't read current values: ${e}`);
