@@ -2,12 +2,12 @@ import type {
     ActionContext,
     DeviceInfo,
     DeviceLoadContext,
+    DeviceRefreshResponse,
     InstanceDetails,
     JsonFormData,
     JsonFormSchema,
 } from '@iobroker/dm-utils';
-import { DeviceManagement } from '@iobroker/dm-utils';
-import type { DeviceRefreshResponse } from '@iobroker/dm-utils/build/types/base';
+import { ACTIONS, DeviceManagement } from '@iobroker/dm-utils';
 import { AllDevices } from './devices/all-devices';
 import type { I2CDeviceConfig } from './lib/adapter-config';
 import { Delay } from './lib/async';
@@ -96,7 +96,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
                     handler: device ? (deviceId, context) => this.showDeviceSettings(deviceId, context) : undefined,
                 },
                 {
-                    id: 'enable/disable', // TODO: should be: ACTIONS.ENABLE_DISABLE,
+                    id: ACTIONS.ENABLE_DISABLE,
                     handler: (deviceId, context) =>
                         device ? this.disableDevice(deviceId, context) : this.showDeviceSettings(deviceId, context),
                 },
@@ -127,7 +127,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
     private async showDeviceSettings(
         deviceId: I2cDeviceId,
         context: ActionContext,
-    ): Promise<DeviceRefreshResponse<'adapter', I2cDeviceId>> {
+    ): Promise<DeviceRefreshResponse<I2cDeviceId>> {
         const address = parseInt(deviceId.substring(2), 16);
         const names = AllDevices.flatMap(d => d.names)
             .filter(n => n.name !== 'Generic' && n.addresses.includes(address))
@@ -209,7 +209,7 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
     private async disableDevice(
         deviceId: I2cDeviceId,
         context: ActionContext,
-    ): Promise<DeviceRefreshResponse<'adapter', I2cDeviceId>> {
+    ): Promise<DeviceRefreshResponse<I2cDeviceId>> {
         const confirmed = await context.showConfirmation(
             `Are you sure you want to disable and remove the device at address ${deviceId}?`,
         );
