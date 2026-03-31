@@ -40,6 +40,7 @@ type I2cDeviceId = `0x${HexDigit}${HexDigit}`;
 export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceId> {
     protected override async getInstanceInfo(): Promise<InstanceDetails> {
         const info = await super.getInstanceInfo();
+        info.identifierLabel = 'Address';
         if (!info.actions) {
             info.actions = [];
         }
@@ -55,9 +56,11 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
 
     protected override async loadDevices(context: DeviceLoadContext<I2cDeviceId>): Promise<void> {
         try {
-            const deviceObjects = await this.adapter.getDevicesAsync();
+            const [deviceObjects, foundAddresses] = await Promise.all([
+                this.adapter.getDevicesAsync(),
+                this.searchDevices(),
+            ]);
             const existingDevices = deviceObjects.map(d => ({ ...d, native: d.native as I2CDeviceConfig }));
-            const foundAddresses = await this.adapter.searchDevicesAsync(this.adapter.config.busNumber);
             const allAddresses = new Set<number>(foundAddresses);
             existingDevices.forEach(d => allAddresses.add(d.native.address));
 
@@ -83,12 +86,12 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
         const hex = toHexString(address) as I2cDeviceId;
         return {
             id: hex,
-
-            name: device ? device.common.name : `${hex} (Unused)`,
+            identifier: hex,
+            name: device ? { objectId: device._id, property: 'common.name' } : `${hex} (Unused)`,
             icon: DefaultIcon,
             enabled: !!device,
             status: connected ? 'connected' : 'disconnected',
-            model: device?.native.name,
+            model: device ? { objectId: device._id, property: 'native.name' } : undefined,
             actions: [
                 {
                     id: 'settings',
@@ -129,59 +132,72 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
         context: ActionContext,
     ): Promise<DeviceRefreshResponse<I2cDeviceId>> {
         const address = parseInt(deviceId.substring(2), 16);
+        const existingHandler = this.adapter.handlers.find(d => d.address === address);
+        let name = existingHandler?.deviceConfig.name;
+
         const names = AllDevices.flatMap(d => d.names)
             .filter(n => n.name !== 'Generic' && n.addresses.includes(address))
             .map(n => n.name)
             .sort();
+
+        if (!existingHandler) {
+            this.log.debug(`Configuring new device at address ${deviceId}`);
+            const typeData = await context.showForm(
+                {
+                    type: 'panel',
+                    items: {
+                        name: {
+                            type: 'select',
+                            label: 'Device Type',
+                            options: [
+                                ...names.map(n => ({
+                                    value: n,
+                                    label: n,
+                                })),
+                                {
+                                    value: 'Generic',
+                                    label: 'Generic',
+                                },
+                            ],
+                            format: 'dropdown',
+                            xs: 12,
+                            sm: 6,
+                            md: 4,
+                        },
+                    },
+                },
+                {
+                    title: `Type of device at address ${deviceId}`,
+                    buttons: ['apply', 'cancel'],
+                },
+            );
+            if (typeof typeData?.name !== 'string') {
+                return { refresh: 'none' };
+            }
+
+            name = typeData.name;
+        }
+
+        if (!name) {
+            name = 'Generic';
+        }
+
+        const deviceInfo = AllDevices.find(d => d.names.some(n => n.name === name));
+        const nameInfo = deviceInfo?.names.find(n => n.name === name);
+        if (!deviceInfo || !nameInfo) {
+            this.log.warn(`Device type ${name} not found for address ${deviceId}`);
+            return { refresh: 'none' };
+        }
+
         const form: JsonFormSchema = {
             type: 'panel',
-            items: {
-                name: {
-                    type: 'select',
-                    label: 'Device Type',
-                    options: [
-                        {
-                            value: '',
-                            label: 'Unused',
-                        },
-                        ...names.map(n => ({
-                            value: n,
-                            label: n,
-                        })),
-                        {
-                            value: 'Generic',
-                            label: 'Generic',
-                        },
-                    ],
-                    format: 'dropdown',
-                    xs: 12,
-                    sm: 6,
-                    md: 4,
-                },
-                ...AllDevices.flatMap(d =>
-                    d.names.map(n => ({ ...n, type: d.type, config: { ...d.config, ...n.config } })),
-                )
-                    .filter(n => n.addresses.includes(address))
-                    .reduce(
-                        (acc, n) => ({
-                            ...acc,
-                            [`_${n.name}`]: {
-                                type: 'panel',
-                                hidden: `data.name !== '${n.name}'`,
-                                items: n.config,
-                                xs: 12,
-                            },
-                        }),
-                        {},
-                    ),
-            },
+            items: { ...deviceInfo.config, ...nameInfo.config },
         };
         console.log('FORM', JSON.stringify(form, null, 2));
-        const existingHandler = this.adapter.handlers.find(d => d.address === address);
-        let data: JsonFormData | undefined = existingHandler?.deviceConfig ?? { name: '' };
+        let data: JsonFormData | undefined = existingHandler?.deviceConfig ?? { name };
         data = await context.showForm(form, {
             data,
-            title: `Settings for device at address ${deviceId}`,
+            title: `Settings for ${name} at address ${deviceId}`,
             buttons: ['apply', 'cancel'],
         });
 
@@ -201,9 +217,9 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
             console.error(error);
         }
 
-        const obj = await this.adapter.getObjectAsync(deviceId);
+        const [obj, foundAddresses] = await Promise.all([this.adapter.getObjectAsync(deviceId), this.searchDevices()]);
 
-        return { update: this.createDeviceInfo(address, obj ?? undefined, true) };
+        return { update: this.createDeviceInfo(address, obj ?? undefined, foundAddresses.includes(address)) };
     }
 
     private async disableDevice(
@@ -217,6 +233,12 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
             return { refresh: 'none' };
         }
         await this.adapter.deleteHandler(deviceId);
-        return { update: this.createDeviceInfo(parseInt(deviceId.substring(2), 16)) };
+        const address = parseInt(deviceId.substring(2), 16);
+        const foundAddresses = await this.searchDevices();
+        return { update: this.createDeviceInfo(address, undefined, foundAddresses.includes(address)) };
+    }
+
+    private searchDevices(): Promise<number[]> {
+        return this.adapter.searchDevicesAsync(this.adapter.config.busNumber);
     }
 }
