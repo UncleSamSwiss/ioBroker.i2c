@@ -57,7 +57,7 @@
   ],
   "dependencies": {
     "@iobroker/adapter-core": "^3.3.2",
-    "@iobroker/dm-utils": "^3.0.16",
+    "@iobroker/dm-utils": "^3.0.17",
     "i2c-bus": "^5.2.3"
   },
   "devDependencies": {
@@ -71,7 +71,7 @@
     "@tsconfig/node20": "^20.1.9",
     "@types/i2c-bus": "^5.1.2",
     "@types/iobroker": "npm:@iobroker/types@^7.1.0",
-    "@types/node": "^20.19.30",
+    "@types/node": "^20.19.37",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
