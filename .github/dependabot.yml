@@ -3,10 +3,9 @@ updates:
     - package-ecosystem: npm
       directory: '/'
       schedule:
-          interval: monthly
-          day: 10
-          time: '00:05'
-          timezone: Europe/Berlin
+          interval: 'cron'
+          timezone: 'Europe/Berlin'
+          cronjob: '25 3 13 * *'
       open-pull-requests-limit: 5
       assignees:
           - UncleSamSwiss
@@ -17,10 +16,9 @@ updates:
     - package-ecosystem: github-actions
       directory: '/'
       schedule:
-          interval: monthly
-          day: 10
-          time: '00:05'
-          timezone: Europe/Berlin
+          interval: 'cron'
+          timezone: 'Europe/Berlin'
+          cronjob: '25 3 13 * *'
       open-pull-requests-limit: 5
       assignees:
           - UncleSamSwiss
