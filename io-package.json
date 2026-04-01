@@ -1,8 +1,21 @@
 {
     "common": {
         "name": "i2c",
-        "version": "1.2.1",
+        "version": "2.0.0",
         "news": {
+            "2.0.0": {
+                "en": "Allow to add/remove devices without restarting the adapter\nAdd support for Device Manager\nChange to JSON Config",
+                "de": "Lassen Sie Geräte hinzufügen/entfernen, ohne den Adapter neu zu starten\nUnterstützung für Device Manager hinzufügen\nÄnderung von JSON Config",
+                "ru": "Разрешить добавлять/удалять устройства без перезагрузки адаптера\nДобавить поддержку Device Manager\nИзменить конфигурацию JSON",
+                "pt": "Permitir adicionar/remover dispositivos sem reiniciar o adaptador\nAdicionar suporte ao Gerenciador de Dispositivos\nMudar para a Configuração do JSON",
+                "nl": "Devices toevoegen/verwijderen zonder de adapter opnieuw te starten\nOndersteuning voor Apparaatbeheer toevoegen\nVeranderen naar JSON-configuratie",
+                "fr": "Permettre d'ajouter/supprimer des périphériques sans redémarrer l'adaptateur\nAjout de la prise en charge du Gestionnaire de périphériques\nChangement à JSON Config",
+                "it": "Consentire di aggiungere / rimuovere i dispositivi senza riavviare l'adattatore\nAggiungi supporto per Gestione dispositivi\nCambiamento di JSON Config",
+                "es": "Permitir añadir/remove dispositivos sin reiniciar el adaptador\nAñadir soporte para el administrador de dispositivos\nCambio a JSON Config",
+                "pl": "Pozwala na dodanie / usunięcie urządzeń bez ponownego uruchamiania adaptera\nDodaj wsparcie dla menedżera urządzeń\nZmiana konfiguracji JSON",
+                "uk": "Дозволяє додавати / перезавантажити пристрої без перезавантаження адаптера\nДодати підтримку диспетчера пристроїв\nЗміна конфігурації JSON",
+                "zh-cn": "允许不重新启动适配器而添加/移动设备\n为设备管理器添加支持\n更改为 JSON 配置"
+            },
             "1.2.1": {
                 "en": "Reading multiple values from I2C into states is now faster. This should increase the polling frequency for most devices.",
                 "de": "Das Einlesen mehrerer Werte von I2C in Zustände ist jetzt schneller. Dies sollte die Abfragefrequenz für die meisten Geräte erhöhen.",
@@ -155,7 +168,7 @@
         },
         "dependencies": [
             {
-                "js-controller": ">=6.0.11"
+                "js-controller": ">=7.0.7"
             }
         ],
         "globalDependencies": [

@@ -140,11 +140,12 @@ For later updates:
     ### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
+### 2.0.0 (2026-04-01)
 
 - (UncleSamSwiss) Allow to add/remove devices without restarting the adapter
 - (UncleSamSwiss) Add support for Device Manager
 - (UncleSamSwiss) Change to JSON Config
+- (UncleSamSwiss) Minimum required Node.js version is now 20
 
 ### 1.2.1 (2021-10-13)
 
