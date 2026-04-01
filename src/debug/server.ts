@@ -1,7 +1,7 @@
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import { createServer } from 'http';
 import type * as i2c from 'i2c-bus';
-import { parse } from 'url';
+import type { IncomingMessage, Server, ServerResponse } from 'node:http';
+import { createServer } from 'node:http';
+import { parse } from 'node:url';
 
 export class I2CServer {
     private readonly server: Server;
