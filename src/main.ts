@@ -387,12 +387,15 @@ export class I2cAdapter extends utils.Adapter {
         }
 
         for (const device of this.config.devices) {
-            // update device object in database
             const id = toHexString(device.address);
             try {
-                await this.extendObject(id, {
-                    native: device,
-                });
+                const obj = await this.getObjectAsync(id);
+                if (obj) {
+                    await this.setObject(id, {
+                        ...obj,
+                        native: device as any,
+                    });
+                }
             } catch (error: any) {
                 this.log.error(`Error migrating device ${id}: ${error}`);
             }

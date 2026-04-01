@@ -165,8 +165,7 @@
         ]
     },
     "native": {
-        "busNumber": 1,
-        "devices": []
+        "busNumber": 1
     },
     "objects": [],
     "instanceObjects": []
