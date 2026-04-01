@@ -218,8 +218,8 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
         }
 
         const [obj, foundAddresses] = await Promise.all([this.adapter.getObjectAsync(deviceId), this.searchDevices()]);
-
-        return { update: this.createDeviceInfo(address, obj ?? undefined, foundAddresses.includes(address)) };
+        const connected = foundAddresses.includes(address);
+        return { update: this.createDeviceInfo(address, obj ?? undefined, connected) };
     }
 
     private async disableDevice(
@@ -232,10 +232,16 @@ export class I2cDeviceManagement extends DeviceManagement<I2cAdapter, I2cDeviceI
         if (!confirmed) {
             return { refresh: 'none' };
         }
+
         await this.adapter.deleteHandler(deviceId);
         const address = parseInt(deviceId.substring(2), 16);
         const foundAddresses = await this.searchDevices();
-        return { update: this.createDeviceInfo(address, undefined, foundAddresses.includes(address)) };
+        const connected = foundAddresses.includes(address);
+        if (!connected) {
+            return { delete: deviceId };
+        }
+
+        return { update: this.createDeviceInfo(address, undefined, connected) };
     }
 
     private searchDevices(): Promise<number[]> {
