@@ -1,18 +1,21 @@
 import { request } from 'http';
-import * as i2c from 'i2c-bus';
+import type * as i2c from 'i2c-bus';
 
 export class I2CClient implements i2c.PromisifiedBus {
-    constructor(private readonly address: string, private readonly log: ioBroker.Logger) {}
+    constructor(
+        private readonly address: string,
+        private readonly log: ioBroker.Logger,
+    ) {}
 
     public async close(): Promise<void> {
         // close does nothing
     }
 
-    public async i2cFuncs(): Promise<i2c.I2CFuncs> {
+    public i2cFuncs(): Promise<i2c.I2CFuncs> {
         throw new Error('Method not supported.');
     }
 
-    scan(address?: number | undefined): Promise<number[]>;
+    scan(address?: number): Promise<number[]>;
     scan(startAddr: number, endAddr: number): Promise<number[]>;
     async scan(startAddr?: number, endAddr?: number): Promise<number[]> {
         const args: any = {};
@@ -126,7 +129,7 @@ export class I2CClient implements i2c.PromisifiedBus {
                 },
             };
             this.log.debug(`RPC Client: Sending ${this.address} ${JSON.stringify(options)}; ${postData}`);
-            const req = request(this.address, options, (resp) => {
+            const req = request(this.address, options, resp => {
                 let data = '';
 
                 if (resp.statusCode !== 200) {
@@ -135,19 +138,20 @@ export class I2CClient implements i2c.PromisifiedBus {
                 }
 
                 // A chunk of data has been recieved.
-                resp.on('data', (chunk) => {
+                resp.on('data', chunk => {
                     data += chunk;
                 });
 
                 // The whole response has been received. Print out the result.
                 resp.on('end', () => {
+                    // eslint-disable-next-line prefer-template
                     this.log.debug('RPC Client: Received ' + data);
                     resolve(JSON.parse(data));
                 });
-            }).on('error', (err) => {
+            }).on('error', err => {
                 reject(err);
             });
-            req.write(postData, (err) => {
+            req.write(postData, err => {
                 if (err) {
                     reject(err);
                 }

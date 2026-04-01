@@ -1,7 +1,12 @@
-import { I2CDeviceConfig } from '../lib/adapter-config';
-import { I2cAdapter } from '../main';
+import type { ConfigItemAny, ConfigItemSelectOption } from '@iobroker/dm-utils';
+import type { I2CDeviceConfig } from '../lib/adapter-config';
+import type { I2cAdapter } from '../main';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
+/**
+ * xMC5883 device configuration
+ */
 export interface xMC5883Config {
     /** in ms */
     refreshInterval: number;
@@ -28,12 +33,19 @@ interface ReadConfig {
     gainFactor: number;
 }
 
-export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
+/**
+ * xMC5883 device handler
+ */
+export class xMC5883Handler extends DeviceHandlerBase<xMC5883Config> {
     private readonly configureDeviceAsync: () => Promise<ReadConfig>;
     private readonly readValuesAsync: () => Promise<Measurement>;
 
-    private gainFactor = 0;
-
+    /**
+     * Creates an instance of xMC5883Handler.
+     *
+     * @param deviceConfig Device configuration
+     * @param adapter I2C adapter
+     */
     constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
         super(deviceConfig, adapter);
 
@@ -46,19 +58,22 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
         }
     }
 
+    /**
+     * Starts the device handler.
+     */
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         await Promise.all(
-            ['X', 'Y', 'Z'].map(async (coord) => {
-                await this.adapter.extendObjectAsync(`${this.hexAddress}.${coord.toLowerCase()}`, {
+            ['X', 'Y', 'Z'].map(async coord => {
+                await this.adapter.extendObject(`${this.hexAddress}.${coord.toLowerCase()}`, {
                     type: 'state',
                     common: {
                         name: `${this.hexAddress} ${coord}`,
@@ -79,13 +94,13 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
                 await this.adapter.getObjectAsync(this.config.interrupt);
 
                 // subscribe to the object and add change listener
-                this.adapter.addForeignStateChangeListener(this.config.interrupt, async (_value) => {
+                this.adapter.addForeignStateChangeListener(this.config.interrupt, async _value => {
                     this.debug('Interrupt detected');
                     await this.updateValuesAsync(gainFactor);
                 });
 
                 this.debug('Interrupt enabled');
-            } catch (error) {
+            } catch {
                 this.error(`Interrupt object ${this.config.interrupt} not found!`);
             }
         } else {
@@ -93,9 +108,13 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
         }
     }
 
+    /**
+     * Stops the device handler.
+     */
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async configureQMC5883Async(): Promise<ReadConfig> {
@@ -256,12 +275,111 @@ export default class xMC5883 extends DeviceHandlerBase<xMC5883Config> {
             this.debug('Reading values');
             measurement = await this.readValuesAsync();
             this.debug(`Read ${JSON.stringify(measurement)}`);
-        } catch (e) {
+        } catch (e: any) {
             this.error(`Couldn't read values: ${e}`);
             return;
         }
-        this.setStateAck('x', measurement.x * gainFactor);
-        this.setStateAck('y', measurement.y * gainFactor);
-        this.setStateAck('z', measurement.z * gainFactor);
+        await this.setStateAckAsync('x', measurement.x * gainFactor);
+        await this.setStateAckAsync('y', measurement.y * gainFactor);
+        await this.setStateAckAsync('z', measurement.z * gainFactor);
     }
 }
+
+function createConfig(name: 'HMC5883L' | 'QMC5883L'): Record<string, ConfigItemAny> {
+    let defaultRange: number;
+    let rangeOptions: ConfigItemSelectOption[];
+    let defaultOversampling: number;
+    let oversamplingOptions: ConfigItemSelectOption[];
+    if (name === 'HMC5883L') {
+        defaultRange = 2;
+        rangeOptions = [
+            { value: 0, label: '± 0.88 Gs' },
+            { value: 1, label: '± 1.3 Gs' },
+            { value: 2, label: '± 1.9 Gs' },
+            { value: 3, label: '± 2.5 Gs' },
+            { value: 4, label: '± 4.0 Gs' },
+            { value: 5, label: '± 4.7 Gs' },
+            { value: 6, label: '± 5.6 Gs' },
+            { value: 7, label: '± 8.1 Gs' },
+        ];
+
+        defaultOversampling = 0;
+        oversamplingOptions = [
+            { value: 0, label: '1' },
+            { value: 1, label: '2' },
+            { value: 2, label: '4' },
+            { value: 3, label: '8' },
+        ];
+    } else {
+        defaultRange = 0;
+        rangeOptions = [
+            { value: 0, label: '± 2 Gs' },
+            { value: 1, label: '± 8 Gs' },
+        ];
+
+        defaultOversampling = 2;
+        oversamplingOptions = [
+            { value: 3, label: '64' },
+            { value: 2, label: '128' },
+            { value: 1, label: '256' },
+            { value: 0, label: '512' },
+        ];
+    }
+
+    return {
+        'xMC5883.range': {
+            type: 'select',
+            label: 'Range',
+            default: defaultRange,
+            options: rangeOptions,
+            format: 'dropdown',
+            xs: 12,
+            sm: 6,
+            md: 4,
+        },
+        'xMC5883.oversampling': {
+            type: 'select',
+            label: 'Oversampling',
+            default: defaultOversampling,
+            options: oversamplingOptions,
+            format: 'dropdown',
+            xs: 12,
+            sm: 6,
+            md: 4,
+        },
+    };
+}
+
+export const xMC5883: DeviceHandlerInfo = {
+    type: 'xMC5883',
+    createHandler: (deviceConfig, adapter) => new xMC5883Handler(deviceConfig, adapter),
+    names: [
+        {
+            name: 'HMC5883L',
+            addresses: [0x1e],
+            config: createConfig('HMC5883L'),
+        },
+        {
+            name: 'QMC5883L',
+            addresses: [0x0d],
+            config: createConfig('QMC5883L'),
+        },
+    ],
+    config: {
+        'xMC5883.pollingInterval': {
+            type: 'number',
+            label: 'Refresh Interval',
+            default: 5000,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'xMC5883.interrupt': {
+            type: 'objectId',
+            label: 'Interrupt State Object ID',
+            xs: 12,
+            newLine: true,
+        },
+    },
+};

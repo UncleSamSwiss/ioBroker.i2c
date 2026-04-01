@@ -4,16 +4,21 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-      time: "04:00"
+      day: 10
+      time: "00:05"
       timezone: Europe/Berlin
-    open-pull-requests-limit: 15
+    open-pull-requests-limit: 5
+    assignees:
+      - UncleSamSwiss
     versioning-strategy: increase
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: monthly
-      time: "04:00"
+      day: 10
+      time: "00:05"
       timezone: Europe/Berlin
-    open-pull-requests-limit: 15
-
+    open-pull-requests-limit: 5
+    assignees:
+      - UncleSamSwiss

@@ -1,40 +1,97 @@
-import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import type { ConfigItemAny, ConfigItemSelectOption } from '@iobroker/dm-utils';
+import type { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { toHexString } from '../lib/shared';
-import { I2cAdapter } from '../main';
+import type { I2cAdapter } from '../main';
 import { BigEndianDeviceHandlerBase } from './big-endian-device-handler-base';
+import type { DeviceHandlerInfo } from './device-handler-base';
 
+/**
+ * SX150x device configuration
+ */
 export interface SX150xConfig extends ImplementationConfigBase {
+    /** The polling interval in milliseconds */
     pollingInterval: number;
+
+    /** The interrupt object ID */
     interrupt?: string;
 
+    /** Flag indicating if an external oscillator is used */
     oscExternal: boolean;
+
+    /** The frequency of the internal oscillator in Hz */
     oscFrequency: number;
+
+    /** Flags indicating LED logarithmic scale */
     ledLog: boolean[]; // 1 or 2 elements in array
+
+    /** The frequency of the LED (enum, not Hz) */
     ledFrequency: number;
+
+    /** The debounce time in milliseconds */
     debounceTime: number;
+
+    /** Keypad configuration */
     keypad: KeypadConfig;
 
+    /** Pin configurations */
     pins: PinConfig[];
 }
 
+/**
+ * Keypad configuration
+ */
 export interface KeypadConfig {
-    rowCount: number; // 0 -> off, then off by one (1 -> 2)
-    columnCount: number; // off by one (0 -> 1)
+    /**
+     * The number of rows in the keypad.
+     * 0 means keypad functionality is off.
+     * Otherwise, the value is offset by one (e.g., 1 means 2 rows).
+     */
+    rowCount: number;
+    /**
+     * The number of columns in the keypad.
+     * The value is offset by one (e.g., 0 means 1 column).
+     */
+    columnCount: number;
+
+    /**
+     * Auto-sleep time in milliseconds.
+     */
     autoSleep: number;
+
+    /**
+     * Scan time in milliseconds.
+     */
     scanTime: number;
+
+    /**
+     * Key values mapping [row][column]
+     */
     keyValues: string[][];
 }
 
+/**
+ * Pin configuration
+ */
 export interface PinConfig {
+    /** Pin mode */
     mode: PinMode;
+    /** Resistor configuration */
     resistor: 'none' | 'up' | 'down';
+    /** Open drain configuration */
     openDrain: boolean;
+    /** Invert input/output polarity */
     invert: boolean;
+    /** Debounce input */
     debounce: boolean;
+    /** Interrupt configuration */
     interrupt: 'none' | 'raising' | 'falling' | 'both';
+    /** High input configuration */
     highInput: boolean;
+
+    /** Level shifter direction */
     levelShifterMode: 'AtoB' | 'BtoA';
 
+    /** LED configuration */
     led: LedConfig;
 }
 
@@ -49,12 +106,21 @@ export type PinMode =
     | 'keypad'
     | 'level-shifter';
 
+/**
+ * LED configuration
+ */
 export interface LedConfig {
+    /** Time the LED is ON (0-31, not in ms) */
     timeOn: number;
+    /** LED intensity when ON (0-255)*/
     intensityOn: number;
+    /** Time the LED is OFF (0-31, not in ms)*/
     timeOff: number;
+    /** LED intensity when OFF (0-255) */
     intensityOff: number;
+    /** Time to fade in (0-31, not in ms) */
     timeRaise: number;
+    /** Time to fade out (0-31, not in ms) */
     timeFall: number;
 }
 
@@ -93,7 +159,10 @@ interface PinRegisters {
     TFall?: number;
 }
 
-export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
+/**
+ * SX150x device handler
+ */
+export class SX150xHandler extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private readonly registers: Readonly<Registers>;
 
     private readonly writeRegister: (command: number, value: number) => Promise<void>;
@@ -102,6 +171,12 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private writeValue = 0;
     private readValue = 0;
 
+    /**
+     * Creates an instance of SX150xHandler.
+     *
+     * @param deviceConfig Device configuration
+     * @param adapter I2C adapter
+     */
     constructor(deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) {
         super(deviceConfig, adapter);
 
@@ -116,20 +191,23 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         }
     }
 
+    /**
+     * Starts the device handler.
+     */
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'sensor',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         const keypadId = `${this.hexAddress}.key`;
         if (this.config.keypad.rowCount > 0 && this.registers.KeyData) {
-            await this.adapter.extendObjectAsync(keypadId, {
+            await this.adapter.extendObject(keypadId, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Pressed Key`,
@@ -152,7 +230,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
             switch (pinConfig.mode) {
                 case 'input':
                     hasInput = true;
-                    await this.adapter.extendObjectAsync(id, {
+                    await this.adapter.extendObject(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} Input ${i}`,
@@ -167,7 +245,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 case 'output':
                     outputState = i;
                     this.addOutputListener(i);
-                    await this.adapter.extendObjectAsync(id, {
+                    await this.adapter.extendObject(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} Output ${i}`,
@@ -184,7 +262,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 case 'led-blink':
                     outputState = i;
                     this.addOutputListener(i);
-                    await this.adapter.extendObjectAsync(id, {
+                    await this.adapter.extendObject(id, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i}`,
@@ -196,8 +274,8 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         native: pinConfig as any,
                     });
                     break;
-                case 'led-channel':
-                    await this.adapter.extendObjectAsync(id, {
+                case 'led-channel': {
+                    await this.adapter.extendObject(id, {
                         type: 'channel',
                         common: {
                             name: `${this.hexAddress} LED ${i}`,
@@ -206,7 +284,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     outputState = `${id}.on`;
                     this.addOutputListener(i, `${id}.on`);
-                    await this.adapter.extendObjectAsync(`${id}.on`, {
+                    await this.adapter.extendObject(`${id}.on`, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i} ON`,
@@ -220,7 +298,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     const pinRegister = this.registers.Pins[i];
                     if (pinRegister.TOn) {
                         this.addLedLevelListener(i, 'timeOn');
-                        await this.adapter.extendObjectAsync(`${id}.timeOn`, {
+                        await this.adapter.extendObject(`${id}.timeOn`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} ON Time`,
@@ -234,7 +312,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         });
                     }
                     this.addLedLevelListener(i, 'intensityOn');
-                    await this.adapter.extendObjectAsync(`${id}.intensityOn`, {
+                    await this.adapter.extendObject(`${id}.intensityOn`, {
                         type: 'state',
                         common: {
                             name: `${this.hexAddress} LED ${i} ON Intensity`,
@@ -248,7 +326,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     });
                     if (pinRegister.Off) {
                         this.addLedLevelListener(i, 'timeOff');
-                        await this.adapter.extendObjectAsync(`${id}.timeOff`, {
+                        await this.adapter.extendObject(`${id}.timeOff`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} OFF Time`,
@@ -261,7 +339,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                             },
                         });
                         this.addLedLevelListener(i, 'intensityOff');
-                        await this.adapter.extendObjectAsync(`${id}.intensityOff`, {
+                        await this.adapter.extendObject(`${id}.intensityOff`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} OFF Intensity`,
@@ -276,7 +354,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                     }
                     if (pinRegister.TRise) {
                         this.addLedLevelListener(i, 'timeRaise');
-                        await this.adapter.extendObjectAsync(`${id}.timeRaise`, {
+                        await this.adapter.extendObject(`${id}.timeRaise`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} Fade-in Time`,
@@ -289,7 +367,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                             },
                         });
                         this.addLedLevelListener(i, 'timeFall');
-                        await this.adapter.extendObjectAsync(`${id}.timeFall`, {
+                        await this.adapter.extendObject(`${id}.timeFall`, {
                             type: 'state',
                             common: {
                                 name: `${this.hexAddress} LED ${i} Fade-out Time`,
@@ -303,6 +381,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                         });
                     }
                     break;
+                }
                 case 'keypad':
                     hasInput = true;
                 // fall through!
@@ -346,21 +425,25 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 await this.adapter.getObjectAsync(this.config.interrupt);
 
                 // subscribe to the object and add change listener
-                this.adapter.addForeignStateChangeListener(this.config.interrupt, async (_value) => {
+                this.adapter.addForeignStateChangeListener(this.config.interrupt, async _value => {
                     this.debug('Interrupt detected');
                     await this.readCurrentValuesAsync(false);
                 });
 
                 this.debug('Interrupt enabled');
-            } catch (error) {
+            } catch {
                 this.error(`Interrupt object ${this.config.interrupt} not found!`);
             }
         }
     }
 
+    /**
+     * Stops the device handler.
+     */
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async configureDeviceAsync(): Promise<void> {
@@ -371,7 +454,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         await this.writeByte(this.registers.Reset, 0x34);
 
         // configure registers
-        await this.writePinBitmapAsync(this.registers.InputDisable, (p) => p.mode != 'input' && p.mode != 'keypad');
+        await this.writePinBitmapAsync(this.registers.InputDisable, p => p.mode != 'input' && p.mode != 'keypad');
         await this.writePinBitmapAsync(
             this.registers.PullUp,
             (p, i) =>
@@ -380,7 +463,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         );
         await this.writePinBitmapAsync(
             this.registers.PullDown,
-            (p) => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'down',
+            p => (p.mode == 'input' || p.mode == 'output') && p.resistor == 'down',
         );
         await this.writePinBitmapAsync(
             this.registers.OpenDrain,
@@ -389,20 +472,20 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
                 (p.mode == 'output' && p.openDrain) ||
                 (p.mode == 'keypad' && i < bankSize),
         );
-        await this.writePinBitmapAsync(this.registers.Polarity, (p) => p.mode != 'keypad' && p.invert);
+        await this.writePinBitmapAsync(this.registers.Polarity, p => p.mode != 'keypad' && p.invert);
         await this.writePinBitmapAsync(
             this.registers.Dir,
             (p, i) => p.mode == 'input' || (p.mode == 'keypad' && i >= bankSize),
         );
         await this.writePinBitmapAsync(
             this.registers.InterruptMask, // this is inverted: 0 : An event on this IO will trigger an interrupt
-            (p) => p.mode != 'input' || p.interrupt == 'none',
+            p => p.mode != 'input' || p.interrupt == 'none',
         );
         await this.writeSenseAsync();
         await this.writeLevelShifterAsync();
         await this.writeClockAsync();
         await this.writeMiscAsync();
-        await this.writePinBitmapAsync(this.registers.LEDDriverEnable, (p) => p.mode.startsWith('led-'));
+        await this.writePinBitmapAsync(this.registers.LEDDriverEnable, p => p.mode.startsWith('led-'));
         await this.writeByte(this.registers.DebounceConfig, this.config.debounceTime);
         await this.writePinBitmapAsync(
             this.registers.DebounceEnable,
@@ -428,7 +511,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         }
 
         if (this.registers.HighInput) {
-            await this.writePinBitmapAsync(this.registers.HighInput, (p) => p.mode == 'input' && p.highInput);
+            await this.writePinBitmapAsync(this.registers.HighInput, p => p.mode == 'input' && p.highInput);
         }
     }
 
@@ -499,7 +582,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
     private async writeClockAsync(): Promise<void> {
         let value = 0;
         const pins = this.config.pins;
-        if (pins.find((p) => p.mode.startsWith('led-') || p.debounce) || this.config.keypad.rowCount > 0) {
+        if (pins.find(p => p.mode.startsWith('led-') || p.debounce) || this.config.keypad.rowCount > 0) {
             // OSC is required
             if (this.config.oscExternal) {
                 value |= 0x20;
@@ -518,7 +601,7 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         if (this.config.ledLog.length > 1 && this.config.ledLog[1]) {
             value |= 0x80;
         }
-        if (this.config.pins.find((p) => p.mode.startsWith('led-'))) {
+        if (this.config.pins.find(p => p.mode.startsWith('led-'))) {
             value |= this.config.ledFrequency << 4;
         }
         if (this.config.ledLog[0]) {
@@ -571,11 +654,11 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
     }
 
     private async sendCurrentValuesAsync(): Promise<void> {
-        this.debug('Sending ' + toHexString(this.writeValue, this.config.pins.length / 4));
+        this.debug(`Sending ${toHexString(this.writeValue, this.config.pins.length / 4)}`);
         try {
             await this.writeRegister(this.registers.Data, this.writeValue);
-        } catch (e) {
-            this.error("Couldn't send current value: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't send current value: ${e}`);
         }
     }
 
@@ -583,18 +666,18 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         const oldValue = this.readValue;
         try {
             this.readValue = await this.readRegister(this.registers.Data);
-        } catch (e) {
-            this.error("Couldn't read current data: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't read current data: ${e}`);
             return;
         }
 
         if (oldValue != this.readValue || force) {
-            this.debug('Read data ' + toHexString(this.readValue, this.config.pins.length / 4));
+            this.debug(`Read data ${toHexString(this.readValue, this.config.pins.length / 4)}`);
             for (let i = 0; i < this.config.pins.length; i++) {
                 const mask = 1 << i;
                 if (((oldValue & mask) !== (this.readValue & mask) || force) && this.config.pins[i].mode == 'input') {
                     const value = (this.readValue & mask) > 0;
-                    this.setStateAck(i, value);
+                    await this.setStateAckAsync(i, value);
                 }
             }
         }
@@ -606,13 +689,13 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         let keyData = 0;
         try {
             keyData = await this.readRegister(this.registers.KeyData);
-        } catch (e) {
-            this.error("Couldn't read key data: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't read key data: ${e}`);
             return;
         }
 
         const keyDataStr = toHexString(keyData, this.config.pins.length / 4);
-        this.debug('Read key data ' + keyDataStr);
+        this.debug(`Read key data ${keyDataStr}`);
         const bankSize = this.config.pins.length / 2;
         let row = -1;
         let col = -1;
@@ -641,12 +724,12 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
 
         const keyValue = this.config.keypad.keyValues[row][col];
         this.debug(`Decoded key [${row},${col}] = "${keyValue}"`);
-        this.setStateAck('key', keyValue);
+        await this.setStateAckAsync('key', keyValue);
     }
 
     private addOutputListener(pin: number, id?: string): void {
         this.adapter.addStateChangeListener<boolean>(
-            id || this.hexAddress + '.' + pin,
+            id || `${this.hexAddress}.${pin}`,
             async (_oldValue: boolean, newValue: boolean) => await this.changeOutputAsync(pin, newValue),
         );
     }
@@ -676,8 +759,8 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         try {
             await this.writeLedConfigAsync(pin, led);
             await this.setStateAckAsync(`${pin}.${type}`, value);
-        } catch (e) {
-            this.error("Couldn't write LED config: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't write LED config: ${e}`);
         }
     }
 
@@ -811,3 +894,764 @@ export default class SX150x extends BigEndianDeviceHandlerBase<SX150xConfig> {
         return registers;
     }
 }
+
+interface PinCapabilities {
+    levelShift: boolean;
+    blink: boolean;
+    breath: boolean;
+}
+
+// Helper to create data path accessor
+function d(path: string): string {
+    return `data.SX150x.${path}`;
+}
+
+// Helper to check if any pin has a mode starting with 'led-'
+function hasLedPins(pinCount: number): string {
+    const checks: string[] = [];
+    for (let i = 0; i < pinCount; i++) {
+        checks.push(`${d(`pins?.["${i}"]?.mode`)}?.startsWith("led-")`);
+    }
+    return checks.join(' || ');
+}
+
+// Helper to check if any pin has input mode with debounce enabled
+function hasDebouncedPins(pinCount: number): string {
+    const checks: string[] = [];
+    for (let i = 0; i < pinCount; i++) {
+        checks.push(`(${d(`pins?.["${i}"]?.mode`)} === "input" && ${d(`pins?.["${i}"]?.debounce`)})`);
+    }
+    return `${hasKeypadPins()} || ${checks.join(' || ')}`;
+}
+
+// Helper to check if keypad is active
+function hasKeypadPins(): string {
+    return `(${d('keypad?.rowCount')} ?? 0) > 0`;
+}
+
+// Helper to get showLed condition (based on "features" checkboxes behavior)
+function showLedCondition(pinCount: number): string {
+    // showLed is true if any pin has led- mode OR user checked the showLed checkbox
+    return `data._showLed || (${hasLedPins(pinCount)})`;
+}
+
+// Helper to get showDebounce condition
+function showDebounceCondition(pinCount: number): string {
+    // showDebounce is true if user checked it OR if keypad is active OR if any pin has debounce
+    return `data._showDebounce || data._showKeypad || (${hasDebouncedPins(pinCount)})`;
+}
+
+// Helper to get showKeypad condition
+function showKeypadCondition(): string {
+    return `data._showKeypad || (${hasKeypadPins()})`;
+}
+
+function createConfig(name: `SX150${7 | 8 | 9}`): Record<string, ConfigItemAny> {
+    const config: Record<string, ConfigItemAny> = {};
+    const caps = [] as PinCapabilities[];
+    let pinCount: number;
+    switch (name) {
+        case 'SX1507':
+            pinCount = 4;
+            for (let i = 0; i < 4; i++) {
+                caps[i] = { levelShift: false, blink: true, breath: i > 0 };
+            }
+            break;
+        case 'SX1508':
+            pinCount = 8;
+            for (let i = 0; i < 8; i++) {
+                caps[i] = { levelShift: i < 4, blink: (i >> 1) % 2 === 1, breath: i % 4 === 3 };
+            }
+            break;
+        default:
+            pinCount = 16;
+            for (let i = 0; i < 16; i++) {
+                caps[i] = { levelShift: i < 8, blink: true, breath: (i >> 2) % 2 === 1 };
+            }
+            break;
+    }
+
+    const hasKeypad = pinCount > 4;
+    const hasHighInput = pinCount > 4;
+    const hasAutoSleep = pinCount === 16;
+    const bankSize = pinCount / 2;
+
+    // =====================================
+    // Features checkboxes section
+    // =====================================
+    Object.assign(config, {
+        _featuresHeader: {
+            type: 'staticText',
+            text: 'Features',
+            xs: 12,
+            newLine: true,
+        },
+        // showLed checkbox - disabled if there are already LED pins configured
+        _showLed: {
+            type: 'checkbox',
+            label: 'LEDs',
+            default: false,
+            disabled: hasLedPins(pinCount),
+            xs: 3,
+        },
+        // showDebounce checkbox - disabled if keypad is active or debounced pins exist
+        _showDebounce: {
+            type: 'checkbox',
+            label: 'Debouncing',
+            default: false,
+            disabled: `data._showKeypad || (${hasDebouncedPins(pinCount)})`,
+            xs: 3,
+        },
+    });
+
+    // showKeypad checkbox - only for devices with keypad support (pinCount > 4)
+    if (hasKeypad) {
+        config._showKeypad = {
+            type: 'checkbox',
+            label: 'Keypad',
+            default: false,
+            disabled: hasKeypadPins(),
+            xs: 3,
+        };
+    }
+
+    // =====================================
+    // Oscillator settings (shown when LED, debounce, or keypad is enabled)
+    // =====================================
+    const showOscillator = hasKeypad
+        ? `(${showLedCondition(pinCount)}) || (${showDebounceCondition(pinCount)}) || (${showKeypadCondition()})`
+        : `(${showLedCondition(pinCount)}) || (${showDebounceCondition(pinCount)})`;
+
+    config._oscHeader = {
+        type: 'staticText',
+        text: 'Oscillator',
+        hidden: `!(${showOscillator})`,
+        xs: 12,
+        newLine: true,
+    };
+
+    // Note: oscExternal is shown as a toggle switch - Internal/External
+    // Using checkbox: unchecked = Internal (false), checked = External (true)
+    config['SX150x.oscExternal'] = {
+        type: 'checkbox',
+        label: 'External Oscillator',
+        default: false,
+        hidden: `!(${showOscillator})`,
+        xs: 7,
+        md: 5,
+        newLine: true,
+    };
+
+    // Oscillator frequency options (only shown when internal oscillator selected)
+    const oscFrequencyOptions = [
+        { value: 0, label: 'Off' },
+        { value: 1, label: '2 MHz' },
+        { value: 2, label: '1 MHz' },
+        { value: 3, label: '500 kHz' },
+        { value: 4, label: '250 kHz' },
+        { value: 5, label: '125 kHz' },
+        { value: 6, label: '62.5 kHz' },
+        { value: 7, label: '~31.3 kHz' },
+        { value: 8, label: '~15.6 kHz' },
+        { value: 9, label: '~7.8 kHz' },
+        { value: 10, label: '~3.9 kHz' },
+        { value: 11, label: '~2 kHz' },
+        { value: 12, label: '~977 Hz' },
+        { value: 13, label: '~488 Hz' },
+        { value: 14, label: '~244 Hz' },
+    ];
+
+    config['SX150x.oscFrequency'] = {
+        type: 'select',
+        label: 'OSCOUT frequency',
+        options: oscFrequencyOptions,
+        default: 0,
+        format: 'dropdown',
+        hidden: `!(${showOscillator}) || ${d('oscExternal')}`,
+        xs: 5,
+        md: 4,
+    };
+
+    // =====================================
+    // LED settings (shown when showLed is active)
+    // =====================================
+    const ledFrequencyOptions = [
+        { value: 1, label: '2 MHz' },
+        { value: 2, label: '1 MHz' },
+        { value: 3, label: '500 kHz' },
+        { value: 4, label: '250 kHz' },
+        { value: 5, label: '125 kHz' },
+        { value: 6, label: '62.5 kHz' },
+        { value: 7, label: '31.25 kHz' },
+    ];
+
+    config['SX150x.ledFrequency'] = {
+        type: 'select',
+        label: 'LED driver frequency',
+        options: ledFrequencyOptions,
+        default: 1,
+        format: 'dropdown',
+        hidden: `!(${showLedCondition(pinCount)})`,
+        xs: 6,
+        md: 3,
+        newLine: true,
+    };
+
+    // LED Log (logarithmic) toggle for first bank
+    // Using checkbox: unchecked = Linear (false), checked = Logarithmic (true)
+    config['SX150x.ledLog.0'] = {
+        type: 'checkbox',
+        label: pinCount > 4 ? 'LED driver mode Bank A' : 'LED driver mode',
+        default: false,
+        hidden: `!(${showLedCondition(pinCount)})`,
+        xs: 6,
+        md: 4,
+    };
+
+    // LED Log for second bank (only for devices with more than 4 pins)
+    if (pinCount > 4) {
+        config['SX150x.ledLog.1'] = {
+            type: 'checkbox',
+            label: 'LED driver mode Bank B',
+            default: false,
+            hidden: `!(${showLedCondition(pinCount)})`,
+            xs: 6,
+            md: 4,
+        };
+    }
+
+    // =====================================
+    // Debounce settings (shown when showDebounce or showKeypad is active)
+    // =====================================
+    const debounceTimeOptions = [
+        { value: 0, label: '0.5 ms' },
+        { value: 1, label: '1 ms' },
+        { value: 2, label: '2 ms' },
+        { value: 3, label: '4 ms' },
+        { value: 4, label: '8 ms' },
+        { value: 5, label: '16 ms' },
+        { value: 6, label: '32 ms' },
+        { value: 7, label: '64 ms' },
+    ];
+
+    const showDebounceSettings = hasKeypad
+        ? `(${showDebounceCondition(pinCount)}) || (${showKeypadCondition()})`
+        : showDebounceCondition(pinCount);
+
+    config['SX150x.debounceTime'] = {
+        type: 'select',
+        label: 'Debounce time',
+        options: debounceTimeOptions,
+        default: 0,
+        format: 'dropdown',
+        hidden: `!(${showDebounceSettings})`,
+        xs: 6,
+        md: 4,
+        newLine: true,
+    };
+
+    // =====================================
+    // Keypad settings (only for devices with keypad support)
+    // =====================================
+    if (hasKeypad) {
+        // Row count options
+        const keyRowsOptions = [{ value: 0, label: 'Off' }];
+        for (let i = 1; i < bankSize; i++) {
+            keyRowsOptions.push({ value: i, label: (i + 1).toString() });
+        }
+
+        config['SX150x.keypad.rowCount'] = {
+            type: 'select',
+            label: 'Number of rows',
+            options: keyRowsOptions,
+            default: 0,
+            format: 'dropdown',
+            hidden: `!(${showKeypadCondition()})`,
+            xs: 6,
+            md: 3,
+            newLine: true,
+        };
+
+        // Column count options
+        const keyColsOptions = [{ value: 0, label: '1' }];
+        for (let i = 1; i < bankSize; i++) {
+            keyColsOptions.push({ value: i, label: (i + 1).toString() });
+        }
+
+        config['SX150x.keypad.columnCount'] = {
+            type: 'select',
+            label: 'Number of columns',
+            options: keyColsOptions,
+            default: 0,
+            format: 'dropdown',
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 6,
+            md: 3,
+        };
+
+        // Auto sleep (only for SX1509)
+        if (hasAutoSleep) {
+            const keyAutoSleepOptions = [
+                { value: 0, label: 'Off' },
+                { value: 1, label: '128 ms' },
+                { value: 2, label: '256 ms' },
+                { value: 3, label: '512 ms' },
+                { value: 4, label: '1 sec' },
+                { value: 5, label: '2 sec' },
+                { value: 6, label: '4 sec' },
+                { value: 7, label: '8 sec' },
+            ];
+
+            config['SX150x.keypad.autoSleep'] = {
+                type: 'select',
+                label: 'Auto sleep time',
+                options: keyAutoSleepOptions,
+                default: 0,
+                format: 'dropdown',
+                hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+                xs: 6,
+                md: 3,
+            };
+        }
+
+        // Scan time options - must be >= debounce time
+        const keyScanTimeOptions: ConfigItemSelectOption[] = [];
+        for (let i = 0; i < 8; i++) {
+            keyScanTimeOptions.push({
+                value: i,
+                label: `${1 << i} ms`,
+                hidden: `${i} < (${d('debounceTime')} ?? 0)`,
+            });
+        }
+
+        config['SX150x.keypad.scanTime'] = {
+            type: 'select',
+            label: 'Scan time',
+            options: keyScanTimeOptions,
+            default: 0,
+            format: 'dropdown',
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 6,
+            md: 3,
+        };
+
+        // Keypad values header
+        config._keypadValuesHeader = {
+            type: 'staticText',
+            text: 'Keypad key values',
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 12,
+            newLine: true,
+        };
+
+        // Create keypad value inputs as a grid
+        // First, add empty space before column headers (matches original: <Grid item xs={2} md={1}></Grid>)
+        config._keyColHeaderSpacer = {
+            type: 'staticText',
+            text: '',
+            hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')}`,
+            xs: 2,
+            md: 1,
+            newLine: true,
+        };
+
+        // Create column headers
+        for (let col = 0; col < bankSize; col++) {
+            config[`_keyColHeader${col}`] = {
+                type: 'staticText',
+                text: { en: `Column ${col}`, de: `Spalte ${col}` },
+                hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')} || ${col} > (${d('keypad?.columnCount')} ?? 0)`,
+                xs: 1,
+            };
+        }
+
+        // Create rows with row header and value inputs
+        for (let row = 0; row < bankSize; row++) {
+            config[`_keyRowHeader${row}`] = {
+                type: 'staticText',
+                text: { en: `Row ${row}`, de: `Zeile ${row}` },
+                hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')} || ${row} > (${d('keypad?.rowCount')} ?? 0)`,
+                xs: 2,
+                md: 1,
+                newLine: true,
+            };
+
+            for (let col = 0; col < bankSize; col++) {
+                // Default value: letter (A,B,C...) + row number
+                const defaultValue = String.fromCharCode(65 + col) + row;
+                config[`SX150x.keypad.keyValues.${row}.${col}`] = {
+                    type: 'text',
+                    default: defaultValue,
+                    hidden: `!(${showKeypadCondition()}) || !${d('keypad?.rowCount')} || ${row} > (${d('keypad?.rowCount')} ?? 0) || ${col} > (${d('keypad?.columnCount')} ?? 0)`,
+                    xs: 1,
+                };
+            }
+        }
+    }
+
+    // =====================================
+    // Pin configurations
+    // =====================================
+    for (let i = 0; i < pinCount; i++) {
+        const pinCaps = caps[i];
+        const isInBankB = i >= bankSize;
+        const correspondingBankAPin = i - bankSize;
+        const correspondingBankBPin = i + bankSize;
+
+        // Pin divider
+        config[`_pinDivider${i}`] = {
+            type: 'divider',
+            xs: 12,
+            newLine: true,
+        };
+
+        // Pin label
+        config[`_pinLabel${i}`] = {
+            type: 'staticText',
+            text: { en: `Pin ${i}`, de: `Pin ${i}` },
+            xs: 2,
+            md: 1,
+        };
+
+        // Build mode options based on capabilities
+        // Mode is disabled when pin is controlled by keypad or level-shifter from bank A
+        const modeOptions: ConfigItemSelectOption[] = [];
+
+        // Check if this pin is used for keypad
+        const isKeypadPin = hasKeypad
+            ? isInBankB
+                ? `${correspondingBankAPin} <= (${d('keypad?.columnCount')} ?? 0) && (${d('keypad?.rowCount')} ?? 0) > 0` // Bank B: column pins
+                : `${i} <= (${d('keypad?.rowCount')} ?? 0) && (${d('keypad?.rowCount')} ?? 0) > 0` // Bank A: row pins
+            : 'false';
+
+        // Check if this pin is level-shifter slave (bank B controlled by bank A)
+        const isLevelShifterSlave =
+            isInBankB && pinCaps.levelShift
+                ? `${d(`pins?.["${correspondingBankAPin}"]?.mode`)} === "level-shifter"`
+                : 'false';
+
+        // Combined condition for pin being externally controlled
+        const pinControlledExternally = hasKeypad
+            ? `(${isKeypadPin}) || (${isLevelShifterSlave})`
+            : isLevelShifterSlave;
+
+        // Keypad mode (shown when keypad controls this pin)
+        if (hasKeypad) {
+            modeOptions.push({
+                value: 'keypad',
+                label: 'Keypad',
+                hidden: `!(${isKeypadPin})`,
+            });
+        }
+
+        // Level-shifter slave mode (shown when bank A controls this pin)
+        if (isInBankB && pinCaps.levelShift) {
+            modeOptions.push({
+                value: 'level-shifter',
+                label: 'Level Shifter',
+                hidden: `!(${isLevelShifterSlave})`,
+            });
+        }
+
+        // Standard modes (shown when not externally controlled)
+        modeOptions.push({
+            value: 'none',
+            label: 'None',
+            hidden: pinControlledExternally,
+        });
+        modeOptions.push({
+            value: 'input',
+            label: 'Input',
+            hidden: pinControlledExternally,
+        });
+        modeOptions.push({
+            value: 'output',
+            label: 'Output',
+            hidden: pinControlledExternally,
+        });
+
+        // Level-shifter option for bank A pins that support it
+        if (pinCaps.levelShift && !isInBankB) {
+            // Level shifter is disabled if the corresponding bank B pin is already in use (not 'none' or 'level-shifter')
+            const bankBMode = d(`pins?.["${correspondingBankBPin}"]?.mode`);
+            modeOptions.push({
+                value: 'level-shifter',
+                label: 'Level Shifter',
+                hidden: `(${pinControlledExternally}) || (${bankBMode} !== "none" && ${bankBMode} !== "level-shifter")`,
+            });
+        }
+
+        // LED modes (shown when showLed is enabled and not externally controlled)
+        const showLedCond = showLedCondition(pinCount);
+        modeOptions.push({
+            value: 'led-channel',
+            label: 'LED as channel',
+            hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+        });
+        modeOptions.push({
+            value: 'led-static',
+            label: 'LED static value',
+            hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+        });
+
+        if (pinCaps.blink) {
+            modeOptions.push({
+                value: 'led-single',
+                label: 'LED single shot',
+                hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+            });
+            modeOptions.push({
+                value: 'led-blink',
+                label: 'LED blinking',
+                hidden: `!(${showLedCond}) || (${pinControlledExternally})`,
+            });
+        }
+
+        config[`SX150x.pins.${i}.mode`] = {
+            type: 'select',
+            label: 'Mode',
+            options: modeOptions,
+            default: 'none',
+            format: 'dropdown',
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // Invert checkbox (for input, output, led-, and level-shifter modes)
+        const pinMode = d(`pins?.["${i}"]?.mode`);
+        config[`SX150x.pins.${i}.invert`] = {
+            type: 'checkbox',
+            label: 'inverted',
+            default: false,
+            hidden: `${pinMode} !== "input" && ${pinMode} !== "output" && !${pinMode}.startsWith("led-") && ${pinMode} !== "level-shifter"`,
+            xs: 2,
+        };
+
+        // Resistor dropdown (for input and output modes)
+        config[`SX150x.pins.${i}.resistor`] = {
+            type: 'select',
+            label: 'Resistor',
+            options: [
+                { value: 'none', label: 'None' },
+                { value: 'up', label: 'Pull-up' },
+                { value: 'down', label: 'Pull-down' },
+            ],
+            default: 'none',
+            format: 'dropdown',
+            hidden: `${pinMode} !== "input" && ${pinMode} !== "output"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // Open drain checkbox (for output mode)
+        config[`SX150x.pins.${i}.openDrain`] = {
+            type: 'checkbox',
+            label: 'open drain',
+            default: false,
+            hidden: `${pinMode} !== "output"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // Debounce checkbox (for input mode when showDebounce is enabled)
+        config[`SX150x.pins.${i}.debounce`] = {
+            type: 'checkbox',
+            label: 'debounce',
+            default: false,
+            hidden: `${pinMode} !== "input" || !(${showDebounceSettings})`,
+            xs: 2,
+        };
+
+        // Interrupt dropdown (for input mode)
+        config[`SX150x.pins.${i}.interrupt`] = {
+            type: 'select',
+            label: 'Interrupt trigger',
+            options: [
+                { value: 'none', label: 'None' },
+                { value: 'raising', label: 'Raising' },
+                { value: 'falling', label: 'Falling' },
+                { value: 'both', label: 'Both' },
+            ],
+            default: 'none',
+            format: 'dropdown',
+            hidden: `${pinMode} !== "input"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // High input checkbox (for input mode on devices that support it)
+        if (hasHighInput) {
+            config[`SX150x.pins.${i}.highInput`] = {
+                type: 'checkbox',
+                label: 'high input voltage',
+                default: false,
+                hidden: `${pinMode} !== "input"`,
+                xs: 2,
+            };
+        }
+
+        // Level shifter mode dropdown (for level-shifter mode)
+        if (pinCaps.levelShift) {
+            const pin1 = !isInBankB ? i : correspondingBankAPin;
+            const pin2 = !isInBankB ? correspondingBankBPin : i;
+            config[`SX150x.pins.${i}.levelShifterMode`] = {
+                type: 'select',
+                label: 'Level shifter mode',
+                options: [
+                    { value: 'AtoB', label: { en: `Pin ${pin1} → Pin ${pin2}` } },
+                    { value: 'BtoA', label: { en: `Pin ${pin2} → Pin ${pin1}` } },
+                ],
+                default: 'AtoB',
+                format: 'dropdown',
+                hidden: `${pinMode} !== "level-shifter"`,
+                disabled: isInBankB, // Bank B pins are controlled by bank A
+                xs: 3,
+                md: 2,
+                xl: 1,
+            };
+        }
+
+        // LED intensity on (for led-static, led-single, led-blink modes)
+        config[`SX150x.pins.${i}.led.intensityOn`] = {
+            type: 'number',
+            label: 'ON intensity',
+            default: 255,
+            min: 0,
+            max: 255,
+            hidden: `!${pinMode}?.startsWith("led-") || ${pinMode} === "led-channel"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED time on (for led-single and led-blink modes)
+        // Options are dynamically calculated based on led frequency
+        const ledTimeOptions: ConfigItemSelectOption[] = [];
+        for (let f = 1; f <= 7; f++) {
+            const clockFrequency = 2000000 / (1 << (f - 1));
+            for (let t = 1; t < 32; t++) {
+                const factor = t < 16 ? 64 : 512;
+                let value = (factor * t * 255) / clockFrequency;
+                let unit = 'sec';
+                if (value < 1) {
+                    value *= 1000;
+                    unit = 'ms';
+                }
+
+                ledTimeOptions.push({
+                    value: t,
+                    label: `${value.toFixed(2)} ${unit}`,
+                    hidden: `${d('ledFrequency')} !== ${f}`,
+                });
+            }
+        }
+
+        config[`SX150x.pins.${i}.led.timeOn`] = {
+            type: 'select',
+            label: 'ON time',
+            options: ledTimeOptions,
+            default: 1,
+            format: 'dropdown',
+            hidden: `${pinMode} !== "led-single" && ${pinMode} !== "led-blink"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED intensity off (for led-blink mode)
+        const ledIntensityOffOptions: ConfigItemSelectOption[] = [];
+        for (let t = 0; t < 8; t++) {
+            ledIntensityOffOptions.push({ value: t, label: (t * 4).toString() });
+        }
+
+        config[`SX150x.pins.${i}.led.intensityOff`] = {
+            type: 'select',
+            label: 'OFF intensity',
+            options: ledIntensityOffOptions,
+            default: 0,
+            format: 'dropdown',
+            hidden: `${pinMode} !== "led-blink"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED time off (for led-blink mode)
+        config[`SX150x.pins.${i}.led.timeOff`] = {
+            type: 'select',
+            label: 'OFF time',
+            options: ledTimeOptions,
+            default: 1,
+            format: 'dropdown',
+            hidden: `${pinMode} !== "led-blink"`,
+            xs: 3,
+            md: 2,
+            xl: 1,
+        };
+
+        // LED fade options (for pins that support breath)
+        if (pinCaps.breath) {
+            const ledFadeOptions: ConfigItemSelectOption[] = [{ value: 0, label: 'Off' }];
+            for (let t = 1; t < 32; t++) {
+                ledFadeOptions.push({ value: t, label: `${t}` });
+            }
+
+            config[`SX150x.pins.${i}.led.timeRaise`] = {
+                type: 'select',
+                label: 'Fade in time',
+                options: ledFadeOptions,
+                default: 0,
+                format: 'dropdown',
+                hidden: `!${pinMode}?.startsWith("led-") || ${pinMode} === "led-channel"`,
+                xs: 3,
+                md: 2,
+                xl: 1,
+            };
+
+            config[`SX150x.pins.${i}.led.timeFall`] = {
+                type: 'select',
+                label: 'Fade out time',
+                options: ledFadeOptions,
+                default: 0,
+                format: 'dropdown',
+                hidden: `!${pinMode}?.startsWith("led-") || ${pinMode} === "led-channel"`,
+                xs: 3,
+                md: 2,
+                xl: 1,
+            };
+        }
+    }
+
+    return config;
+}
+
+export const SX150x: DeviceHandlerInfo = {
+    type: 'SX150x',
+    createHandler: (deviceConfig, adapter) => new SX150xHandler(deviceConfig, adapter),
+    names: [
+        { name: 'SX1507', addresses: [0x3e, 0x3f, 0x70, 0x71], config: createConfig('SX1507') },
+        { name: 'SX1508', addresses: [0x20, 0x21, 0x22, 0x23], config: createConfig('SX1508') },
+        { name: 'SX1509', addresses: [0x3e, 0x3f, 0x70, 0x71], config: createConfig('SX1509') },
+    ],
+    config: {
+        pollingInterval: {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 200,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        interrupt: {
+            type: 'objectId',
+            label: 'Interrupt State Object ID',
+            xs: 12,
+            newLine: true,
+        },
+    },
+};

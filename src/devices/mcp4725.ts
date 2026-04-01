@@ -1,3 +1,5 @@
+import { getAllAddresses } from '../lib/i2c';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface MCP4725Config {
@@ -5,19 +7,19 @@ export interface MCP4725Config {
     writeToEeprom: boolean;
 }
 
-export default class MCP4725 extends DeviceHandlerBase<MCP4725Config> {
+export class MCP4725Handler extends DeviceHandlerBase<MCP4725Config> {
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         const id = `${this.hexAddress}.voltage`;
-        await this.adapter.extendObjectAsync(id, {
+        await this.adapter.extendObject(id, {
             type: 'state',
             common: {
                 name: `${this.hexAddress} Voltage`,
@@ -40,6 +42,7 @@ export default class MCP4725 extends DeviceHandlerBase<MCP4725Config> {
 
     async stopAsync(): Promise<void> {
         this.debug('Stopping');
+        return Promise.resolve();
     }
 
     private async writeVoltageAsync(voltage: number): Promise<void> {
@@ -72,8 +75,36 @@ export default class MCP4725 extends DeviceHandlerBase<MCP4725Config> {
             }
             await this.i2cWrite(buffer.length, buffer);
             await this.setStateAckAsync('voltage', voltage);
-        } catch (e) {
-            this.error("Couldn't write voltage: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't write voltage: ${e}`);
         }
     }
 }
+
+export const MCP4725: DeviceHandlerInfo = {
+    type: 'MCP4725',
+    createHandler: (deviceConfig, adapter) => new MCP4725Handler(deviceConfig, adapter),
+    names: [{ name: 'MCP4725', addresses: getAllAddresses(0x60, 8) }],
+    config: {
+        'MCP4725.referenceVoltage': {
+            type: 'number',
+            label: 'Reference Voltage',
+            default: 3300,
+            unit: 'mV',
+            min: 2700,
+            max: 5500,
+            step: 100,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'MCP4725.writeToEeprom': {
+            type: 'checkbox',
+            label: 'Write to EEPROM',
+            default: false,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+    },
+};

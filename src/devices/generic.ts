@@ -1,6 +1,8 @@
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { Polling } from '../lib/async';
+import { getAllAddresses } from '../lib/i2c';
 import { toHexString } from '../lib/shared';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface GenericConfig extends ImplementationConfigBase {
@@ -8,21 +10,24 @@ export interface GenericConfig extends ImplementationConfigBase {
     registers: RegisterConfig[];
 }
 
-export type RegisterType =
-    | 'int8'
-    | 'uint8'
-    | 'int16_be'
-    | 'int16_le'
-    | 'uint16_be'
-    | 'uint16_le'
-    | 'int32_be'
-    | 'int32_le'
-    | 'uint32_be'
-    | 'uint32_le'
-    | 'float_be'
-    | 'float_le'
-    | 'double_be'
-    | 'double_le';
+const RegisterTypes = [
+    'int8',
+    'uint8',
+    'int16_be',
+    'int16_le',
+    'uint16_be',
+    'uint16_le',
+    'int32_be',
+    'int32_le',
+    'uint32_be',
+    'uint32_le',
+    'float_be',
+    'float_le',
+    'double_be',
+    'double_le',
+] as const;
+
+export type RegisterType = (typeof RegisterTypes)[number];
 
 export interface RegisterConfig {
     register: number;
@@ -39,19 +44,19 @@ interface RegisterHandler {
     polling?: Polling;
 }
 
-export default class Generic extends DeviceHandlerBase<GenericConfig> {
+export class GenericHandler extends DeviceHandlerBase<GenericConfig> {
     private handlers: Record<number, RegisterHandler> = {};
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
         const name = this.config.name || this.name;
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + name + ')',
+                name: `${this.hexAddress} (${name})`,
                 role: 'sensor',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         for (const registerConfig of this.config.registers) {
@@ -61,12 +66,12 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
             };
             this.handlers[registerConfig.register] = handler;
 
-            this.debug('Register ' + handler.hex + ': ' + JSON.stringify(handler.config));
+            this.debug(`Register ${handler.hex}: ${JSON.stringify(handler.config)}`);
 
-            await this.adapter.extendObjectAsync(this.hexAddress + '.' + handler.hex, {
+            await this.adapter.extendObject(`${this.hexAddress}.${handler.hex}`, {
                 type: 'state',
                 common: {
-                    name: this.hexAddress + ' ' + (handler.config.name || 'Register'),
+                    name: `${this.hexAddress} ${handler.config.name || 'Register'}`,
                     read: handler.config.read,
                     write: handler.config.write,
                     type: 'number',
@@ -83,13 +88,13 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
                     handler.polling = new Polling(async () => await this.readValueAsync(handler));
                     handler.polling
                         .runAsync(handler.config.pollingInterval, 50)
-                        .catch((error) => this.error(`${handler.hex}: Polling error: ${error}`));
+                        .catch(error => this.error(`${handler.hex}: Polling error: ${error}`));
                 }
             }
 
             // init listener when write
             if (handler.config.write) {
-                // send current value on startup for write-only regsiters
+                // send current value on startup for write-only registers
                 if (!handler.config.read) {
                     const value = this.getStateValue(handler.hex);
                     if (typeof value === 'number') {
@@ -107,11 +112,13 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
         for (const register in this.handlers) {
             this.handlers[register].polling?.stop();
         }
+
+        return Promise.resolve();
     }
 
     private addOutputListener(handler: RegisterHandler): void {
         this.adapter.addStateChangeListener<number>(
-            this.hexAddress + '.' + handler.hex,
+            `${this.hexAddress}.${handler.hex}`,
             async (_oldValue: number, newValue: number) => await this.sendValueAsync(handler, newValue),
         );
     }
@@ -171,7 +178,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
                 await this.i2cWrite(buf.length, buf);
             }
             await this.setStateAckAsync(handler.hex, value);
-        } catch (e) {
+        } catch (e: any) {
             this.error(`${handler.hex}: Couldn't send value: ${e}`);
         }
     }
@@ -187,7 +194,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
             } else {
                 await this.i2cRead(buf.length, buf);
             }
-        } catch (e) {
+        } catch (e: any) {
             this.error(`${handler.hex}: Couldn't read value: ${e}`);
             return;
         }
@@ -241,7 +248,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
             }
 
             this.debug(`${handler.hex}: Read ${buf.toString('hex')} -> ${value}`);
-        } catch (e) {
+        } catch (e: any) {
             this.error(
                 `${handler.hex}: Couldn't read value as type ${handler.config.type} from buffer ${buf.toString(
                     'hex',
@@ -251,7 +258,7 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
         }
 
         // save the value into the state
-        this.setStateAck(handler.hex, value);
+        await this.setStateAckAsync(handler.hex, value);
     }
 
     private createBuffer(handler: RegisterHandler): Buffer {
@@ -285,7 +292,73 @@ export default class Generic extends DeviceHandlerBase<GenericConfig> {
             case 'double_le':
                 return Buffer.alloc(8);
             default:
-                throw new Error("Couldn't read value because of unknown type: " + handler.config.type);
+                throw new Error(`Couldn't read value because of unknown type: ${handler.config.type as any}`);
         }
     }
 }
+
+export const Generic: DeviceHandlerInfo = {
+    type: 'Generic',
+    createHandler: (deviceConfig, adapter) => new GenericHandler(deviceConfig, adapter),
+    names: [{ name: 'Generic', addresses: getAllAddresses(0x08, 112) }],
+    config: {
+        'Generic.name': {
+            type: 'text',
+            label: 'Device Name Override',
+            default: '',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+        'Generic.registers': {
+            type: 'table',
+            xs: 12,
+            uniqueColumns: ['register', 'name'],
+            noMultiEdit: true,
+            items: [
+                {
+                    type: 'number',
+                    label: 'Register Address',
+                    attr: 'register',
+                    default: 0,
+                    min: 0,
+                    max: 255,
+                },
+                {
+                    type: 'text',
+                    label: 'Register Name',
+                    attr: 'name',
+                    default: '',
+                },
+                {
+                    type: 'select',
+                    label: 'Data Type',
+                    attr: 'type',
+                    options: RegisterTypes.map(t => ({ value: t, label: t })),
+                    default: 'uint8',
+                },
+                {
+                    type: 'checkbox',
+                    label: 'Read',
+                    attr: 'read',
+                    default: true,
+                },
+                {
+                    type: 'checkbox',
+                    label: 'Write',
+                    attr: 'write',
+                    default: false,
+                },
+                {
+                    type: 'number',
+                    label: 'Polling Interval',
+                    attr: 'pollingInterval',
+                    unit: 'ms',
+                    default: 1000,
+                    min: 0,
+                    disabled: '!data.read',
+                },
+            ] as any,
+        },
+    },
+};

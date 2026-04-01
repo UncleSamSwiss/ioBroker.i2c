@@ -1,6 +1,9 @@
-import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import type { ConfigItemAny } from '@iobroker/dm-utils';
+import type { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
-import { I2cAdapter } from '../main';
+import { getAllAddresses } from '../lib/i2c';
+import type { I2cAdapter } from '../main';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface MCP342xConfig extends ImplementationConfigBase {
@@ -28,7 +31,7 @@ export interface Channel {
     gain: Gain;
 }
 
-export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
+export class MCP342xHandler extends DeviceHandlerBase<MCP342xConfig> {
     private channelCount: 4 | 2;
     private has18Bit: boolean;
 
@@ -45,13 +48,13 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
     async startAsync(): Promise<void> {
         this.debug('Starting');
 
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'sensor',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         let hasEnabled = false;
@@ -60,7 +63,7 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
             if (channelConfig.enabled) {
                 hasEnabled = true;
             }
-            await this.adapter.extendObjectAsync(`${this.hexAddress}.${i + 1}`, {
+            await this.adapter.extendObject(`${this.hexAddress}.${i + 1}`, {
                 type: 'state',
                 common: {
                     name: `${this.hexAddress} Channel ${i + 1}`,
@@ -70,7 +73,7 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
                     role: 'value.voltage',
                     unit: 'V',
                 },
-                native: channelConfig as any,
+                native: channelConfig,
             });
         }
 
@@ -89,6 +92,7 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
         this.debug('Stopping');
         this.stopPolling();
         this.currentDelay?.cancel();
+        return Promise.resolve();
     }
 
     async readCurrentValuesAsync(): Promise<void> {
@@ -123,7 +127,7 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
             const lsb = this.getLsb(config.resolution);
             const pga = 1 << config.gain;
 
-            this.setStateAck(index + 1, (value * lsb) / pga);
+            await this.setStateAckAsync(index + 1, (value * lsb) / pga);
         }
     }
 
@@ -138,7 +142,7 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
             case Resolution.Bits12:
                 return 5; // 240 SPS
             default:
-                throw new Error(`Unsupported resolution: ${resolution} bits`);
+                throw new Error(`Unsupported resolution: ${resolution as any} bits`);
         }
     }
 
@@ -153,7 +157,123 @@ export default class MCP342x extends DeviceHandlerBase<MCP342xConfig> {
             case Resolution.Bits12:
                 return 1 / 1000; // 1 mV
             default:
-                throw new Error(`Unsupported resolution: ${resolution} bits`);
+                throw new Error(`Unsupported resolution: ${resolution as any} bits`);
         }
     }
 }
+
+function createChannelConfig(index: number, has18Bit: boolean): Record<string, ConfigItemAny> {
+    return {
+        [`MCP342x.channels.${index}.enabled`]: {
+            type: 'checkbox',
+            default: false,
+            xs: 4,
+            md: 3,
+            xl: 2,
+            label: `Channel ${index + 1}`,
+            newLine: true,
+        },
+        [`MCP342x.channels.${index}.resolution`]: {
+            type: 'select',
+            options: [
+                { value: Resolution.Bits12, label: '12 bits' },
+                { value: Resolution.Bits14, label: '14 bits' },
+                { value: Resolution.Bits16, label: '16 bits' },
+                { value: Resolution.Bits18, label: '18 bits', hidden: !has18Bit },
+            ],
+            default: Resolution.Bits12,
+            format: 'dropdown',
+            disabled: `!data.MCP342x.channels["${index}"].enabled`,
+            xs: 4,
+            md: 3,
+            xl: 2,
+            label: 'Resolution',
+        },
+        [`MCP342x.channels.${index}.gain`]: {
+            type: 'select',
+            options: [
+                { value: Gain.X1, label: 'x1' },
+                { value: Gain.X2, label: 'x2' },
+                { value: Gain.X4, label: 'x4' },
+                { value: Gain.X8, label: 'x8' },
+            ],
+            default: Gain.X1,
+            format: 'dropdown',
+            disabled: `!data.MCP342x.channels["${index}"].enabled`,
+            xs: 4,
+            md: 3,
+            xl: 2,
+            label: 'Gain',
+        },
+    };
+}
+
+export const MCP342x: DeviceHandlerInfo = {
+    type: 'MCP342x',
+    createHandler: (deviceConfig, adapter) => new MCP342xHandler(deviceConfig, adapter),
+    names: [
+        {
+            name: 'MCP3422',
+            addresses: [0x68],
+            config: {
+                ...createChannelConfig(0, true),
+                ...createChannelConfig(1, true),
+            },
+        },
+        {
+            name: 'MCP3423',
+            addresses: getAllAddresses(0x68, 8),
+            config: {
+                ...createChannelConfig(0, true),
+                ...createChannelConfig(1, true),
+            },
+        },
+        {
+            name: 'MCP3424',
+            addresses: getAllAddresses(0x68, 8),
+            config: {
+                ...createChannelConfig(0, true),
+                ...createChannelConfig(1, true),
+                ...createChannelConfig(2, true),
+                ...createChannelConfig(3, true),
+            },
+        },
+        {
+            name: 'MCP3426',
+            addresses: [0x68],
+            config: {
+                ...createChannelConfig(0, false),
+                ...createChannelConfig(1, false),
+            },
+        },
+        {
+            name: 'MCP3427',
+            addresses: getAllAddresses(0x68, 8),
+            config: {
+                ...createChannelConfig(0, false),
+                ...createChannelConfig(1, false),
+            },
+        },
+        {
+            name: 'MCP3428',
+            addresses: getAllAddresses(0x68, 8),
+            config: {
+                ...createChannelConfig(0, false),
+                ...createChannelConfig(1, false),
+                ...createChannelConfig(2, false),
+                ...createChannelConfig(3, false),
+            },
+        },
+    ],
+    config: {
+        'MCP342x.pollingInterval': {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 60000,
+            unit: 'ms',
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+    },
+};

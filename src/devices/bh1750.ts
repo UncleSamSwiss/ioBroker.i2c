@@ -24,36 +24,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { round } from '../lib/utils';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface BH1750Config extends ImplementationConfigBase {
     pollingInterval: number;
 }
 
-export default class BH1750 extends DeviceHandlerBase<BH1750Config> {
+export class BH1750Handler extends DeviceHandlerBase<BH1750Config> {
     private useAmericanUnits!: boolean;
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'illuminance',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         const systemConfig = await this.adapter.getForeignObjectAsync('system.config');
         this.useAmericanUnits = !!(systemConfig && systemConfig.common && systemConfig.common.tempUnit == '°F');
         this.info(`Using ${this.useAmericanUnits ? 'American' : 'metric'} units`);
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.lux', {
+        await this.adapter.extendObject(`${this.hexAddress}.lux`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Lux',
+                name: `${this.hexAddress} Lux`,
                 read: true,
                 write: false,
                 type: 'number',
@@ -62,10 +63,10 @@ export default class BH1750 extends DeviceHandlerBase<BH1750Config> {
             },
         });
 
-        await this.adapter.extendObjectAsync(this.hexAddress + '.measure', {
+        await this.adapter.extendObject(`${this.hexAddress}.measure`, {
             type: 'state',
             common: {
-                name: this.hexAddress + ' Measure',
+                name: `${this.hexAddress} Measure`,
                 read: false,
                 write: true,
                 type: 'boolean',
@@ -74,7 +75,7 @@ export default class BH1750 extends DeviceHandlerBase<BH1750Config> {
         });
 
         this.adapter.addStateChangeListener(
-            this.hexAddress + '.measure',
+            `${this.hexAddress}.measure`,
             async () => await this.readCurrentValuesAsync(),
         );
 
@@ -88,9 +89,10 @@ export default class BH1750 extends DeviceHandlerBase<BH1750Config> {
         }
     }
 
-    async stopAsync(): Promise<void> {
+    stopAsync(): Promise<void> {
         this.debug('Stopping');
         this.stopPolling();
+        return Promise.resolve();
     }
 
     private async readCurrentValuesAsync(): Promise<void> {
@@ -99,19 +101,36 @@ export default class BH1750 extends DeviceHandlerBase<BH1750Config> {
             // Grab illuminance
             const buffer = new Buffer(2);
             await this.readI2cBlock(0x20, 2, buffer);
-            this.debug('Buffer' + buffer);
+            this.debug(`Buffer ${buffer.toString('hex')}`);
             const lux = (buffer[1] + 256 * buffer[0]) / 1.2;
 
             this.debug(
-                'Read: ' +
-                    JSON.stringify({
-                        lux: lux,
-                    }),
+                `Read: ${JSON.stringify({
+                    lux: lux,
+                })}`,
             );
 
-            this.setStateAck('lux', round(lux));
-        } catch (e) {
-            this.error("Couldn't read current values: " + e);
+            await this.setStateAckAsync('lux', round(lux));
+        } catch (e: any) {
+            this.error(`Couldn't read current values: ${e}`);
         }
     }
 }
+
+export const BH1750: DeviceHandlerInfo = {
+    type: 'BH1750',
+    createHandler: (deviceConfig, adapter) => new BH1750Handler(deviceConfig, adapter),
+    names: [{ name: 'BH1750', addresses: [0x23, 0x5c] }],
+    config: {
+        'BH1750.pollingInterval': {
+            type: 'number',
+            label: 'Polling Interval',
+            default: 10,
+            unit: 'sec',
+            min: 0,
+            xs: 7,
+            sm: 5,
+            md: 3,
+        },
+    },
+};

@@ -32,8 +32,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
+import { getAllAddresses } from '../lib/i2c';
+import type { DeviceHandlerInfo } from './device-handler-base';
 import { DeviceHandlerBase } from './device-handler-base';
 
 export interface PCA9685Config extends ImplementationConfigBase {
@@ -61,23 +63,23 @@ enum Mode {
     RESTART = 0x80,
     SLEEP = 0x10,
     ALLCALL = 0x01,
-    INVRT = 0x10,
+    // INVERT = 0x10,
     OUTDRV = 0x04,
     EXTCLK = 0x40,
 }
 
-export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
+export class PCA9685Handler extends DeviceHandlerBase<PCA9685Config> {
     private currentDelay?: Delay;
 
     async startAsync(): Promise<void> {
         this.debug('Starting');
-        await this.adapter.extendObjectAsync(this.hexAddress, {
+        await this.adapter.extendObject(this.hexAddress, {
             type: 'device',
             common: {
-                name: this.hexAddress + ' (' + this.name + ')',
+                name: `${this.hexAddress} (${this.name})`,
                 role: 'value',
             },
-            native: this.config as any,
+            native: this.deviceConfig,
         });
 
         for (let i = 0; i < 16; i++) {
@@ -87,10 +89,10 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
                 await this.setStateAckAsync(i, value);
             }
 
-            await this.adapter.extendObjectAsync(this.hexAddress + '.' + i, {
+            await this.adapter.extendObject(`${this.hexAddress}.${i}`, {
                 type: 'state',
                 common: {
-                    name: this.hexAddress + ' Channel ' + i,
+                    name: `${this.hexAddress} Channel ${i}`,
                     read: true,
                     write: true,
                     type: 'number',
@@ -113,10 +115,12 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
         if (this.currentDelay) {
             this.currentDelay.cancel();
         }
+
+        return Promise.resolve();
     }
 
     private async initializeDeviceAsync(): Promise<void> {
-        this.debug('Initializing PCA9865');
+        this.debug('Initializing PCA9685');
         await this.restartDeviceAsync();
         await this.setPwmFrequencyAsync(this.config.frequency);
         for (let i = 0; i < 16; i++) {
@@ -138,27 +142,30 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
 
     private async setPwmFrequencyAsync(frequencyHz: number): Promise<void> {
         if (isNaN(frequencyHz)) {
-            this.error('Cannot set PWM frequency to ' + frequencyHz);
+            this.error(`Cannot set PWM frequency to ${frequencyHz}`);
             return;
         }
 
-        if (frequencyHz > 1526) frequencyHz = 1526;
-        else if (frequencyHz < 24) frequencyHz = 24;
+        if (frequencyHz > 1526) {
+            frequencyHz = 1526;
+        } else if (frequencyHz < 24) {
+            frequencyHz = 24;
+        }
 
         let prescaleValue = 25000000.0; // 25MHz
         prescaleValue /= 4096.0; // 12-bit
         prescaleValue /= frequencyHz;
         prescaleValue -= 1.0;
-        this.debug('Setting PWM frequency to ' + frequencyHz + ' Hz');
-        this.debug('Estimated pre-scale: ' + prescaleValue + ' Hz');
+        this.debug(`Setting PWM frequency to ${frequencyHz} Hz`);
+        this.debug(`Estimated pre-scale: ${prescaleValue} Hz`);
         const prescale = Math.floor(prescaleValue + 0.5);
-        this.debug('Final pre-scale: ' + prescale);
+        this.debug(`Final pre-scale: ${prescale}`);
 
         const oldMode = await this.readByte(Register.MODE1);
         const newMode = (oldMode & 0x7f) | Mode.SLEEP;
 
-        this.debug('Old mode: ' + oldMode);
-        this.debug('New mode: ' + newMode);
+        this.debug(`Old mode: ${oldMode}`);
+        this.debug(`New mode: ${newMode}`);
 
         await this.writeByte(Register.MODE1, newMode); // go to sleep
         await this.delay(2);
@@ -170,15 +177,18 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
     }
 
     private async setPwmValueAsync(channel: number, pwmValue: number): Promise<void> {
-        this.debug('Received new PWM value ' + pwmValue + ' for channel ' + channel);
+        this.debug(`Received new PWM value ${pwmValue} for channel ${channel}`);
 
         if (isNaN(channel) || isNaN(pwmValue)) {
-            this.error('Cannot set PWM value ' + pwmValue + ' for channel ' + channel);
+            this.error(`Cannot set PWM value ${pwmValue} for channel ${channel}`);
             return;
         }
 
-        if (channel < 0) channel = 0;
-        else if (channel > 15) channel = 15;
+        if (channel < 0) {
+            channel = 0;
+        } else if (channel > 15) {
+            channel = 15;
+        }
 
         let ledOn = 0;
         let ledOff = pwmValue;
@@ -202,8 +212,8 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
             await this.writeByte(Register.LED0_ON_H + 4 * channel, ledOn >> 8);
             await this.writeByte(Register.LED0_OFF_L + 4 * channel, ledOff & 0xff);
             await this.writeByte(Register.LED0_OFF_H + 4 * channel, ledOff >> 8);
-        } catch (e) {
-            this.error("Couldn't send current PWM value: " + e);
+        } catch (e: any) {
+            this.error(`Couldn't send current PWM value: ${e}`);
         }
 
         this.debug(`Writing values for channel ${channel}: on=${ledOn} | off=${ledOff} (PWM ${pwmValue})`);
@@ -217,7 +227,7 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
 
     private addOutputListener(channel: number): void {
         this.adapter.addStateChangeListener<number>(
-            this.hexAddress + '.' + channel,
+            `${this.hexAddress}.${channel}`,
             async (_oldValue: number, newValue: number) => await this.setPwmValueAsync(channel, newValue),
         );
     }
@@ -228,3 +238,23 @@ export default class PCA9685 extends DeviceHandlerBase<PCA9685Config> {
         await delay.runAsnyc();
     }
 }
+
+export const PCA9685: DeviceHandlerInfo = {
+    type: 'PCA9685',
+    createHandler: (deviceConfig, adapter) => new PCA9685Handler(deviceConfig, adapter),
+    names: [{ name: 'PCA9685', addresses: getAllAddresses(0x40, 64) }],
+    config: {
+        'PCA9685.frequency': {
+            type: 'number',
+            default: 100,
+            min: 24,
+            max: 1526,
+            step: 1,
+            label: 'PWM Frequency',
+            xs: 7,
+            sm: 5,
+            md: 3,
+            unit: 'Hz',
+        },
+    },
+};

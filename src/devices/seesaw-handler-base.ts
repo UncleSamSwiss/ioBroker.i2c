@@ -3,7 +3,7 @@
  * A lot of this code is based on https://github.com/adafruit/Adafruit_Seesaw
  * License: BSD license, all text here must be included in any redistribution.
  */
-import { ImplementationConfigBase } from '../lib/adapter-config';
+import type { ImplementationConfigBase } from '../lib/adapter-config';
 import { Delay } from '../lib/async';
 import { DeviceHandlerBase } from './device-handler-base';
 
@@ -46,6 +46,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
     /**
      * Start the seesaw.
      * This should be called when your sketch is connecting to the seesaw.
+     *
      * @param reset pass true to reset the seesaw on startup. Defaults to true.
      */
     public async begin(reset?: boolean): Promise<boolean> {
@@ -72,6 +73,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
 
     /**
      * Read the temperature of the seesaw board in degrees Celsius.
+     *
      * @return Temperature in degrees Celsius as a floating point value.
      */
     public async getTemp(): Promise<number> {
@@ -83,6 +85,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
 
     /**
      * Read the analog value on an capacitive touch-enabled pin.
+     *
      * @param pin the number of the pin to read.
      * @returns the analog value. This is an integer between 0 and 1023.
      */
@@ -99,6 +102,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
 
     /**
      * Write 1 byte to the specified seesaw register.
+     *
      * @param regHigh the module address register
      * @param regLow the function address register
      * @param value value the value between 0 and 255 to write
@@ -111,6 +115,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
 
     /**
      * Read 1 byte from the specified seesaw register.
+     *
      * @param regHigh the module address register
      * @param regLow the function address register
      * @param delay a number of microseconds to delay before reading
@@ -144,6 +149,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
 
     /**
      * Delays execution.
+     *
      * @param delay The delay in microseconds.
      */
     public async delayMicroseconds(delay: number): Promise<void> {
@@ -153,6 +159,7 @@ export abstract class SeesawHandlerBase<T extends ImplementationConfigBase> exte
 
     /**
      * Delays execution.
+     *
      * @param delay The delay in milliseconds.
      */
     public async delay(delay: number): Promise<void> {

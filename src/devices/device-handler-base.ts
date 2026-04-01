@@ -1,8 +1,21 @@
-import * as i2c from 'i2c-bus';
-import { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
-import { Polling, PollingCallback } from '../lib/async';
+import type { ConfigItemAny } from '@iobroker/dm-utils';
+import type * as i2c from 'i2c-bus';
+import type { I2CDeviceConfig, ImplementationConfigBase } from '../lib/adapter-config';
+import type { PollingCallback } from '../lib/async';
+import { Polling } from '../lib/async';
 import { toHexString } from '../lib/shared';
-import { I2cAdapter, StateValue } from '../main';
+import type { I2cAdapter, StateValue } from '../main';
+
+export interface DeviceHandlerInfo {
+    type: string;
+    createHandler: (deviceConfig: I2CDeviceConfig, adapter: I2cAdapter) => DeviceHandlerBase<ImplementationConfigBase>;
+    config: Record<string, ConfigItemAny>;
+    names: {
+        name: string;
+        addresses: number[];
+        config?: Record<string, ConfigItemAny>;
+    }[];
+}
 
 export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
     public readonly type: string;
@@ -13,7 +26,10 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
 
     private polling?: Polling;
 
-    constructor(private readonly deviceConfig: I2CDeviceConfig, protected readonly adapter: I2cAdapter) {
+    constructor(
+        public readonly deviceConfig: I2CDeviceConfig,
+        protected readonly adapter: I2cAdapter,
+    ) {
         if (!deviceConfig.type || !deviceConfig.name) {
             throw new Error('Type and name of device must be specified');
         }
@@ -25,15 +41,23 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
         this.hexAddress = toHexString(deviceConfig.address);
     }
 
+    public get address(): number {
+        return this.deviceConfig.address;
+    }
+
     // methods to override
+
+    /** Starts the device handler. */
     abstract startAsync(): Promise<void>;
+
+    /** Stops the device handler. */
     abstract stopAsync(): Promise<void>;
 
     // polling related methods
     protected startPolling(callback: PollingCallback, interval: number, minInterval?: number): void {
         this.stopPolling();
         this.polling = new Polling(callback);
-        this.polling.runAsync(interval, minInterval).catch((error) => this.error('Polling error: ' + error));
+        this.polling.runAsync(interval, minInterval).catch(error => this.error(`Polling error: ${error}`));
     }
 
     protected stopPolling(): void {
@@ -96,15 +120,11 @@ export abstract class DeviceHandlerBase<T extends ImplementationConfigBase> {
 
     // adapter methods
     protected async setStateAckAsync<T extends StateValue>(state: string | number, value: T): Promise<void> {
-        await this.adapter.setStateAckAsync(this.hexAddress + '.' + state, value);
-    }
-
-    protected setStateAck<T extends StateValue>(state: string | number, value: T): void {
-        this.adapter.setStateAck(this.hexAddress + '.' + state, value);
+        await this.adapter.setStateAckAsync(`${this.hexAddress}.${state}`, value);
     }
 
     protected getStateValue<T extends StateValue>(state: string | number): T | undefined {
-        return this.adapter.getStateValue<T>(this.hexAddress + '.' + state);
+        return this.adapter.getStateValue<T>(`${this.hexAddress}.${state}`);
     }
 
     // logging methods

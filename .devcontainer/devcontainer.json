@@ -1,36 +1,27 @@
-// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.101.1/containers/docker-existing-docker-compose
-// If you want to run as a non-root user in the container, see .devcontainer/docker-compose.yml.
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-    "name": "ioBroker Docker Compose",
+    "name": "Node.js & TypeScript",
+    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm",
 
-    // Update the 'dockerComposeFile' list if you have more compose files or use different names.
-    // The .devcontainer/docker-compose.yml file contains any overrides you need/want to make.
-    "dockerComposeFile": ["docker-compose.yml"],
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    // "features": {},
 
-    // The 'service' property is the name of the service for the container that VS Code should
-    // use. Update this value and .devcontainer/docker-compose.yml to the real service name.
-    "service": "iobroker",
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
 
-    // The optional 'workspaceFolder' property is the path VS Code should open by default when
-    // connected. This is typically a file mount in .devcontainer/docker-compose.yml
-    "workspaceFolder": "/workspace",
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "yarn install",
 
-    // Set *default* container specific settings.json values on container create.
-    "settings": {},
+    // Configure tool-specific properties.
+    "customizations": {
+        "vscode": {
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+        }
+    }
 
-    // Add the IDs of extensions you want installed when the container is created.
-    "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"],
-
-    // Uncomment the next line if you want start specific services in your Docker Compose config.
-    // "runServices": [],
-
-    // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
-    // "shutdownAction": "none",
-
-    // When creating the container, delete unnecessary adapters, disable error reporting, set the license as confirmed, and install/update this adapter
-    "postCreateCommand": "iob del discovery && iob plugin disable sentry && iob object set system.config common.licenseConfirmed=true && NPM_PACK=$(npm pack) && iob url \"$(pwd)/$NPM_PACK\" --debug && rm \"$NPM_PACK\""
-
-    // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-    //"remoteUser": "iobroker"
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    // "remoteUser": "root"
 }
