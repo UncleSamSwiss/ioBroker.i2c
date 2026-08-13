@@ -56,7 +56,7 @@
     "linux"
   ],
   "dependencies": {
-    "@iobroker/adapter-core": "^3.3.2",
+    "@iobroker/adapter-core": "^3.4.3",
     "@iobroker/dm-utils": "^3.0.19",
     "i2c-bus": "^5.2.3",
     "nan": "^2.26.2"
