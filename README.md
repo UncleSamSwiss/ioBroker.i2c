@@ -140,6 +140,9 @@ For later updates:
     ### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 2.0.0 (2026-04-01)
 
 - (UncleSamSwiss) Allow to add/remove devices without restarting the adapter
