@@ -215,6 +215,8 @@ For later updates:
 
 - (UncleSamSwiss) Initial version
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
                                  Apache License
