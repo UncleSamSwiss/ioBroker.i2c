@@ -135,6 +135,9 @@ For later updates:
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+- (iobroker-bot) Adapter requires node.js >= 22 now.
+
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
