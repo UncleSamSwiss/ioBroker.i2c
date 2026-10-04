@@ -59,7 +59,7 @@
     "@iobroker/adapter-core": "^3.3.2",
     "@iobroker/dm-utils": "^3.0.19",
     "i2c-bus": "^5.2.3",
-    "nan": "^2.26.2"
+    "nan": "^2.28.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^5.2.1",
